@@ -1,1 +1,46 @@
-# login page
+<!-- Created by William Alexander Tang Wai on 16/09/2025 -->
+<!-- Login Tutorial on https://www.w3schools.com/howto/howto_css_login_form.asp -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="css/login-page-style.css">
+</head>
+<body>
+    <!-- Login Form -->
+    <!-- To change 'login_page.php' to whatever file will process login -->
+    <form action="login_page.php" method="post">
+        <div class="logo-container">
+            <h1 class="logo">AMT</h1>
+        </div>
+        <h3 class="logo-sub">Assignment Moderation Tool</h3>
+        <h3 class="login-text">Log In</h3>
+
+        <div class="input-container">
+            <label for="email"><b>Email</b></label>
+            <input type="text" placeholder="Enter Email" name="email" id="email" required>
+
+            <label for="psw"><b>Password</b></label>
+            <div class="password-container">
+                <input type="password" placeholder="Enter Password" name="psw" id="psw" required>
+                <img src="images/login-page-images/eye-closed.png" class="eye-icon" 
+                    onclick="togglePassword()" id="eye">
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button type="submit">Log In</button>
+        </div>
+
+        <!-- To change href to 'forgot-password.html' later -->
+        <!-- href="#" goes to the top of the page -->
+        <span class="psw"><a href="#">Forgot password?</a></span>
+    </form>
+
+    <!-- Script -->
+    <script src="js/login-page-script.js"></script>
+</body>
+</html>
