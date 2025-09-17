@@ -9,8 +9,8 @@
 function togglePassword() {
   const passwordInput = document.getElementById("psw");
   const eyeIcon = document.getElementById("eye");
-  const eyeOpen = "images/login-page-images/eye-open.png";
-  const eyeClosed = "images/login-page-images/eye-closed.png";
+  const eyeOpen = "images/login-page/eye-open.png";
+  const eyeClosed = "images/login-page/eye-closed.png";
 
   if (passwordInput.type === "password") {
     passwordInput.type = "text";
