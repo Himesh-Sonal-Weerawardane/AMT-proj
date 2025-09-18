@@ -82,7 +82,7 @@ form {
 }
 
 /* Input boxes */
-input[type=text], input[type=password] {
+input[type=text], input[type=email], input[type=password] {
   width: 400px;
   padding: 12px 10px;
   margin: 10px 0;
