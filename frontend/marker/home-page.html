@@ -12,6 +12,8 @@
 </head>
 <body>
     <div class="accordion-container">
+        <!-- Note: Query the DB, group results by year & semester,
+         and loop to build accordions for dynamic rendering. -->
         <button class="accordion">2025</button>
         <div class="panel">
             <button class="accordion1">Semester 1</button>
@@ -61,7 +63,49 @@
 
         <button class="accordion">2024</button>
         <div class="panel">
-            <p>Lorem ipsum...</p>
+            <button class="accordion1">Semester 1</button>
+            <div class="panel">
+                <div class="row">
+                    <div class="column">
+                        <table>
+                            <tr>
+                                <th colspan="2">Moderation 1</th>
+                            </tr>
+                            <tr>
+                                <td>Your Marks</td>
+                                <td>72</td>
+                            </tr>
+                            <tr>
+                                <td>Admin's Marks</td>
+                                <td>75</td>
+                            </tr>
+                            <tr>
+                                <td>Difference</td>
+                                <td class="difference">3</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="column">
+                        <table>
+                            <tr>
+                                <th colspan="2">Moderation 2</th>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <button class="accordion">2023</button>
