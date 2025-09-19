@@ -31,17 +31,15 @@
             <div class="password-container">
                 <input type="password" placeholder="Enter Password" name="psw" id="psw" required>
                 <img src="images/login-page/eye-closed.png" class="eye-icon" 
-                    onclick="togglePassword()" id="eye">
+                    onclick="togglePassword('psw', 'eye')" id="eye">
             </div>
         </div>
 
         <div class="button-container">
             <button type="submit">Log In</button>
         </div>
-
-        <!-- To change href to 'forgot-password.html' later -->
-        <!-- href="#" goes to the top of the page -->
-        <span class="psw"><a href="#">Forgot password?</a></span>
+        
+        <span class="psw"><a href="login-pages/forgot-psw.html">Forgot password?</a></span>
     </form>
 
     <!-- Script -->

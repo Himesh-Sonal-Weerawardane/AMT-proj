@@ -6,11 +6,13 @@
  * Change the input type between 'password' and 'text',
  * and update the eye icon image accordingly.
  */
-function togglePassword() {
-  const passwordInput = document.getElementById("psw");
-  const eyeIcon = document.getElementById("eye");
-  const eyeOpen = "images/login-page/eye-open.png";
-  const eyeClosed = "images/login-page/eye-closed.png";
+function togglePassword(psw, eye) {
+  const passwordInput = document.getElementById(psw);
+  const eyeIcon = document.getElementById(eye);
+  
+  // absolute paths to eye icons
+  const eyeOpen = "/frontend/images/login-page/eye-open.png";
+  const eyeClosed = "/frontend/images/login-page/eye-closed.png";
 
   if (passwordInput.type === "password") {
     passwordInput.type = "text";
@@ -20,3 +22,16 @@ function togglePassword() {
     eyeIcon.src = eyeClosed; // password hidden
   }
 }
+
+document.getElementById("psw-form").addEventListener("submit", function(event) {
+  const psw = document.getElementById("psw").value;
+  const confirmPsw = document.getElementById("confirm-psw").value;
+  const errorMessage = document.getElementById("psw-error-msg");
+
+  if (psw !== confirmPsw) {
+    event.preventDefault(); // stop form from submitting
+    errorMessage.style.display = "block"; // show error
+  } else {
+    errorMessage.style.display = "none"; // hide error if they match
+  }
+});

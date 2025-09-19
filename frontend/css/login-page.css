@@ -51,7 +51,7 @@ form {
 }
 
 /* Log In text under logo sub text */
-.login-text {
+.login-text, .forgot-psw-text, .reset-psw-text {
   display: flex;
   justify-content: center;
   font-size: 24px;
@@ -61,7 +61,7 @@ form {
 
 /********************************************************/
 /* Incorrect email/password text */
-.error-message {
+.error-message, .successful-message, #psw-error-msg {
   /* To change display to flex when receiving error from server */
   display: none;
   justify-content: center;
@@ -69,6 +69,11 @@ form {
   font-weight: 300;
   margin: 50px 0 12px 0;
   color: #d41a1a;
+}
+
+/* Successful msg should be displayed in green */
+.successful-message {
+  color: #22c55e;
 }
 
 /********************************************************/
