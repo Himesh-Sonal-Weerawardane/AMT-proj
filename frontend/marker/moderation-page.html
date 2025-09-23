@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderation</title>
+    <script src="../js/openTabContent.js"></script>
+    <script src="../js/gradeInfo.js"></script>
+    <link rel="stylesheet" href="../css/moderation-page.css">
+
+</head>
+<body>
+
+    <!-- topnav to be replaced -->
+
+    <div class="topnav">
+
+        <button class="logo">☰ AMT</button>
+
+        <div class="sub-dropdown">
+            <button class="accordion">ASP228</button>
+            <img src="../images/dropdown-arrow.png" alt="Dropdown arrow" class="arrow">
+            <ul class="dropdown-menu">
+                <li>CSP100</li>
+            </ul>
+        </div>
+
+        <div class="nav-pages">
+            <a class="active" href="#home">Home</a>
+            <a class="active" href="#contactandhelp">Contact and Help</a>
+            <a class="active" href="#informationandhandbook">Information and Handbook</a>
+            <a class="active" href="#settings">Settings</a>
+        </div>
+
+    </div>
+
+    <div class="container">
+        <div class="left-panel">
+            <div class="doc-view">
+                <h1>Moderation Document</h1>
+                <iframe src="../pdf/sample.pdf" type="application/pdf" width="200%" height="500%"></iframe>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="right-panel">
+            <div class="tabs">
+
+                <button class="tablinks" onclick="openTabContent(event, 'Rubric')" id="defaultOpen">Rubric</button>
+                <button class="tablinks" onclick="openTabContent(event, 'Statistics')">Statistics</button>
+
+            </div>
+
+            <div id="Rubric" class="tabcontent">
+
+                <h3>Criteria</h3>
+
+                <div class="criteria">
+
+                    <div class="criterion">
+
+                        <h4>1. Criterion 1...</h4>
+
+                        <div class="grading-scale">
+
+                            <div class="scale-bar">
+                                <div class="scale-section" data-grade="HD"></div>
+                                <div class="scale-section" data-grade="D"></div>
+                                <div class="scale-section" data-grade="C"></div>
+                                <div class="scale-section" data-grade="P"></div>
+                                <div class="scale-section" data-grade="F"></div>
+                            </div>
+
+                            <div class="grade-label">
+                                <span id="selected-grade"></span>
+                                <p id="grade-description"></p>
+                                <p id="grade-score"></p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="Statistics" class="tabcontent">
+                <h2>Statistics</h2>
+                <div class="section">
+                    <h3>Statistics 1</h3>
+                    <p>contains differences in markings...</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
