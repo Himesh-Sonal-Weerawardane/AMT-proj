@@ -14,7 +14,7 @@
       "grades": [
         {
           "grade": "High Distinction",
-          "pointsRange": "12 - 15 points",
+          "pointsRange": "(12 - 15 points)",
           "description": [
             "Articulates a compelling justification for investigating the phenomenon.",
             "Provides a clear, comprehensive definition of all relevant key terms and constructs.",
@@ -23,7 +23,7 @@
         },
         {
           "grade": "Distinction",
-          "pointsRange": "10.5 - 11.5 points",
+          "pointsRange": "(10.5 - 11.5 points)",
           "description": [
             "Articulates a strong justification for investigating the phenomenon.",
             "Provides a thorough definition of all relevant key terms and constructs.",
@@ -32,7 +32,7 @@
         },
         {
           "grade": "Credit",
-          "pointsRange": "9 - 10 points",
+          "pointsRange": "(9 - 10 points)",
           "description": [
             "Articulates a justification for investigating the phenomenon which indicates its relevance.",
             "Provides definitions for most relevant key terms and constructs.",
@@ -41,7 +41,7 @@
         },
         {
           "grade": "Pass",
-          "pointsRange": "7.5 - 8.5 points",
+          "pointsRange": "(7.5 - 8.5 points)",
           "description": [
             "Identifies the importance of the phenomenon.",
             "Provides broad definitions or defines some relevant key terms and constructs.",
@@ -50,7 +50,7 @@
         },
         {
           "grade": "Fail",
-          "pointsRange": "0 - 7 points",
+          "pointsRange": "(0 - 7 points)",
           "description": [
             "Provides a minimal justification for investigating the phenomenon.",
             "Provides limited or unclear definitions of key terms and constructs.",
@@ -65,7 +65,7 @@
       "grades": [
         {
           "grade": "High Distinction",
-          "pointsRange": "17 - 20 points",
+          "pointsRange": "(17 - 20 points)",
           "description": [
             "Provides a sophisticated explanation of methodology.",
             "Demonstrates excellent justification of methods chosen.",
@@ -74,7 +74,7 @@
         },
         {
           "grade": "Distinction",
-          "pointsRange": "15 - 16.5 points",
+          "pointsRange": "(15 - 16.5 points)",
           "description": [
             "Provides a strong explanation of methodology.",
             "Demonstrates good justification of methods chosen.",
@@ -83,7 +83,7 @@
         },
         {
           "grade": "Credit",
-          "pointsRange": "13 - 14.5 points",
+          "pointsRange": "(13 - 14.5 points)",
           "description": [
             "Explains methodology adequately.",
             "Some justification of methods.",
@@ -92,7 +92,7 @@
         },
         {
           "grade": "Pass",
-          "pointsRange": "10 - 12.5 points",
+          "pointsRange": "(10 - 12.5 points)",
           "description": [
             "Basic explanation of methodology.",
             "Limited justification of methods.",
@@ -101,7 +101,7 @@
         },
         {
           "grade": "Fail",
-          "pointsRange": "0 - 9.5 points",
+          "pointsRange": "(0 - 9.5 points)",
           "description": [
             "Minimal or incorrect explanation of methodology.",
             "No justification of methods.",
