@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Publish New Module</title>
+  <link rel="stylesheet" href="../css/publish-module.css" />
+</head>
+<body>
+<main class="page-wrapper">
+  <section class="module-card">
+    <header class="module-card__header">
+      <h1 class="module-card__title">New Module</h1>
+    </header>
+    <form class="module-form" action="#" method="post">
+      <div class="form-group">
+        <label class="form-label" for="module-title">Title</label>
+        <input
+                class="form-control"
+                type="text"
+                id="module-title"
+                name="module-title"
+                placeholder="Module Name"
+        />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="module-deadline">Set Deadline</label>
+        <input
+                class="form-control"
+                type="date"
+                id="module-deadline"
+                name="module-deadline"
+        />
+      </div>
+      <div class="form-group form-group--description">
+        <label class="form-label" for="module-description">Description</label>
+        <textarea
+                class="form-control form-control--textarea"
+                id="module-description"
+                name="module-description"
+                placeholder="Provide a detailed module description here..."
+        ></textarea>
+      </div>
+
+      <section class="upload-section">
+        <div class="upload-section__heading">
+          <h2 class="upload-section__title">Upload Assignment</h2>
+          <span class="upload-section__icon" aria-hidden="true">♡</span>
+        </div>
+        <div class="upload-section__content">
+          <article class="preview-card" aria-label="Assignment preview">
+            <header class="preview-card__header">
+              <h3 class="preview-card__title">Preview: Moderation 1.docx</h3>
+            </header>
+            <object
+                    class="preview-card__document"
+                    data="../pdf/sample-pdf.pdf"
+                    type="application/pdf"
+            >
+              <p class="preview-card__fallback">
+                Preview unavailable. <a href="../pdf/sample-pdf.pdf">Download file</a>
+              </p>
+            </object>
+          </article>
+          <label class="file-dropzone" for="assignment-upload">
+            <input
+                    class="file-dropzone__input"
+                    type="file"
+                    id="assignment-upload"
+                    name="assignment-upload"
+                    accept=".pdf,.doc,.docx"
+            />
+            <span class="file-dropzone__text">Upload here</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="upload-section">
+        <div class="upload-section__heading">
+          <h2 class="upload-section__title">Upload Rubric</h2>
+          <span class="upload-section__icon" aria-hidden="true">♡</span>
+        </div>
+        <div class="upload-section__content">
+          <article class="preview-card" aria-label="Rubric preview">
+            <header class="preview-card__header">
+              <h3 class="preview-card__title">Preview: Rubric.docx</h3>
+            </header>
+            <object
+                    class="preview-card__document"
+                    data="../pdf/sample-pdf.pdf"
+                    type="application/pdf"
+            >
+              <p class="preview-card__fallback">
+                Preview unavailable. <a href="../pdf/sample-pdf.pdf">Download file</a>
+              </p>
+            </object>
+          </article>
+          <label class="file-dropzone" for="rubric-upload">
+            <input
+                    class="file-dropzone__input"
+                    type="file"
+                    id="rubric-upload"
+                    name="rubric-upload"
+                    accept=".pdf,.doc,.docx"
+            />
+            <span class="file-dropzone__text">Upload here</span>
+          </label>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="submit" class="publish-button">Publish Module</button>
+      </div>
+    </form>
+  </section>
+</main>
+</body>
+</html>
