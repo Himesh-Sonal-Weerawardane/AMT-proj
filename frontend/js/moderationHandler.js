@@ -15,13 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("moderation-doc").src = rubricData.rubric.pdfFile;
             document.getElementById("moderation-title").textContent = rubricData.rubric.rubricTitle;
 
-            renderRubric(rubricData);
+            moderationHandler(rubricData);
+
+            alertSubmission()
 
         });
 
 });
 
-function renderRubric(data) {
+function moderationHandler(data) {
 
     const criteria = document.getElementById("criteria");
     criteria.innerHTML = "";
@@ -66,6 +68,7 @@ function renderRubric(data) {
         criterionInput.min = 0;
         criterionInput.max = element.maxPoints;
         criterionInput.style.width = "50px";
+        criterionInput.classList.add("score-input");
 
         const maxPointsLabel = document.createElement("span");
         maxPointsLabel.textContent = ` / ${element.maxPoints}`;
@@ -78,14 +81,53 @@ function renderRubric(data) {
 
         /* User Comments */
         const criterionComment = document.createElement("td");
-        const commentInput = document.createElement("textarea");
-        commentInput.id = `feedback-${index}`;
-        commentInput.placeholder = "Enter comment...";
-        criterionComment.appendChild(commentInput);
+        criterionComment.contentEditable = "true";
+        criterionComment.setAttribute("data-placeholder", "Enter comment...");
+        criterionComment.classList.add("comment-cell");
         row.appendChild(criterionComment);
+
 
         criteria.appendChild(row);
 
     });
 
 }
+
+
+function alertSubmission() {
+    const submitButton = document.getElementById("moderation-submit");
+
+    submitButton.addEventListener("click", () => {
+        const scoreInput = document.querySelectorAll(".score-input");
+
+        const allScoresFilled = Array.from(scoreInput).every(inp => inp.value.trim() !== "");
+
+        if (allScoresFilled) {
+            alert("Moderation submitted successfully!");
+        } else {
+            alert("Please fill in all scores before submission!");
+        }
+    });
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
