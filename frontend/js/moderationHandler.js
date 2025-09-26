@@ -1,10 +1,12 @@
 
-
-/* Fetching and rendering the rubric */
+/*
+    Handles the rubric and performs unmarked state
+ */
 
 
 let rubricData;
 
+/* Fetching and rendering the rubric */
 document.addEventListener('DOMContentLoaded', () => {
 
     fetch("./data/rubric.json")
@@ -15,15 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("moderation-doc").src = rubricData.rubric.pdfFile;
             document.getElementById("moderation-title").textContent = rubricData.rubric.rubricTitle;
 
-            moderationHandler(rubricData);
-
+            renderRubric(rubricData);
+            calculateTotalScore(rubricData);
             alertSubmission()
 
         });
 
 });
 
-function moderationHandler(data) {
+function renderRubric(data) {
 
     const criteria = document.getElementById("criteria");
     criteria.innerHTML = "";
@@ -94,6 +96,7 @@ function moderationHandler(data) {
 }
 
 
+/* Alert the user when submission is made */
 function alertSubmission() {
     const submitButton = document.getElementById("moderation-submit");
 
@@ -110,6 +113,39 @@ function alertSubmission() {
     });
 
 }
+
+
+/* Calculate the total score in real time */
+function calculateTotalScore(data) {
+    const scoreInput = document.querySelectorAll(".score-input");
+    const totalScore = document.getElementById("total-score");
+
+    const maxScore = data.criteria.reduce((a, b) => a + b.maxPoints, 0);
+
+    totalScore.textContent = `_ / ${maxScore}`;
+
+    function updateTotalScore() {
+        let total = 0;
+        let filled = false;
+        scoreInput.forEach(input => {
+            const val = parseFloat(input.value);
+            if (!isNaN(val)) {
+                total += val;
+                filled = true;
+            }
+        });
+        totalScore.textContent = filled ? `${total} / ${maxScore}` : `_ / ${maxScore}`;
+    }
+
+    scoreInput.forEach((input) => {
+        input.addEventListener("input", (updateTotalScore));
+    });
+
+    updateTotalScore()
+}
+
+
+
 
 
 
