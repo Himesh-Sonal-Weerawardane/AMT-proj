@@ -3,6 +3,7 @@
 /* JS tabs tutorial https://www.w3schools.com/howto/howto_js_tabs.asp */
 
 
+
 function openTabContent(evt, tabName) {
     var i, tabcontent, tablinks;
 
@@ -25,3 +26,24 @@ function openTabContent(evt, tabName) {
 document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("defaultOpen").click();
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
