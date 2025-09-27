@@ -1,4 +1,5 @@
 
+/* Dragging feature using the vertical page divider */
 
 document.addEventListener("DOMContentLoaded", () => {
     const dragbar = document.getElementById("drag-bar");

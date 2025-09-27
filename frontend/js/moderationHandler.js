@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("moderation-title").textContent = rubricData.rubric.rubricTitle;
 
             renderRubric(rubricData);
+            scoreLimits();
             calculateTotalScore(rubricData);
             alertSubmission()
 
@@ -146,7 +147,23 @@ function calculateTotalScore(data) {
 
 
 
+function scoreLimits(data) {
+    const scoreInput = document.querySelectorAll(".score-input");
 
+    scoreInput.forEach(input => {
+        input.addEventListener("input", (e) => {
+            const inputValue = parseFloat(input.value);
+            const min = parseFloat(input.min);
+            const max = parseFloat(input.max);
+
+            if (!isNaN(inputValue) && (inputValue < min || inputValue > max)) {
+                input.classList.add("invalid-score");
+            } else {
+                input.classList.remove("invalid-score");
+            }
+        });
+    });
+}
 
 
 
