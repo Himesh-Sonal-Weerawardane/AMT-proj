@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("moderation-title").textContent = rubricData.rubric.rubricTitle;
 
             renderRubric(rubricData);
-            scoreLimits();
-            calculateTotalScore(rubricData);
+            //scoreLimits();
+            //calculateTotalScore(rubricData);
             alertSubmission()
 
         });
@@ -32,65 +32,60 @@ function renderRubric(data) {
     criteria.innerHTML = "";
 
     data.criteria.forEach((element, index) => {
+        const criterion = document.createElement("div");
+        criterion.classList.add("criterion");
 
-        const row = document.createElement("tr");
-
-        /* Criterion Title */
-        const criterionTitle = document.createElement("td");
+        /* Criterion title */
+        const criterionTitle = document.createElement("h4");
+        criterionTitle.classList.add("criterion-title");
         criterionTitle.textContent = element.criterion;
-        row.appendChild(criterionTitle);
+        criterion.appendChild(criterionTitle);
 
+        const scoreWrapper = document.createElement("div");
+        scoreWrapper.classList.add("score-wrapper");
 
-        /* Criterion Description and Point Range for each grade group */
-        element.grades.forEach(grade => {
+        /* Criterion Score Bar */
+        const scoreBar = document.createElement("input");
+        scoreBar.id = `score-${index}`;
+        scoreBar.type = "range";
+        scoreBar.min = 0;
+        scoreBar.max = element.maxPoints;
+        scoreBar.value = 0;
+        scoreBar.classList.add("score-bar");
 
-            const gradeGroup = document.createElement("td");
+        const scoreView = document.createElement("span");
+        scoreView.classList.add("score-view");
+        scoreView.textContent = `_ / ${element.maxPoints}`;
 
-            const gradeDescription = document.createElement("ul");
-            grade.description.forEach(d => {
-                const li = document.createElement("li");
-                li.textContent = d;
-                gradeDescription.appendChild(li);
-            });
-            gradeGroup.appendChild(gradeDescription);
-
-
-            const range = document.createElement("p");
-            range.textContent = grade.pointsRange;
-            gradeGroup.appendChild(range);
-
-            row.appendChild(gradeGroup);
+        scoreBar.addEventListener("input", () => {
+            scoreView.textContent = `${scoreBar.value} / ${element.maxPoints}`;
         });
 
-        /* Criterion Input Score */
-        const criterionScore = document.createElement("td");
-        const criterionInput = document.createElement("input");
+        scoreWrapper.appendChild(scoreBar);
+        scoreWrapper.appendChild(scoreView);
+        criterion.appendChild(scoreWrapper);
 
-        criterionInput.id = `score-${index}`;
-        criterionInput.type = "number";
-        criterionInput.min = 0;
-        criterionInput.max = element.maxPoints;
-        criterionInput.style.width = "50px";
-        criterionInput.classList.add("score-input");
+        /* Criterion Description */
+        const gradeDescription = document.createElement("ul");
+        gradeDescription.classList.add("grade-description");
 
-        const maxPointsLabel = document.createElement("span");
-        maxPointsLabel.textContent = ` / ${element.maxPoints}`;
-        maxPointsLabel.style.marginLeft = "4px";
+        element.grades.forEach(grade => {
+            const li = document.createElement("li");
+            li.innerHTML = `<strong>${grade.pointsRange}:</strong> ${grade.description.join(", ")}`;
+            gradeDescription.appendChild(li);
+        });
 
-        criterionScore.appendChild(criterionInput);
-        criterionScore.appendChild(maxPointsLabel);
-        row.appendChild(criterionScore);
+        criterion.appendChild(gradeDescription);
 
 
-        /* User Comments */
-        const criterionComment = document.createElement("td");
-        criterionComment.contentEditable = "true";
-        criterionComment.setAttribute("data-placeholder", "Enter comment...");
-        criterionComment.classList.add("comment-cell");
-        row.appendChild(criterionComment);
+        const commentSection = document.createElement("div");
+        commentSection.classList.add("comment-section");
+        commentSection.contentEditable = "true";
+        commentSection.setAttribute("data-placeholder", "Enter comment...");
+        criterion.appendChild(commentSection);
 
 
-        criteria.appendChild(row);
+        criteria.appendChild(criterion);
 
     });
 

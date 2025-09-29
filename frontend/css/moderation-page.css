@@ -145,48 +145,13 @@ html, body {
 
 
 
-/* Rubric table */
+/* Rubric  */
 
-.rubric-table {
-    width: 100%;
-    border: 1px solid #ccc;
-    border-collapse: collapse;
-    table-layout: fixed;
-    border-radius: 6px;
-    overflow: auto;
+.comment-section {
+    border: 1px solid lightgray;
 }
 
-.rubric-table th {
-    background-color: #f1f1f1;
-}
-
-.rubric-table th, .rubric-table td {
-    width: 50px;
-    border: 1px solid #ccc;
-    padding: 8px;
-    overflow: auto;
-    text-align: left;
-}
-
-
-
-.rubric-table td ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.rubric-table td ul li {
-    margin-bottom: 20px;
-}
-
-
-.rubric-table th {
-    text-align: center;
-}
-
-
-.comment-cell:empty:before {
+.comment-section:empty:before {
     content: attr(data-placeholder);
     color: lightgray;
     pointer-events: none;

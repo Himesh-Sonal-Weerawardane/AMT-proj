@@ -109,6 +109,57 @@
           ]
         }
       ]
+    },
+    {
+      "criterion": "3. Analysis & Interpretation: Critically analyses data and interprets findings",
+      "maxPoints": 25,
+      "grades": [
+        {
+          "grade": "High Distinction",
+          "pointsRange": "(22 - 25 points)",
+          "description": [
+            "Provides insightful and thorough analysis of all data.",
+            "Draws accurate, meaningful conclusions with strong justification.",
+            "Effectively interprets findings in context of theoretical framework."
+          ]
+        },
+        {
+          "grade": "Distinction",
+          "pointsRange": "(19 - 21.5 points)",
+          "description": [
+            "Provides clear and coherent analysis of most data.",
+            "Draws reasonable conclusions with adequate justification.",
+            "Interprets findings largely in context of theoretical framework."
+          ]
+        },
+        {
+          "grade": "Credit",
+          "pointsRange": "(16 - 18.5 points)",
+          "description": [
+            "Provides analysis of key data points.",
+            "Draws mostly logical conclusions.",
+            "Some interpretation in context of theoretical framework."
+          ]
+        },
+        {
+          "grade": "Pass",
+          "pointsRange": "(12 - 15.5 points)",
+          "description": [
+            "Provides basic analysis.",
+            "Draws simple or partial conclusions.",
+            "Limited interpretation of findings."
+          ]
+        },
+        {
+          "grade": "Fail",
+          "pointsRange": "(0 - 11.5 points)",
+          "description": [
+            "Provides minimal or incorrect analysis.",
+            "Fails to draw meaningful conclusions.",
+            "No interpretation of findings."
+          ]
+        }
+      ]
     }
   ]
 }
