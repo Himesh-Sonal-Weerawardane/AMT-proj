@@ -18,9 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("moderation-title").textContent = rubricData.rubric.rubricTitle;
 
             renderRubric(rubricData);
-            //scoreLimits();
             //calculateTotalScore(rubricData);
-            alertSubmission()
+            alertSubmission();
 
         });
 
@@ -78,11 +77,24 @@ function renderRubric(data) {
         criterion.appendChild(gradeDescription);
 
 
+        /* Comment Section */
+        const commentContainer = document.createElement("div");
+        const commentPara = document.createElement("p");
         const commentSection = document.createElement("div");
+
+        commentContainer.classList.add("comment-container");
         commentSection.classList.add("comment-section");
+
+        commentPara.textContent = 'Criterion Feedback (Optional)';
+        commentPara.style.margin = "20px 20px 20px 30px";
+        commentPara.style.fontWeight = "bold";
+
         commentSection.contentEditable = "true";
         commentSection.setAttribute("data-placeholder", "Enter comment...");
-        criterion.appendChild(commentSection);
+
+        commentContainer.appendChild(commentPara);
+        commentContainer.appendChild(commentSection);
+        criterion.appendChild(commentContainer);
 
 
         criteria.appendChild(criterion);
@@ -97,9 +109,15 @@ function alertSubmission() {
     const submitButton = document.getElementById("moderation-submit");
 
     submitButton.addEventListener("click", () => {
-        const scoreInput = document.querySelectorAll(".score-input");
+        const scoreInput = document.querySelectorAll(".score-view");
+        let allScoresFilled = true;
 
-        const allScoresFilled = Array.from(scoreInput).every(inp => inp.value.trim() !== "");
+        scoreInput.forEach((element) => {
+            const empty = element.textContent.trim();
+            if (empty.startsWith("_")) {
+                allScoresFilled = false;
+            }
+        });
 
         if (allScoresFilled) {
             alert("Moderation submitted successfully!");
@@ -138,26 +156,6 @@ function calculateTotalScore(data) {
     });
 
     updateTotalScore()
-}
-
-
-
-function scoreLimits(data) {
-    const scoreInput = document.querySelectorAll(".score-input");
-
-    scoreInput.forEach(input => {
-        input.addEventListener("input", (e) => {
-            const inputValue = parseFloat(input.value);
-            const min = parseFloat(input.min);
-            const max = parseFloat(input.max);
-
-            if (!isNaN(inputValue) && (inputValue < min || inputValue > max)) {
-                input.classList.add("invalid-score");
-            } else {
-                input.classList.remove("invalid-score");
-            }
-        });
-    });
 }
 
 
