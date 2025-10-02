@@ -18,7 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("moderation-title").textContent = rubricData.rubric.rubricTitle;
 
             renderRubric(rubricData);
-            //calculateTotalScore(rubricData);
+
+            calculateTotalScore(rubricData);
+
             alertSubmission();
 
         });
@@ -38,7 +40,6 @@ function renderRubric(data) {
         const criterionTitle = document.createElement("h4");
         criterionTitle.classList.add("criterion-title");
         criterionTitle.textContent = element.criterion;
-        criterion.appendChild(criterionTitle);
 
         const scoreWrapper = document.createElement("div");
         scoreWrapper.classList.add("score-wrapper");
@@ -49,6 +50,7 @@ function renderRubric(data) {
         scoreBar.type = "range";
         scoreBar.min = 0;
         scoreBar.max = element.maxPoints;
+        scoreBar.step = 0.5;
         scoreBar.value = 0;
         scoreBar.classList.add("score-bar");
 
@@ -62,7 +64,15 @@ function renderRubric(data) {
 
         scoreWrapper.appendChild(scoreBar);
         scoreWrapper.appendChild(scoreView);
-        criterion.appendChild(scoreWrapper);
+
+
+        /* Wrapper for Criterion Title and Score Bar */
+        const inputWrapper = document.createElement("div");
+        inputWrapper.classList.add("input-wrapper");
+        inputWrapper.appendChild(criterionTitle);
+        inputWrapper.appendChild(scoreWrapper);
+        criterion.appendChild(inputWrapper);
+
 
         /* Criterion Description */
         const gradeDescription = document.createElement("ul");
@@ -129,9 +139,8 @@ function alertSubmission() {
 }
 
 
-/* Calculate the total score in real time */
 function calculateTotalScore(data) {
-    const scoreInput = document.querySelectorAll(".score-input");
+    const scoreInput = document.querySelectorAll(".score-bar");
     const totalScore = document.getElementById("total-score");
 
     const maxScore = data.criteria.reduce((a, b) => a + b.maxPoints, 0);
@@ -141,6 +150,7 @@ function calculateTotalScore(data) {
     function updateTotalScore() {
         let total = 0;
         let filled = false;
+
         scoreInput.forEach(input => {
             const val = parseFloat(input.value);
             if (!isNaN(val)) {
@@ -148,16 +158,21 @@ function calculateTotalScore(data) {
                 filled = true;
             }
         });
-        totalScore.textContent = filled ? `${total} / ${maxScore}` : `_ / ${maxScore}`;
+
+        if (filled) {
+            totalScore.textContent = `${total} / ${maxScore}`;
+        } else {
+            totalScore.textContent = `_ / ${maxScore}`;
+        }
+
     }
 
     scoreInput.forEach((input) => {
         input.addEventListener("input", (updateTotalScore));
     });
 
-    updateTotalScore()
+    totalScore.textContent = `_ / ${maxScore}`;
 }
-
 
 
 

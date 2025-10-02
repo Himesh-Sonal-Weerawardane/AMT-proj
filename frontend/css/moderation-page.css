@@ -158,8 +158,9 @@ html, body {
 
 .score-wrapper {
     align-items: center;
-    margin: 10px;
+    margin: 5px;
     font-weight: bold;
+    margin-bottom: 20px;
 }
 
 .score-bar {
@@ -202,7 +203,21 @@ html, body {
     margin: 20px 20px 20px 30px;
 }
 
+.grade-description {
+    margin-top: 30px;
+    padding-right: 20px;
+}
 
+
+.criterion-title {
+    margin-left: 25px;
+}
+
+
+.input-wrapper {
+    border: 3px solid lightgray;
+    margin: 0 10px;
+}
 
 
 
