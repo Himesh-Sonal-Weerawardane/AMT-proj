@@ -5,7 +5,7 @@ body {
     font-family: "Inter", sans-serif;
     height: 100%;
     width: 100%;
-    overflow: hidden;
+    overflow: auto;
     letter-spacing: 0.04em;
 }
 
@@ -25,6 +25,7 @@ body {
     justify-content: center;
     margin-top: 40px;
     flex-direction: column;
+    margin-bottom: 100px;
 }
 
 .listing-heading {
@@ -46,8 +47,24 @@ body {
 }
 
 
+
+/* Buttons */
 #edit-button {
-    padding: 6px 40px;
+    padding: 10px 40px;
+    font-size: 15px;
+    background-color: #fff;
+    border: 1px solid #a9a9a9;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+#edit-button:hover {
+    background-color: lightgray;
+}
+
+#invite-button {
+    padding: 10px 40px;
     font-size: 15px;
     background-color: #fff;
     border: 1px solid #a9a9a9;
@@ -55,9 +72,11 @@ body {
     cursor: pointer;
 }
 
-#edit-button:hover {
+
+#invite-button:hover {
     background-color: lightgray;
 }
+
 
 
 /* Listing Headers */
@@ -65,11 +84,11 @@ body {
 
 .staff-list-header {
     display: flex;
-    margin-top: 30px;
-    margin-left: 400px;
-    align-items: center;
+    margin-top: 40px;
+    justify-content: center;
+    text-align: center;
     padding: 10px 15px;
-    gap: 25px;
+    align-items: center;
 }
 
 .profile-header {
@@ -78,16 +97,16 @@ body {
 }
 
 .name-header,.email-header, .role-header {
-    width: 400px;
+    width: 390px;
 }
 
 
 #horizontal-divider {
     display: flex;
     height: 5px;
-    width: 60%;
+    width: 65%;
     background-color: dimgray;
-    margin: 5px auto;
+    margin: 5px auto 10px auto;
 }
 
 
@@ -104,24 +123,24 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
     padding: 10px 15px;
-    background-color: white;
-    gap: 15px;
+    gap: 20px;
     flex-direction: column;
 }
 
 .staff-row {
     display: flex;
     align-items: center;
-    width: 100%;
-    gap: 15px;
+    justify-content: center;
+    text-align: center;
     padding: 10px 0;
-    margin-left: 820px;
+    margin: auto;
 }
 
 .row-divider {
     height: 2px;
-    width: 60%;
+    width: 65%;
     background-color: lightgray;
     margin: 0 auto 0;
 }
@@ -135,38 +154,11 @@ body {
     width: 400px;
 }
 
-.staff-name {
-    width: 240px;
-}
 
-.staff-email, .staff-role {
+.staff-name, .staff-email, .staff-role {
     text-align: center;
 }
 
-
-
-/* Invite */
-
-.invite-wrapper {
-    margin-top: 30px;
-    text-align: right;
-}
-
-
-#invite-button {
-    padding: 10px 40px;
-    font-size: 15px;
-    background-color: #fff;
-    border: 1px solid #a9a9a9;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 400px;
-}
-
-
-#invite-button:hover {
-    background-color: lightgray;
-}
 
 
 

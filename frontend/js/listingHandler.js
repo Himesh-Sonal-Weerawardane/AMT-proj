@@ -14,7 +14,7 @@ async function listingHandler() {
         staffCard.innerHTML = `
             <div class="staff-row">
                 <div class="staff-profile"></div>
-                <div class="staff-name">${staff.name}</div>
+                <a href="url" class="staff-name">${staff.name}</a>
                 <div class="staff-email">${staff.email}</div>
                 <div class="staff-role">${staff.role}</div>
             </div>

@@ -18,5 +18,35 @@
     "email": "charliebrown@gmail.com",
     "role": "Admin",
     "avatar": null
+  },
+  {
+    "name": "Charlie Smith",
+    "email": "charliesmith@example.com",
+    "role": "Admin",
+    "avatar": null
+  },
+  {
+    "name": "Ethan",
+    "email": "ethan@example.com",
+    "role": "Marker",
+    "avatar": null
+  },
+  {
+    "name": "Eddy",
+    "email": "eddy@example.com",
+    "role": "Admin",
+    "avatar": null
+  },
+  {
+    "name": "George",
+    "email": "george@example.com",
+    "role": "Marker",
+    "avatar": null
+  },
+  {
+    "name": "Hannah",
+    "email": "hannah@example.com",
+    "role": "Marker",
+    "avatar": null
   }
 ]
