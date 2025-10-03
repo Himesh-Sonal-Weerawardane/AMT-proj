@@ -1,0 +1,22 @@
+
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "email": "johndoe@gmail.com",
+    "role": "Admin",
+    "avatar": null
+  },
+  { "id": 2,
+    "name": "John Smith",
+    "email": "johnsmith@gmail.com",
+    "role": "Marker",
+    "avatar": null
+  },
+  { "id": 3,
+    "name": "Charlie Brown",
+    "email": "charliebrown@gmail.com",
+    "role": "Admin",
+    "avatar": null
+  }
+]
