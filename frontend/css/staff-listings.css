@@ -41,9 +41,12 @@ body {
 
 
 #staff-search {
-    padding: 5px 10px;
+    width: 250px;
+    padding: 10px 10px;
     font-size: 15px;
     margin-right: 20px;
+    border: 1px solid gray;
+    text-align: left;
 }
 
 
@@ -53,8 +56,7 @@ body {
     padding: 10px 40px;
     font-size: 15px;
     background-color: #fff;
-    border: 1px solid #a9a9a9;
-    border-radius: 5px;
+    border: 1px solid gray;
     cursor: pointer;
     margin-right: 10px;
 }
@@ -67,8 +69,7 @@ body {
     padding: 10px 40px;
     font-size: 15px;
     background-color: #fff;
-    border: 1px solid #a9a9a9;
-    border-radius: 5px;
+    border: 1px solid gray;
     cursor: pointer;
 }
 
@@ -159,6 +160,100 @@ body {
     text-align: center;
 }
 
+
+
+/* Invite Form */
+
+.invite-popup {
+    display: none;
+    position: fixed;
+    width: 800px;
+    height: 700px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #a9a9a9;
+    background-color: white;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    z-index: 9;
+}
+
+.invite-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px;
+
+}
+
+.invite-top h3 {
+    font-size: 25px;
+    margin: 0;
+    text-align: left;
+}
+
+.close-button {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+
+.blur {
+    filter: blur(3px);
+}
+
+
+#invite-title h3 {
+    font-size: 20px;
+    text-align: left;
+}
+
+
+.divider {
+    width: 100%;
+    height: 3px;
+    background-color: dimgray;
+}
+
+.invite-section {
+    display: flex;
+    margin: 10px;
+
+}
+
+#invite-email {
+    flex: 9;
+    height: 25px;
+    border: 2px solid gray;
+    margin-right: 10px;
+    padding: 5px;
+}
+
+#invite-role {
+    flex: 1;
+    margin-right: 10px;
+    padding: 0 20px 0 10px;
+    appearance: none;
+    border-radius: 0;
+    border: 2px solid gray;
+    background-image: url('../image/dropdown-arrow.png');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-position-y: bottom 11px;
+    background-size: 10px 10px;
+}
+
+
+#invite-submit {
+    flex: 1;
+    padding: 10px 20px;
+    background-color: white;
+    border: 2px solid gray;
+    cursor: pointer;
+}
 
 
 
