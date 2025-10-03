@@ -177,6 +177,7 @@ body {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(5px);
     z-index: 9;
+    overflow: hidden;
 }
 
 .invite-top {
@@ -253,6 +254,19 @@ body {
     background-color: white;
     border: 2px solid gray;
     cursor: pointer;
+}
+
+
+.invitation h4 {
+    margin: 15px 25px 5px 25px;
+}
+
+
+#divider-2 {
+    width: 95%;
+    height: 3px;
+    background-color: lightgray;
+    margin: 5px auto 10px auto;
 }
 
 
