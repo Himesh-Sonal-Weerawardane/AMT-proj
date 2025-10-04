@@ -20,30 +20,35 @@
     "avatar": null
   },
   {
+    "id": 4,
     "name": "Charlie Smith",
     "email": "charliesmith@example.com",
     "role": "Admin",
     "avatar": null
   },
   {
+    "id": 5,
     "name": "Ethan",
     "email": "ethan@example.com",
     "role": "Marker",
     "avatar": null
   },
   {
+    "id": 6,
     "name": "Eddy",
     "email": "eddy@example.com",
     "role": "Admin",
     "avatar": null
   },
   {
+    "id": 7,
     "name": "George",
     "email": "george@example.com",
     "role": "Marker",
     "avatar": null
   },
   {
+    "id": 8,
     "name": "Hannah",
     "email": "hannah@example.com",
     "role": "Marker",
