@@ -125,14 +125,6 @@ td {
   font-weight: 300;
 }
 
-.pos-difference {
-  color: #22c55e
-}
-
-.neg-difference {
-  color: #d41a1a
-}
-
 tr:nth-child(even) {
   background-color: #dddddd;
 }
