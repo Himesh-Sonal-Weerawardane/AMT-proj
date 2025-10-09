@@ -18,6 +18,12 @@
 }
 
 /*###########################################*/
+/* To prevent footer from blocking content */
+body {
+  height: 100%;
+  margin: 0 0 100px 0;
+}
+
 /* Footer and Buttons */
 .page-footer {
   display: none;
