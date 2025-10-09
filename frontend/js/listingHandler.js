@@ -1,5 +1,7 @@
 
 
+let staffNames = [];
+
 async function listingHandler() {
     const response = await fetch("data/staff.json");
     const data = await response.json();
@@ -9,10 +11,12 @@ async function listingHandler() {
 
 
     data.forEach((staff) => {
+        staffNames.push(staff.name);
         const staffCard = document.createElement('div');
         staffCard.classList.add('staff-card');
         staffCard.innerHTML = `
             <div class="staff-row">
+                <img src="image/minus-button.png" class="remove-user" alt="Remove">
                 <div class="staff-profile"></div>
                 <a href="user-profile.html?id=${staff.id}" class="staff-name">${staff.name}</a>
                 <div class="staff-email">${staff.email}</div>
@@ -28,5 +32,6 @@ async function listingHandler() {
 
 }
 
-
 window.addEventListener('DOMContentLoaded', listingHandler);
+
+
