@@ -1,0 +1,38 @@
+<!-- Created by William Alexander Tang Wai on 19/09/2025 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password?</title>
+    <link rel="stylesheet" href="../css/login-page.css">
+</head>
+<body>
+    <!-- Forgot Password Form -->
+    <!-- To change 'forgot_psw_page.php' to whatever file will process this -->
+    <form action="forgot_psw_page.php" method="post">
+        <div class="logo-container">
+            <h1 class="logo">AMT</h1>
+        </div>
+        <h3 class="logo-sub">Assignment Moderation Tool</h3>
+
+        <!-- After clicking on Forgot Password, then display this -->
+        <h3 class="successful-message">Reset Password Link sent to "Email".</h3>
+
+        <!-- Set display to none after clicking on Forgot Password for the 
+         following elements -->
+        <h3 class="forgot-psw-text">Forgot Password</h3>
+
+        <br><br><br><br><br>
+        <div class="input-container">
+            <label for="email"><b>Email</b></label>
+            <input type="email" placeholder="Enter Email" name="email" id="email" required>
+        </div>
+
+        <div class="button-container">
+            <button type="submit">Forgot Password</button>
+        </div>
+    </form>
+</body>
+</html>

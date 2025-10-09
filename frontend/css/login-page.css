@@ -1,0 +1,154 @@
+/* Created by William Alexander Tang Wai on 16/09/2025 */
+/* Login Tutorial on https://www.w3schools.com/howto/howto_css_login_form.asp */
+
+/* Black Background, white text, Inter font to all body texts */
+body {
+  background-color: black;
+  color: #eeeeee;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Form */
+form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 90vh;           /* full viewport height */
+}
+
+/********************************************************/
+/* Logo Container */
+/* Centre the circle logo itself */
+.logo-container {
+  display: flex;
+  justify-content: center;
+}
+
+/* Circle logo */
+/* Centre the text inside the circle */
+.logo {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background-color: #eeeeee;  /* circle background */
+  color: black;               /* text color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  font-weight: 700;
+  margin: 20px 0 0 0;
+}
+
+/* Logo sub text under circle */
+.logo-sub {
+  display: flex;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 500;
+  margin: 20px 0 0 0;
+}
+
+/* Log In text under logo sub text */
+.login-text, .forgot-psw-text, .reset-psw-text {
+  display: flex;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 500;
+  margin: 50px 0 12px 0;
+}
+
+/********************************************************/
+/* Incorrect email/password text */
+.error-message, .successful-message, #psw-error-msg {
+  /* To change display to flex when receiving error from server */
+  display: none;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 300;
+  margin: 50px 0 12px 0;
+  color: #d41a1a;
+}
+
+/* Successful msg should be displayed in green */
+.successful-message {
+  color: #22c55e;
+}
+
+/********************************************************/
+/* Container for email and pwd boxes */
+.input-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 300;
+}
+
+/* Input boxes */
+input[type=text], input[type=email], input[type=password] {
+  width: 400px;
+  padding: 12px 10px;
+  margin: 10px 0;
+  box-sizing: border-box;
+}
+
+/* Password box and eye icon */
+.password-container {
+  position: relative;
+}
+
+/* Leave space inside password box for eye icon */
+.password-container input {
+  padding: 12px 40px 12px 10px;
+}
+
+/* Position of eye icon */
+.password-container .eye-icon {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  width: 30px;
+  height: 25px;
+}
+
+/********************************************************/
+/* Login Button Container */
+/* Centre the button */
+.button-container {
+  display: flex;
+  justify-content: center;
+}
+
+/* Login Button */
+button {
+  background-color: #eeeeee;
+  color: black;
+  padding: 10px 20px;
+  margin: 30px 0 5px 0;
+  cursor: pointer;
+  width: 175px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Add a hover effect for login button */
+button:hover {
+  opacity: 0.8;
+}
+
+/* The "Forgot password" text */
+span.psw {
+  font-size: 13px;
+  font-weight: 300;
+  text-decoration: underline;
+}
+
+/* Link colour for Forgot password */
+a:link { color: #eeeeee; }        /* normal unvisited link */
+a:visited { color: #aab0bc; }     /* visited link */
+a:hover { color: #00a6b2; }       /* mouse hover */
+a:active { color: #d41a1a; }      /* when clicked */
