@@ -1,0 +1,215 @@
+<!-- Created by William Alexander Tang Wai on 09/10/2025 -->
+
+<!-- NOTE: This is only an example of the structure of the moderation front page for admin -->
+<!-- Do NOT use!!! -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../css/home-page.css">
+    <link rel="stylesheet" href="../css/admin/assign-mod-front-page.css">
+</head>
+<body data-role="admin">
+    <div class="accordion-container">
+        <!-- Edit Viewings and Publish New Modules buttons -->
+        <div class="button-container" id="top-buttons-container">
+            <button class="top-btns" onclick="toggleEditViewings()">Edit Viewings</button>
+            <!-- https://www.w3schools.com/html/html_links.asp -->
+            <button class="top-btns" onclick="document.location='publish-module.html'">Publish New Module</button>
+        </div>
+
+        <!-- Note: Query the DB, group results by year & semester,
+         and loop to build accordions for dynamic rendering. -->
+        <button class="accordion">2025</button>
+        <div class="panel">
+            <button class="accordion1">Semester 1</button>
+            <div class="panel">
+                <div class="row">
+                    <div class="column">
+                        <table class="moderation-table">
+                            <tr>
+                                <th colspan="2">
+                                    <label class="table-select">
+                                        Moderation 1
+                                        <input type="checkbox" class="table-checkbox">
+                                    </label>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td>Your Marks</td>
+                                <td>72</td>
+                            </tr>
+                            <tr>
+                                <td>Admin's Marks</td>
+                                <td>75</td>
+                            </tr>
+                            <tr>
+                                <td>Difference</td>
+                                <td class="difference">3</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="column">
+                        <table class="moderation-table">
+                            <tr>
+                                <th colspan="2">
+                                    <label class="table-select">
+                                        Moderation 2
+                                        <input type="checkbox" class="table-checkbox">
+                                    </label>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <br>
+            <button class="accordion1">Semester 2</button>
+            <div class="panel">
+                <div class="row">
+                    <div class="column">
+                        <table class="moderation-table">
+                            <tr>
+                                <th colspan="2">
+                                    <label class="table-select">
+                                        Moderation 1
+                                        <input type="checkbox" class="table-checkbox">
+                                    </label>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td>Your Marks</td>
+                                <td>72</td>
+                            </tr>
+                            <tr>
+                                <td>Admin's Marks</td>
+                                <td>75</td>
+                            </tr>
+                            <tr>
+                                <td>Difference</td>
+                                <td class="difference">3</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="column">
+                        <table class="moderation-table">
+                            <tr>
+                                <th colspan="2">
+                                    <label class="table-select">
+                                        Moderation 2
+                                        <input type="checkbox" class="table-checkbox">
+                                    </label>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="accordion">2024</button>
+        <div class="panel">
+            <button class="accordion1">Semester 1</button>
+            <div class="panel">
+                <div class="row">
+                    <div class="column">
+                        <table class="moderation-table">
+                            <tr>
+                                <th colspan="2">
+                                    <label class="table-select">
+                                        Moderation 1
+                                        <input type="checkbox" class="table-checkbox">
+                                    </label>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td>Your Marks</td>
+                                <td>72</td>
+                            </tr>
+                            <tr>
+                                <td>Admin's Marks</td>
+                                <td>75</td>
+                            </tr>
+                            <tr>
+                                <td>Difference</td>
+                                <td class="difference">3</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="column">
+                        <table class="moderation-table">
+                            <tr>
+                                <th colspan="2">
+                                    <label class="table-select">
+                                        Moderation 2
+                                        <input type="checkbox" class="table-checkbox">
+                                    </label>
+                                </th>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="accordion">2023</button>
+        <div class="panel">
+            <p>Lorem ipsum...</p>
+        </div>
+    </div>
+
+    <!-- Button area that displays above the rest of the page -->
+    <footer class="page-footer">
+        <div class="button-container-edit" id="edit-buttons-container">
+            <button class="edit-btns" type="button" id="hide-btn" onclick="hideFromMarkers()">Hide From Markers</button>
+            <button class="edit-btns" type="button" id="download-btn" onclick="downloadStats()">Download Statistics</button>
+            <button class="edit-btns" type="button" id="delete-btn" onclick="deleteSelected()">Delete</button>
+            <button class="edit-btns" type="button" id="done-btn" onclick="toggleEditViewings()">Done</button>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/home-page.js"></script>
+    <script src="../js/edit-viewings.js"></script>
+</body>
+</html>

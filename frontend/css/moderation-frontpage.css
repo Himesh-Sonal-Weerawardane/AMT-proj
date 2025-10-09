@@ -114,6 +114,8 @@ th {
   font-size: 20px;
   font-weight: 500;
   border-bottom: 3px solid #6b7280;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 td {
@@ -123,10 +125,14 @@ td {
   font-weight: 300;
 }
 
-.difference {
+.pos-difference {
   color: #22c55e
 }
 
+.neg-difference {
+  color: #d41a1a
+}
+
 tr:nth-child(even) {
-  background-color: #cccccc;
+  background-color: #dddddd;
 }

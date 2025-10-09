@@ -1,0 +1,39 @@
+<!-- Created by William Alexander Tang Wai on 09/10/2025 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../css/moderation-frontpage.css">
+    <link rel="stylesheet" href="../css/admin/edit-viewings.css">
+</head>
+<body data-role="admin">
+    <div class="accordion-container">
+        <!-- Edit Viewings and Publish New Modules buttons -->
+        <div class="button-container" id="top-buttons-container">
+            <button class="top-btns" onclick="toggleEditViewings()">Edit Viewings</button>
+            <!-- https://www.w3schools.com/html/html_links.asp -->
+            <button class="top-btns" onclick="document.location='publish-module.html'">Publish New Module</button>
+        </div>
+
+        <div id="accordions"></div>
+    </div>
+
+    <!-- Button area that displays above the rest of the page -->
+    <footer class="page-footer">
+        <div class="button-container-edit" id="edit-buttons-container">
+            <button class="edit-btns" type="button" id="hide-btn" onclick="hideFromMarkers()">Hide From Markers</button>
+            <button class="edit-btns" type="button" id="download-btn" onclick="downloadStats()">Download Statistics</button>
+            <button class="edit-btns" type="button" id="delete-btn" onclick="deleteSelected()">Delete</button>
+            <button class="edit-btns" type="button" id="done-btn" onclick="toggleEditViewings()">Done</button>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/accordions-toggle.js"></script>
+    <script src="../js/admin/edit-viewings.js"></script>
+    <script src="../js/show-moderations.js"></script>
+</body>
+</html>
