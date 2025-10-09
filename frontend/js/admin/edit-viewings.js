@@ -11,6 +11,7 @@ function toggleEditViewings() {
     if (editMode) {
         cb.style.display = "inline-flex";
     } else {
+        cb.checked = false;
         cb.style.display = "none";
     }
   });

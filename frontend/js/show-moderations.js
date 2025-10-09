@@ -117,7 +117,7 @@ async function createModerationTables(data, createTableFn) {
         container.appendChild(lineBreak);
     });
 
-    // Call from home-page.js
+    // Call from accordions-toggle.js
     var accordion = document.getElementsByClassName("accordion");
     var accordion1 = document.getElementsByClassName("accordion1");
     toggleAccordion(accordion);
@@ -135,10 +135,13 @@ function createAdminTable(modNumber, modData) {
         <table class="moderation-table">
             <tr>
                 <th colspan="2">
-                    <label class="table-select">
-                        Moderation ${modNumber}
+                    <span class="table-header">
+                        <span class="moderation-link" onclick="window.location.href=
+                            '../example-moderation-pages/admin-moderation.html'">
+                            Moderation ${modNumber}
+                        </span>
                         <input type="checkbox" class="table-checkbox">
-                    </label>
+                    </span>
                 </th>
             </tr>
             <tr><td>Admin Marks</td><td>${modData["Admin Marks"] ?? "-"}</td></tr>
@@ -166,7 +169,12 @@ function createMarkerTable(modNumber, modData) {
         <table class="moderation-table">
             <tr>
                 <th colspan="2">
-                    Moderation ${modNumber}
+                    <span class="table-header">
+                        <span class="moderation-link" onclick="window.location.href=
+                            '../example-moderation-pages/marker-moderation.html'">
+                            Moderation ${modNumber}
+                        </span>
+                    </span>
                 </th>
             </tr>
             <tr><td>Admin Marks</td><td>${adminMarks ?? "-"}</td></tr>

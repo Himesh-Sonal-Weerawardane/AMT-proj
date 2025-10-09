@@ -1,20 +1,15 @@
 /* Created by William Alexander Tang Wai on 09/10/2025 */
 
 /* Checkbox */
-.table-select {
-  display: flex;
-  justify-content: left;
-  cursor: pointer;
-  white-space: nowrap;
-  width: 100%;
-  justify-content: space-between;
-}
-
 .table-checkbox {
   display: none;
   transform: scale(2);
   accent-color: #22c55e;
   cursor: pointer;
+}
+
+.table-checkbox:hover {
+  transform: scale(2.5);
 }
 
 /*###########################################*/
@@ -34,7 +29,7 @@ body {
   width: 100%;
   padding: 0 0 20px 0;
   text-align: center;
-  border-top: 2px solid #333;
+  border-top: 2px solid black;
 }
 
 .button-container {
