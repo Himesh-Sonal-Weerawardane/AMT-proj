@@ -1,0 +1,52 @@
+[
+{
+  "2025": {
+    "1": {
+      "1": {
+        "Admin Marks": 75,
+        "Average": "70%",
+        "Variation": "65%",
+        "Distribution": "60%"
+      },
+      "2": {
+        "Admin Marks": 55,
+        "Average": "50%",
+        "Variation": "45%",
+        "Distribution": "40%"
+      }
+    },
+    "2": {
+      "1": {
+        "Admin Marks": 50,
+        "Average": "70%",
+        "Variation": "65%",
+        "Distribution": "60%"
+      },
+      "2": {
+        "Admin Marks": 45,
+        "Average": "50%",
+        "Variation": "45%",
+        "Distribution": "40%"
+      }
+    }
+  }
+},
+{
+  "2024": {
+    "1": {
+      "1": {
+        "Admin Marks": 75,
+        "Average": "70%",
+        "Variation": "65%",
+        "Distribution": "60%"
+      },
+      "2": {
+        "Admin Marks": 55,
+        "Average": "50%",
+        "Variation": "45%",
+        "Distribution": "40%"
+      }
+    }
+  }
+}
+]
