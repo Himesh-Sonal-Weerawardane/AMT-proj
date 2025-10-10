@@ -27,7 +27,7 @@ body {
 }
 
 .container h2 {
-    margin: 30px 400px 10px 400px;
+    margin: 30px 400px 5px 400px;
     font-weight: normal;
 }
 
@@ -43,50 +43,88 @@ body {
     padding: 5px 10px;
     align-items: center;
     margin: 0 auto;
-    gap: 280px;
+    gap: 100%;
 }
 
 .head-divider {
     display: flex;
     height: 5px;
-    width: 1120px;
+    width: 55%;
     background-color: lightgray;
     margin: 5px auto 5px auto;
 }
 
-.accordion {
+.marking-accordion {
     margin: 5px 400px;
     background-color: white;
     font-size: 15px;
-    flex-direction: column;
     border: none;
     outline: none;
     transition: 0.45s;
     padding: 2px 25px;
+    text-align: left;
 }
+
+.marking-accordion.active .arrow {
+    transform: translateY(2px) translateX(-1px) rotate(90deg);
+}
+
 
 .divider {
     display: flex;
     height: 3px;
-    width: 1120px;
+    width: 55%;
     background-color: lightgray;
-    margin: 5px auto 5px auto;
+    margin: 5px auto 0 auto;
 }
 
-.active, .accordion:hover {
-    background-color: lightgray;
-}
 
 .panel {
+    padding: 5px 35px;
     display: none;
-    padding: 10px;
     overflow: hidden;
 }
 
+.arrow {
+    width: 15px;
+    height: 15px;
+    transform: translateY(2px) translateX(-2px);
+    transition: transform 0.3s ease;
+}
+
+.moderation {
+    padding: 5px 10px;
+    margin: 0 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    font-size: 15px;
+}
 
 
+.progress-accordion {
+    margin: 5px 400px;
+    background-color: white;
+    font-size: 15px;
+    border: none;
+    outline: none;
+    transition: 0.45s;
+    padding: 2px 20px;
+    text-align: left;
+}
+
+.progress-accordion.active .arrow {
+    transform: translateY(2px) translateX(-1px) rotate(90deg);
+}
 
 
+.mini-divider {
+    display: flex;
+    height: 2px;
+    width: 57%;
+    background-color: lightgray;
+    margin: 5px auto 5px auto;
+}
 
 
 
