@@ -10,35 +10,31 @@
 </head>
 <body>
     <div class="main-container">
-        <div class="sub-container">
-            <!-- Need to decide on the content -->
-            <h1>Admin Contact Details</h1>
-            <p>
-                Email: admin@gmail.com<br>
-                Admin will take around x days to answer.<br>
-                If urgent, please contact +61 123456789.
-            </p>
+        <h1>Contact and Help</h1>
+        <iframe src="../pdf/sample-pdf.pdf"></iframe>
 
-            <hr>
-            <h1>Help</h1>
-            <ol>
-                <li class="help-title">How to Mark Assignments</li>
-                <ul>
-                    <li>Click on Assignment and Modules Page.</li>
-                    <li>Click on ...etc.</li>
-                    <li>Lorem, ipsum dolor sit amet consectetur 
-                        adipisicing elit. Ipsa explicabo, officiis 
-                        nostrum ea pariatur modi maiores beatae enim 
-                        amet voluptas harum magni molestiae autem 
-                        dolore saepe numquam earum error. Vero.
-                    </li>
-                </ul>
-                <li class="help-title">How to ...</li>
-                <ul>
-                    <li>Click on ...etc.</li>
-                </ul>
-            </ol>
-        </div>
+        <footer class="page-footer">
+            <form class="module-form" action="#" method="post">
+                <input class="file-select" type="file" id="contact-help-file"
+                        name="contact-help-file" accept=".pdf,.doc,.docx" hidden>
+                <label for="contact-help-file" class="file-label">Upload PDF</label>
+                <span class="file-upload-label" id="file-name">No file chosen</span>
+
+                <div class="form-action">
+                    <button type="submit" class="submit-button">Publish New PDF</button>
+                </div>
+            </form>
+        </footer>
+
     </div>
+
+    <script>
+        const input = document.getElementById("contact-help-file");
+        const fileName = document.getElementById("file-name");
+
+        input.addEventListener("change", () => {
+        fileName.textContent = input.files.length > 0 ? input.files[0].name : "No file chosen";
+        });
+    </script>
 </body>
 </html>
