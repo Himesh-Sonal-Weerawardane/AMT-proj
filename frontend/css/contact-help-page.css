@@ -4,6 +4,8 @@ body {
   background-color: #eeeeee;
   color: black;
   font-family: 'Inter', sans-serif;
+  height: 100%;
+  margin: 0 0 150px 0;
 }
 
 .main-container {
@@ -19,12 +21,61 @@ h1 {
     font-weight: bold;
 }
 
-.help-title {
-    font-size: 20px;
-    font-weight: medium;
+iframe {
+  width: 80vw;
+  height: 80vh;
+  border: none;
 }
 
-li {
-    font-size: 16px;
-    font-weight: normal;
+/* Footer and Buttons */
+.page-footer {
+  display: flex;
+  justify-content: center;
+  background-color: #c9c9c9;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  padding: 30px 20px 30px 20px;
+  margin: 0 0 0 0;
+  text-align: center;
+  border-top: 2px solid black;
+}
+
+.module-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.submit-button, .file-upload-label, .file-label {
+  font-size: 16px;
+}
+
+.submit-button {
+  background-color: #c9c9c9;
+  border: 0px solid #6b7280;
+  margin: 0 0 0 50px;
+  padding: 10px 10px 10px 10px;
+  border-radius: 6px;
+}
+
+.file-label {
+  display: flex;
+  justify-content: center;
+  padding: 10px 10px 10px 10px;
+  margin: 0 10px 0 0;
+  border-radius: 6px;
+  border: 2px dashed #6b7280;
+  cursor: pointer;
+  font-weight: 500;
+}
+.file-label:hover, .submit-button:hover {
+  background-color: #eeeeee;
+}
+
+.file-upload-label {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
