@@ -12,29 +12,6 @@
     <div class="main-container">
         <h1>Contact and Help</h1>
         <iframe src="../pdf/sample-pdf.pdf"></iframe>
-
-        <footer class="page-footer">
-            <form class="module-form" action="#" method="post">
-                <input class="file-select" type="file" id="contact-help-file"
-                        name="contact-help-file" accept=".pdf,.doc,.docx" hidden>
-                <label for="contact-help-file" class="file-label">Upload PDF</label>
-                <span class="file-upload-label" id="file-name">No file chosen</span>
-
-                <div class="form-action">
-                    <button type="submit" class="submit-button">Publish New PDF</button>
-                </div>
-            </form>
-        </footer>
-
     </div>
-
-    <script>
-        const input = document.getElementById("contact-help-file");
-        const fileName = document.getElementById("file-name");
-
-        input.addEventListener("change", () => {
-        fileName.textContent = input.files.length > 0 ? input.files[0].name : "No file chosen";
-        });
-    </script>
 </body>
 </html>
