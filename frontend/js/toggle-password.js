@@ -22,16 +22,3 @@ function togglePassword(psw, eye) {
     eyeIcon.src = eyeClosed; // password hidden
   }
 }
-
-document.getElementById("psw-form").addEventListener("submit", function(event) {
-  const psw = document.getElementById("psw").value;
-  const confirmPsw = document.getElementById("confirm-psw").value;
-  const errorMessage = document.getElementById("psw-error-msg");
-
-  if (psw !== confirmPsw) {
-    event.preventDefault(); // stop form from submitting
-    errorMessage.style.display = "block"; // show error
-  } else {
-    errorMessage.style.display = "none"; // hide error if they match
-  }
-});

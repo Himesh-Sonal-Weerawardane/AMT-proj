@@ -1,3 +1,6 @@
+// Put all the code that should run on the server here and call them from frontend.
+// See index.html and login.js for example.
+
 import 'dotenv/config'
 import express from "express";
 import path from "path";
@@ -16,6 +19,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY
 );
 
+// Parses JSON bodies automatically
+app.use(express.json())
+// Parses form submissions
+app.use(express.urlencoded({ extended: true }))
+
 // Serve your frontend HTML files
 app.use(express.static(path.join(__dirname, "frontend")));
 
@@ -25,6 +33,33 @@ app.get("/api/users", async (req, res) => {
   if (error) return res.status(400).json({ error: error.message });
   res.json(data);
 });
+
+// Login endpoint
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body
+
+  // 1. Authenticate user via Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+  if (authError) return res.status(400).json({ error: authError.message })  // User has wrong email/password
+
+  const userId = authData.user.id
+
+  // 2. Check user role in the database
+  const { data: userData, error: userError } = await supabase
+    .from("users")
+    .select("isAdmin")
+    .eq("auth_id", userId)
+    .single()
+
+  if (userError) return res.status(500).json({ error: userError.message })  // Server/Database failed
+
+  // 3. Respond with role info
+  if (userData.isAdmin) {
+    res.json({ redirect: "admin/moderation-frontpage.html" })
+  } else {
+    res.json({ redirect: "marker/moderation-frontpage.html" })
+  }
+})
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
