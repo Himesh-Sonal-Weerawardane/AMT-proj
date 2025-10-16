@@ -5,7 +5,7 @@ window.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", async (e) => {
         e.preventDefault() // Prevent URL parameters from being added
 
-        const errorMessage = document.getElementById("error-msg");
+        const errorMessage = document.getElementById("error-message");
         errorMessage.style.display = "none"; // hide error
 
         const email = document.getElementById("email").value
