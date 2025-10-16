@@ -20,28 +20,30 @@
         <form class="profile-page" action="profile_page.php" method="post">
             <div class="profile-circle-container">
                 <!-- Change this to the first name and last name intials -->
-                <h1 class="profile-text">JS</h1>
+                <h1 id="profile-text" class="profile-text">JS</h1>
             </div>
 
             <div class="input-container">
                 <!-- Placeholders should be the marker's currently saved name -->
-                <label for="first-name"><b>First Name</b></label>
-                <input type="text" placeholder="John" name="first-name" id="first-name" required>
+                <label id="profile-first-name" for="first-name"><b>First Name</b></label>
+                <input type="text" placeholder="John Smith" name="first-name" id="first-name" required>
 
-                <label for="last-name"><b>Last Name</b></label>
+                <label id="profile-last-name" for="last-name"><b>Last Name</b></label>
                 <input type="text" placeholder="Smith" name="last-name" id="last-name" required>
             </div>
 
             <h3>Role</h3>
-            <p>Marker</p>
+            <p id="profile-role">Marker</p>
             
             <h3>Email</h3>
-            <p>examplemail@gmail.com</p>
+            <p id="profile-email-text">examplemail@gmail.com</p>
 
             <div class="button-container">
                 <button type="submit">Save Changes</button>
             </div>
         </form>
     </div>
+
+    <script src="../js/login-session.js"></script>
 </body>
 </html>

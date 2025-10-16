@@ -4,7 +4,7 @@ try {
     const token = localStorage.getItem("supabase_session")
     if (!token) throw new Error("No token")
 
-    const res = await fetch("/api/session", {
+    const res = await fetch("/api/admin_session", {
         headers: { "Authorization": "Bearer " + token }
     })
     const data = await res.json()
@@ -13,6 +13,11 @@ try {
         // Not logged in or not admin -> redirect
         window.location.href = "/index.html"
     }
+
+    // Everything is ok
+    console.log("Name: ", data.name);
+    console.log("Email: ", data.email);
+    console.log("Role: ", data.is_admin ? "Admin" : "Marker");
 } catch (err) {
     window.location.href = "/index.html"
 }
