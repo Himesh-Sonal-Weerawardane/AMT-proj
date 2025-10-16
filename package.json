@@ -1,0 +1,27 @@
+{
+  "name": "amt",
+  "version": "1.0.0",
+  "description": "Assignment Moderation Tool for IT Project Created on 8th August 2025",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WilliamAlexTW/AMT.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WilliamAlexTW/AMT/issues"
+  },
+  "homepage": "https://github.com/WilliamAlexTW/AMT#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.75.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  }
+}
