@@ -27,11 +27,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
                 // Store login session to check on other pages
                 localStorage.setItem("supabase_session", data.access_token)
-                console.log("data.access_token: ", data.access_token)
-                const token = localStorage.getItem("supabase_session")
-                console.log(token)
 
-                // window.location.href = data.redirect
+                window.location.href = data.redirect
             }
         } catch (err) {
             console.error("Network or server error:", err)
