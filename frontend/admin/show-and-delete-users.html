@@ -29,11 +29,13 @@
         async function loadUsers() {
             const usersSnapshot = await getDocs(collection(db, "users"));
             userList.innerHTML = "";
+            alert("Users successfully loaded?");
 
             usersSnapshot.forEach((userDoc) => {
                 const data = userDoc.data();
                 const li = document.createElement("li");
-                li.textContent = `${data.name} (${data.role})`;
+                li.textContent = `${data.name}, isAdmin=${data.isAdmin ? "Yes" : "No"}`;
+                alert("1 User successfully loaded");
 
                 const deleteBtn = document.createElement("button");
                 deleteBtn.textContent = "Delete";
