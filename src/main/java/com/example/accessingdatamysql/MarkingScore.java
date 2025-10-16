@@ -1,6 +1,5 @@
 package com.example.accessingdatamysql;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,7 +18,7 @@ public class MarkingScore {
     private List<CriteriaScore> criteriaScores;
 
     private User user;
-    private Assignment assignment;
+    private Assignment assignmentID;
 
     public Integer getMarkID(){
         return markID;
@@ -28,11 +27,11 @@ public class MarkingScore {
         this.markID = markID;
     }
 
-    public Assignment getAssignment(){
-        return assignment;
+    public Assignment getAssignmentID(){
+        return assignmentID;
     }
-    public void setAssignment(Assignment assignment){
-        this.assignment = assignment;
+    public void setAssignmentID(Assignment assignmentID){
+        this.assignmentID = assignmentID;
     }
 
     public User getUser(){
@@ -45,7 +44,7 @@ public class MarkingScore {
     public Double getMarkingScore(){
         return markingScore;
     }
-    public void setMarkingScore(){
+    public void setMarkingScore(Double markingScore){
         this.markingScore = markingScore;
     }
 }
