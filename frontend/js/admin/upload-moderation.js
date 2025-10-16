@@ -24,7 +24,7 @@ window.addEventListener("DOMContentLoaded", () => {
             formData.append("description", moduleDescription)
             if (assignmentFile) formData.append("assignment", assignmentUpload)
             if (rubricFile) formData.append("rubric", rubricUpload)
-            // Do not forget to set upload_date in api later
+            // Set upload_date in api
 
             const res = await fetch("/api/upload_moderation", {
                 method: "POST",
