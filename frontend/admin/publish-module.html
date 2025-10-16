@@ -12,7 +12,16 @@
     <header class="module-card__header">
       <h1 class="module-card__title">New Module</h1>
     </header>
-    <form class="module-form" action="#" method="post">
+    <form class="module-form" id="module-form">
+      <label for="year"><b>Year</b></label>
+      <input type="year" placeholder="Enter Year" name="year" id="year" required>
+
+      <label for="semester"><b>Semester</b></label>
+      <input type="semester" placeholder="Enter Semester" name="semester" id="semester" required>
+
+      <label for="moderation-number"><b>Moderation Number</b></label>
+      <input type="moderation-number" placeholder="Enter Moderation Number" name="moderation-number" id="moderation-number" required>
+
       <div class="form-group">
         <label class="form-label" for="module-title">Title</label>
         <input
@@ -116,6 +125,7 @@
 </main>
 
 <script src="../js/admin/admin-session.js"></script>
+<script src="../js/admin/upload-moderation.js"></script>
 
 </body>
 </html>

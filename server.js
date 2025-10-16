@@ -3,9 +3,12 @@
 
 import 'dotenv/config'
 import express from "express";
+import multer from "multer"
+const upload = multer({ dest: "uploads/" }) // temp folder
 import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
+import fs from "fs"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,9 +58,10 @@ app.post("/api/login", async (req, res) => {
   }
 })
 
+// Can it be app.get?
 // Check if user is logged in and is admin
-app.get("/api/admin_session", async (req, res) => {
-  // You’ll normally pass the JWT from the frontend in a header or cookie
+app.post("/api/admin_session", async (req, res) => {
+  // Normally pass the JWT from the frontend in a header or cookie
   const token = req.headers.authorization?.replace("Bearer ", "")
   if (!token) return res.status(401).json({ error: "Not logged in" })
 
@@ -82,8 +86,8 @@ app.get("/api/admin_session", async (req, res) => {
 })
 
 // Check if user is logged in; can be admin or marker
-app.get("/api/login_session", async (req, res) => {
-  // You’ll normally pass the JWT from the frontend in a header or cookie
+app.post("/api/login_session", async (req, res) => {
+  // Normally pass the JWT from the frontend in a header or cookie
   const token = req.headers.authorization?.replace("Bearer ", "")
   if (!token) return res.status(401).json({ error: "Not logged in" })
 
@@ -110,6 +114,38 @@ app.get("/api/login_session", async (req, res) => {
 // #######################################################################
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// #######################################################################
+// Upload and publish a module
+app.post("/api/upload_moderation", upload.fields([
+  { name: "assignment" },
+  { name: "rubric" }
+]), async (req, res) => {
+  try {
+    // Access files
+    const assignmentFile = req.files.assignment?.[0]
+    const rubricFile = req.files.rubric?.[0]
+
+    // Access text fields
+    const { year, semester, moderation_number, name, deadline_date, description } = req.body
+
+    // TODO: upload to Supabase Storage or save to DB
+    console.log("Assignment file path:", assignmentFile?.path)
+    console.log("Rubric file path:", rubricFile?.path)
+
+    res.json({ success: true })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: "Server error" })
+  }
+
+//   // Check role in users table
+//   const { data: userData, error: userError } = await supabase
+//     .from("users")
+//     .select("is_admin, name")
+//     .eq("auth_id", user.id)
+//     .single()
+})
 
 // #######################################################################
 // Other server-side code to be added later
