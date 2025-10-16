@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 // Supabase client setup
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY
+  process.env.SUPABASE_SERVICE_KEY // || process.env.SUPABASE_KEY
 );
 
 // Parses JSON bodies automatically
@@ -55,7 +55,7 @@ app.post("/api/login", async (req, res) => {
   if (userError) return res.status(500).json({ error: userError.message })  // Server/Database failed
 
   // 3. Respond with role info
-  if (userData.isAdmin) {
+  if (userData.is_admin) {
     res.json({ redirect: "admin/moderation-frontpage.html" })
   } else {
     res.json({ redirect: "marker/moderation-frontpage.html" })
