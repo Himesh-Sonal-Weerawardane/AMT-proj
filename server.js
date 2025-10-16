@@ -74,13 +74,18 @@ app.get("/api/session", async (req, res) => {
   // Check role in users table
   const { data: userData, error: userError } = await supabase
     .from("users")
-    .select("isAdmin")
+    .select("is_admin, name")
     .eq("auth_id", user.id)
     .single()
 
-  if (userError || !userData) return res.status(403).json({ error: "Access denied" })
+  if (userError || !userData || !userData?.is_admin) return res.status(403).json({ error: "Access denied" })
 
-  res.json({ email: user.email, isAdmin: userData.isAdmin })
+  // Return user email from auth, and name and is_admin from database
+  res.json({
+    email: user.email,
+    name: userData.name,
+    isAdmin: userData.is_admin
+  })
 })
 
 // #######################################################################
