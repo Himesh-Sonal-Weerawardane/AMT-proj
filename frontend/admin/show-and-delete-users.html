@@ -12,9 +12,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
         import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-        import { getAuth } from "firebase-admin/auth";
-        import express from "express";
-
         const firebaseConfig = {
             apiKey: "AIzaSyDbdfHssnef2pIEm6ZDqC-aHmsXsV_foUc",
             authDomain: "comp30022-amt.firebaseapp.com",
@@ -44,20 +41,6 @@
                     if (confirm(`Delete user ${data.name}?`)) {
                         await deleteDoc(doc(db, "users", userDoc.id));
                         alert(`${data.name} deleted from Firestore`);
-
-                        // Delete from Auth
-                        const app = express();
-                        app.delete("/deleteUser/:uid", async (req, res) => {
-                            const uid = req.params.uid;
-                            try {
-                                await getAuth().deleteUser(uid);
-                                res.send("User deleted from Auth");
-                                alert(`${data.name} deleted from Auth`);
-                            } catch (err) {
-                                res.status(400).send(err.message);
-                            }
-                        });
-
                         loadUsers(); // refresh list
                     }
                 });
