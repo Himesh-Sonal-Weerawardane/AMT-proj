@@ -12,7 +12,10 @@
     <header class="module-card__header">
       <h1 class="module-card__title">New Module</h1>
     </header>
-    <form class="module-form" action="#" method="post">
+    <form class="module-form" id="module-form">
+      <input type="text" id="year" placeholder="Year" required>
+      <input type="text" id="semester" placeholder="Semester" required>
+      <input type="text" id="moderation-num" placeholder="Moderation Number" required>
       <div class="form-group">
         <label class="form-label" for="module-title">Title</label>
         <input
@@ -114,5 +117,74 @@
     </form>
   </section>
 </main>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDbdfHssnef2pIEm6ZDqC-aHmsXsV_foUc",
+    authDomain: "comp30022-amt.firebaseapp.com",
+    projectId: "comp30022-amt",
+    storageBucket: "comp30022-amt.firebasestorage.app",
+    messagingSenderId: "154098199531",
+    appId: "1:154098199531:web:960dd30994fcd9d4a387ae",
+    measurementId: "G-8ZJLJHVS4P"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('module-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const year = document.getElementById('year').value;
+      const semester = document.getElementById('semester').value;
+      const moderation_num = document.getElementById('moderation-num').value;
+      const name = document.getElementById('module-title').value;
+      const deadline = document.getElementById('module-deadline').value;
+      const description = document.getElementById('module-description').value;
+      const assignmentFile = document.getElementById('assignment-upload').files[0];
+      const rubricFile = document.getElementById('rubric-upload').files[0];
+      alert("Submit registered, processing module...");
+
+      try {
+        // Upload assignment file
+        const assignmentRef = ref(storage, `assignments/${year}_${semester}_mod${moderation_num}_${assignmentFile.name}`);
+        await uploadBytes(assignmentRef, assignmentFile);
+        const assignment_url = await getDownloadURL(assignmentRef);
+
+        // Upload rubric file
+        const rubricRef = ref(storage, `rubrics/${year}_${semester}_mod${moderation_num}_${rubricFile.name}`);
+        await uploadBytes(rubricRef, rubricFile);
+        const rubric_url = await getDownloadURL(rubricRef);
+
+        // Save metadata in Firestore
+        await addDoc(collection(db, "assignments"), {
+          name,
+          year,
+          semester,
+          moderation_num,
+          description,
+          assignment_url,
+          rubric_url,
+          upload_date: new Date(),
+          deadline
+        });
+
+        alert("Assignment uploaded successfully!");
+        form.reset();
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
