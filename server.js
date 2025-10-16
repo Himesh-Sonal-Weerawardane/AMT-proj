@@ -44,12 +44,6 @@ app.post("/api/login", async (req, res) => {
   if (authError) return res.status(400).json({ error: authError.message })  // User has wrong email/password
 
   const userId = authData.user.id
-  console.log("Logged-in userId:", userId)
-
-  const { data: allUsers, error } = await supabase
-    .from("users")
-    .select("auth_id") // only select auth_id column
-  console.log("allUsers: ", allUsers)
 
   // 2. Check user role in the database
   const { data: userData, error: userError } = await supabase
@@ -57,7 +51,6 @@ app.post("/api/login", async (req, res) => {
     .select("is_admin")
     .eq("auth_id", userId)
     .single()
-  console.log("is admin: ", userData)
 
   if (userError) return res.status(500).json({ error: userError.message })  // Server/Database failed
 
