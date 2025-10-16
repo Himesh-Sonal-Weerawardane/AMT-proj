@@ -51,26 +51,21 @@ app.post("/api/login", async (req, res) => {
     .select("auth_id") // only select auth_id column
   console.log("allUsers: ", allUsers)
 
-  const { data: userData1, error: userError1 } = await supabase
-    .from("users")
-    .eq("auth_id", userId)
-  console.log("UserData 1: ", userData1)
-
   // 2. Check user role in the database
   const { data: userData, error: userError } = await supabase
     .from("users")
     .select("is_admin")
     .eq("auth_id", userId)
     .single()
+  console.log("is admin: ", userData)
 
   if (userError) return res.status(500).json({ error: userError.message })  // Server/Database failed
-  if (userError) return res.json({ userId, allUsers, userData1, userData })
 
-  // 3. Respond with role info
+  // 3. Redirect to corresponding webpage and send a session token
   if (userData.is_admin) {
-    res.json({ redirect: "admin/moderation-frontpage.html" })
+    res.json({ redirect: "admin/moderation-frontpage.html", access_token: authData.session.access_token })
   } else {
-    res.json({ redirect: "marker/moderation-frontpage.html" })
+    res.json({ redirect: "marker/moderation-frontpage.html", access_token: authData.session.access_token })
   }
 })
 
