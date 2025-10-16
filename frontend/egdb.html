@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Test</title>
+  <!-- Add this inside <head> -->
+  <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js"></script>
+</head>
+<body>
+  <h1>Firebase Connection Test</h1>
+  <!-- Firebase Setup -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+    // import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDbdfHssnef2pIEm6ZDqC-aHmsXsV_foUc",
+      authDomain: "comp30022-amt.firebaseapp.com",
+      projectId: "comp30022-amt",
+      storageBucket: "comp30022-amt.firebasestorage.app",
+      messagingSenderId: "154098199531",
+      appId: "1:154098199531:web:960dd30994fcd9d4a387ae",
+      measurementId: "G-8ZJLJHVS4P"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    // const analytics = getAnalytics(app);
+
+    console.log("Firebase connected!");
+  </script>
+</body>
+</html>

@@ -26,7 +26,7 @@ function togglePassword(psw, eye) {
 document.getElementById("psw-form").addEventListener("submit", function(event) {
   const psw = document.getElementById("psw").value;
   const confirmPsw = document.getElementById("confirm-psw").value;
-  const errorMessage = document.getElementById("psw-error-msg");
+  const errorMessage = document.getElementById("error-msg");
 
   if (psw !== confirmPsw) {
     event.preventDefault(); // stop form from submitting

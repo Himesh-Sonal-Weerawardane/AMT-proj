@@ -10,9 +10,10 @@
     <link rel="stylesheet" href="css/login-page.css">
 </head>
 <body>
+    <button><a href="egdb.html">database</a></button>
+
     <!-- Login Form -->
-    <!-- To change 'login_page.php' to whatever file will process login -->
-    <form action="login_page.php" method="post">
+    <form id="login-form">
         <div class="logo-container">
             <h1 class="logo">AMT</h1>
         </div>
@@ -44,5 +45,56 @@
 
     <!-- Script -->
     <script src="js/login-page.js"></script>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbdfHssnef2pIEm6ZDqC-aHmsXsV_foUc",
+            authDomain: "comp30022-amt.firebaseapp.com",
+            projectId: "comp30022-amt",
+            storageBucket: "comp30022-amt.firebasestorage.app",
+            messagingSenderId: "154098199531",
+            appId: "1:154098199531:web:960dd30994fcd9d4a387ae",
+            measurementId: "G-8ZJLJHVS4P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Login form
+        const form = document.getElementById('login-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('psw').value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                // alert(`Logged in as ${user.email}`);
+
+                // Redirect to marker or admin page
+                const db = getFirestore(app);
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const isAdmin = userDoc.data().isAdmin;
+                    if (isAdmin === true) {
+                        // window.location.href = "admin/moderation-frontpage.html";
+                        window.location.href = "admin/create-users.html";
+                    } else {
+                        window.location.href = "marker/moderation-frontpage.html";
+                    }
+                } else {
+                    alert("No user data found in Firestore!");
+                }
+            } catch (error) {
+                alert("Invalid Email or Password!");
+            }
+        });
+    </script>
 </body>
 </html>

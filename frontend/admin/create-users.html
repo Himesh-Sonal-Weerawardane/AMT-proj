@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Users</title>
+</head>
+<body>
+    <form id="add-user-form">
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="checkbox" id="isAdmin">
+        <button type="submit">Add User</button>
+    </form>
+    
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+        import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbdfHssnef2pIEm6ZDqC-aHmsXsV_foUc",
+            authDomain: "comp30022-amt.firebaseapp.com",
+            projectId: "comp30022-amt",
+            storageBucket: "comp30022-amt.firebasestorage.app",
+            messagingSenderId: "154098199531",
+            appId: "1:154098199531:web:960dd30994fcd9d4a387ae",
+            measurementId: "G-8ZJLJHVS4P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('add-user-form');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const isAdmin = document.getElementById('isAdmin').checked;
+                alert("Submit registered, awaiting creation of user...");
+
+                try {
+                    // Create Auth user
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    const db = getFirestore(app);
+                    await setDoc(doc(db, "users", user.uid), {
+                        name,
+                        isAdmin
+                    });
+                    alert(`User ${name} added succesfully!`);
+
+                    // form.reset();
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
