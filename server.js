@@ -43,12 +43,12 @@ app.post("/api/login", async (req, res) => {
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password })
   if (authError) return res.status(400).json({ error: authError.message })  // User has wrong email/password
 
-  const userId = authData.user.id
+  const userId = authData.user.userId
 
   // 2. Check user role in the database
   const { data: userData, error: userError } = await supabase
     .from("users")
-    .select("isAdmin")
+    .select("is_admin")
     .eq("auth_id", userId)
     .single()
 
