@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Show and Delete Users</title>
+</head>
+<body>
+    <ul id="user-list"></ul>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        import { getAuth } from "firebase-admin/auth";
+        import express from "express";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbdfHssnef2pIEm6ZDqC-aHmsXsV_foUc",
+            authDomain: "comp30022-amt.firebaseapp.com",
+            projectId: "comp30022-amt",
+            storageBucket: "comp30022-amt.firebasestorage.app",
+            messagingSenderId: "154098199531",
+            appId: "1:154098199531:web:960dd30994fcd9d4a387ae",
+            measurementId: "G-8ZJLJHVS4P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const userList = document.getElementById("user-list");
+
+        async function loadUsers() {
+            const usersSnapshot = await getDocs(collection(db, "users"));
+            userList.innerHTML = "";
+
+            usersSnapshot.forEach((userDoc) => {
+                const data = userDoc.data();
+                const li = document.createElement("li");
+                li.textContent = `${data.name} (${data.role})`;
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "Delete";
+                deleteBtn.addEventListener("click", async () => {
+                    if (confirm(`Delete user ${data.name}?`)) {
+                        await deleteDoc(doc(db, "users", userDoc.id));
+                        alert(`${data.name} deleted from Firestore`);
+
+                        // Delete from Auth
+                        const app = express();
+                        app.delete("/deleteUser/:uid", async (req, res) => {
+                            const uid = req.params.uid;
+                            try {
+                                await getAuth().deleteUser(uid);
+                                res.send("User deleted from Auth");
+                                alert(`${data.name} deleted from Auth`);
+                            } catch (err) {
+                                res.status(400).send(err.message);
+                            }
+                        });
+
+                        loadUsers(); // refresh list
+                    }
+                });
+
+                li.appendChild(deleteBtn);
+                userList.appendChild(li);
+            });
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>

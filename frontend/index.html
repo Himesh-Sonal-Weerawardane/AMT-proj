@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="css/login-page.css">
 </head>
 <body>
-    <button><a href="egdb.html">database</a></button>
-
     <!-- Login Form -->
     <form id="login-form">
         <div class="logo-container">
@@ -84,7 +82,7 @@
                     const isAdmin = userDoc.data().isAdmin;
                     if (isAdmin === true) {
                         // window.location.href = "admin/moderation-frontpage.html";
-                        window.location.href = "admin/create-users.html";
+                        window.location.href = "admin/options.html";
                     } else {
                         window.location.href = "marker/moderation-frontpage.html";
                     }
