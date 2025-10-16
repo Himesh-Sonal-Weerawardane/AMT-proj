@@ -5,7 +5,7 @@ window.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", async (e) => {
         e.preventDefault() // Prevent URL parameters from being added
 
-        const errorMessage = document.getElementById("psw-error-msg");
+        const errorMessage = document.getElementById("error-msg");
         errorMessage.style.display = "none"; // hide error
 
         const email = document.getElementById("email").value
@@ -24,6 +24,9 @@ window.addEventListener("DOMContentLoaded", () => {
                 errorMessage.style.display = "block"; // show error
             } else {
                 console.log("Successful login!")
+
+                // Store login session to check on other pages
+                localStorage.setItem("supabase_session", data.access_token)
             }
         } catch (err) {
             console.error("Network or server error:", err)

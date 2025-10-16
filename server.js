@@ -34,6 +34,7 @@ app.get("/api/users", async (req, res) => {
   res.json(data);
 });
 
+// #######################################################################
 // Login endpoint
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body
@@ -61,5 +62,27 @@ app.post("/api/login", async (req, res) => {
   }
 })
 
+// Check if user is logged in and get role
+app.get("/api/session", async (req, res) => {
+  // You’ll normally pass the JWT from the frontend in a header or cookie
+  const token = req.headers.authorization?.replace("Bearer ", "")
+  if (!token) return res.status(401).json({ error: "Not logged in" })
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+  if (authError || !user) return res.status(401).json({ error: "Invalid session" })
+
+  // Check role in users table
+  const { data: userData, error: userError } = await supabase
+    .from("users")
+    .select("isAdmin")
+    .eq("auth_id", user.id)
+    .single()
+
+  if (userError || !userData) return res.status(403).json({ error: "Access denied" })
+
+  res.json({ email: user.email, isAdmin: userData.isAdmin })
+})
+
+// #######################################################################
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
