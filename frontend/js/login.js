@@ -1,9 +1,3 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = 'https://gzdbbllkfxfnyhunxwvn.supabase.co'
-const supabaseKey = process.env.SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
-
 // Submit login form
 window.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("login-form")
