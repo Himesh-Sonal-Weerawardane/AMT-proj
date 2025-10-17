@@ -236,7 +236,7 @@ body {
     appearance: none;
     border-radius: 0;
     border: 2px solid gray;
-    background-image: url('../image/dropdown-arrow.png');
+    background-image: url('../images/front-page/dropdown-arrow.png');
     background-repeat: no-repeat;
     background-position: right 8px center;
     background-position-y: bottom 11px;
