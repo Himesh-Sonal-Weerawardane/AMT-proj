@@ -5,22 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Publish New Module</title>
   <link rel="stylesheet" href="../css/publish-module.css" />
+  <link rel="stylesheet" href="../css/navbar.css">
 </head>
 <body>
+
+<!-- Navigation bar -->
+<div id="navbar-container"></div>
+
 <main class="page-wrapper">
   <section class="module-card">
     <header class="module-card__header">
       <h1 class="module-card__title">New Module</h1>
     </header>
     <form class="module-form" id="module-form">
-      <label for="year"><b>Year</b></label>
-      <input type="year" placeholder="Enter Year" name="year" id="year" required>
 
-      <label for="semester"><b>Semester</b></label>
-      <input type="semester" placeholder="Enter Semester" name="semester" id="semester" required>
+      <div class="form-group">
+        <label class="form-label" for="year">Year</label>
+        <input
+                class="form-control"
+                type="text"
+                id="year"
+                name="year"
+                placeholder="Enter Year (Eg: 2025)"
+        />
+      </div>
 
-      <label for="moderation-number"><b>Moderation Number</b></label>
-      <input type="moderation-number" placeholder="Enter Moderation Number" name="moderation-number" id="moderation-number" required>
+      <div class="form-group">
+        <label class="form-label" for="semester">Semester</label>
+        <input
+                class="form-control"
+                type="text"
+                id="semester"
+                name="semester"
+                placeholder="Enter Semester (1 or 2)"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="moderation-number">Moderation Number</label>
+        <input
+                class="form-control"
+                type="text"
+                id="moderation-number"
+                name="moderation-number"
+                placeholder="Enter Moderation Number (1 or 2)"
+        />
+      </div>
 
       <div class="form-group">
         <label class="form-label" for="module-title">Title</label>
@@ -126,6 +156,7 @@
 
 <script src="../js/admin/admin-session.js"></script>
 <script src="../js/admin/upload-moderation.js"></script>
+<script src="../js/navbar.js"></script>
 
 </body>
 </html>

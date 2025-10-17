@@ -7,8 +7,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Information and Handbook Page</title>
     <link rel="stylesheet" href="../css/contact-help-page.css">
+    <link rel="stylesheet" href="../css/navbar.css">
 </head>
 <body>
+    <!-- Navigation bar -->
+    <div id="navbar-container"></div>
+
     <div class="main-container">
         <h1>Information and Handbook</h1>
         <iframe src="../pdf/sample.pdf"></iframe>
@@ -37,5 +41,6 @@
         fileName.textContent = input.files.length > 0 ? input.files[0].name : "No file chosen";
         });
     </script>
+    <script src="../js/navbar.js"></script>
 </body>
 </html>

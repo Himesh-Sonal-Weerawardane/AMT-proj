@@ -44,11 +44,11 @@ const navbarHTML = `
 
     <!-- To change the links -->
     <nav class="nav-links" aria-label="Primary">
-        <a class="nav-link is-active" href="admin/front-page.html">Home</a>
-        <a class="nav-link" href="marker/moderation-frontpage.html">Assignment Modules</a>
-        <a class="nav-link" href="contact-help-page.html">Contact and Help</a>
-        <a class="nav-link" href="info-handbook-page.html">Information and Handbook</a>
-        <a class="nav-link" href="settings-page-profile.html">Settings</a>
+        <a class="nav-link is-active" href="/frontend/admin/front-page.html">Home</a>
+        <a class="nav-link" href="/frontend/admin/moderation-frontpage.html">Assignment Modules</a>
+        <a class="nav-link" href="/frontend/admin/contact-help-page.html">Contact and Help</a>
+        <a class="nav-link" href="/frontend/admin/info-handbook-page.html">Information and Handbook</a>
+        <a class="nav-link" href="/frontend/settings-page-profile.html">Settings</a>
     </nav>
 
     <div class="nav-actions">
