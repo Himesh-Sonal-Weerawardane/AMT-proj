@@ -4,7 +4,7 @@ export default function authRoutes(supabase) {
   const router = express.Router()
 
   // Login endpoint
-  router.post("login", async (req, res) => {
+  router.post("/login", async (req, res) => {
     const { email, password } = req.body
   
     // 1. Authenticate user via Supabase Auth
