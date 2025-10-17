@@ -68,7 +68,10 @@ body {
 }
 
 .profile-page {
-  height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 /********************************************************/
@@ -157,10 +160,17 @@ input[type=text], input[type=email], input[type=password] {
   font-weight: medium;
 }
 
-#current-email-title, #current-email-text {
+#current-email-title, #role-title {
   width: 600px;
-  margin: 10px 0;
+  margin: 10px 0 0 0;
   font-size: 20px;
+  font-weight: medium;
+}
+
+#current-email-text, #role-text {
+  width: 600px;
+  margin: 0 0 10px 0;
+  font-size: 16px;
   font-weight: medium;
 }
 
@@ -171,4 +181,22 @@ input[type=text], input[type=email], input[type=password] {
   width: 600px;
   display: flex;
   justify-content: flex-end;
+}
+
+/* Login Button */
+.submit-changes-button {
+  background-color: #eeeeee;
+  color: black;
+  border: 1px solid #6b7280;
+  padding: 5px;
+  margin: 20px 0 0 0;
+  cursor: pointer;
+  width: 175px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Add a hover effect for login button */
+.submit-changes-button:hover {
+  background-color: #6b7280;
 }
