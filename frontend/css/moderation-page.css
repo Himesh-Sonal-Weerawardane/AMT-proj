@@ -1,0 +1,228 @@
+
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    letter-spacing: 0.04em;
+}
+
+
+/* Titles */
+
+.title-tab {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid lightgray;
+}
+
+#moderation-title {
+    padding: 15px;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+#moderation-subtitle {
+    padding: 15px;
+    font-size: 17px;
+}
+
+#moderation-submit {
+    font-size: 16px;
+    padding: 5px 12px;
+    background-color: #fff;
+    border: 1px solid #a9a9a9;
+    letter-spacing: 0.03em;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+#moderation-submit:hover {
+    background-color: lightgray;
+}
+
+
+#moderation-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 8px 0;
+}
+
+#total-score {
+    font-weight: bold;
+}
+
+
+/* Panels */
+
+.container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: absolute;
+}
+
+.left-panel, .right-panel {
+    float: left;
+    height: 100%;
+    width: 50%;
+    overflow: scroll;
+}
+
+
+.left-panel iframe {
+    height: 100%;
+    width: 95%;
+    border: none;
+    margin: 20px;
+    display: flex;
+    margin-top: 0;
+}
+
+
+.vertical-divider {
+    width: 7px;
+    background-color: lightgray;
+    cursor: ew-resize;
+    height: 100%;
+    align-self: stretch;
+    flex-shrink: 0;
+}
+
+
+
+/* Rubric and Statistics tab content */
+
+.tabs {
+    background-color: #f1f1f1;
+    width: 100%;
+    box-sizing: border-box;
+    height: 56px;
+}
+
+
+.tabs button {
+    height: inherit;
+    float: left;
+    background-color: inherit;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 20px 40px;
+    transition: 0.5s;
+}
+
+
+.tabs button:hover {
+    background-color: #ddd;
+}
+
+.tabs button.active {
+    background-color: lightgray;
+    font-weight: bold;
+}
+
+.tab-content {
+    width: 100%;
+    flex: 1;
+    display: none;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 10px;
+}
+
+
+.tab-links {
+    font-size: 15px;
+}
+
+
+/* Rubric  */
+
+.comment-section {
+    border: 1px solid lightgray;
+}
+
+.comment-section:empty:before {
+    content: attr(data-placeholder);
+    color: lightgray;
+    pointer-events: none;
+}
+
+.score-wrapper {
+    align-items: center;
+    margin: 5px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.score-bar {
+    -webkit-appearance: none;
+    width: 85%;
+    margin: 0 20px 0 20px;
+    height: 10px;
+    border-radius: 5px;
+    background-color: lightgray;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.score-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: deepskyblue;
+    cursor: pointer;
+}
+
+
+.score-bar::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: deepskyblue;
+    cursor: pointer;
+}
+
+
+.comment-section {
+    height: 200px;
+    padding: 10px;
+    overflow-y: auto;
+    margin: 20px 20px 20px 30px;
+}
+
+.grade-description {
+    margin-top: 30px;
+    padding-right: 20px;
+}
+
+
+.criterion-title {
+    margin-left: 25px;
+}
+
+
+.input-wrapper {
+    border: 3px solid lightgray;
+    margin: 0 10px;
+}
+
+
+
+
+
+
+
+
