@@ -3,7 +3,7 @@
 let staffNames = [];
 
 async function listingHandler() {
-    const response = await fetch("data/staff.json");
+    const response = await fetch("../data/staff.json");
     const data = await response.json();
 
     const staffList = document.getElementById('staff-list');
