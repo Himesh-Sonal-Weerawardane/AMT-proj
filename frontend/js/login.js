@@ -7,7 +7,11 @@ async function initLogin() {
     try {
         const res = await fetch("/api/is_loggedin", { method: "POST" });
         const data = await res.json();
-        if (res.status === 200) window.location.href = data.redirect;
+        if (res.status === 200) {
+            window.location.href = data.redirect
+        } else {
+            console.log("Error: Something went wrong")
+        }
     } catch (err) {
         console.log("An error occurred: ", err);
     }
