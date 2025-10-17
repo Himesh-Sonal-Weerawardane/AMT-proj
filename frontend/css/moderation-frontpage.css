@@ -52,7 +52,7 @@ body {
   width: 16px;
   height: 16px;
   margin-left: 5px;
-  background: url("../images/home-page/arrow.png") no-repeat center center;
+  background: url("../images/front-page/arrow.png") no-repeat center center;
   background-size: contain;
   transition: transform 0.2s ease, background-image 0.2s ease;
 }
