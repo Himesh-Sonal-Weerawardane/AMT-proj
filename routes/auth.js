@@ -77,7 +77,7 @@ export default function authRoutes(supabase) {
   })
 
   // Get session info like name, email, role.
-  app.get("/user_info", async (req, res) => {
+  router.get("/user_info", async (req, res) => {
     try {
       // Get token from cookie
       const token = req.cookies?.supabase_session;
