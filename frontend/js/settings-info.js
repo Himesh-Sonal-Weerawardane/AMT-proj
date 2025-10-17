@@ -1,45 +1,39 @@
-(async () => {
+window.addEventListener("DOMContentLoaded", () => {
+    initSettingsPofilePrivacy();
+})
+
+async function initSettingsPofilePrivacy() {
     try {
-        const res = await fetch("/api/user_info", {
-            headers: { "Authorization": "Bearer " + token }
-        })
-        const data = await res.json()
+        // fetch user data: first_name, last_name, email, role from server
+        const res = await fetch("/api/user_info", { method: "POST" });
+        const data = await res.json();
 
         if (res.status !== 200) {
-            // Not logged in or not admin -> redirect
-            window.location.href = "/index.html"
+            console.log("Could not fetch user data!")
+            return;
         }
+        console.log("User data has been fetched")
 
-        // Everything is ok
-        console.log("Name: ", data.name)
-        console.log("Email: ", data.email)
-        console.log("Role: ", data.role)
-
-        // Profile and privacy pages only
-        setProfilePrivacyPages(data)
+        // Change profile info to fetched info
+        const firstInitial = data.first_name ? data.first_name[0] : "";
+        const lastInitial = data.last_name ? data.last_name[0] : "";
         
+        const initialsText = document.getElementById("profile-text-initials")
+        if (initialsText) initialsText.textContent = firstInitial + lastInitial;
+
+        const firstNameText = document.getElementById("first-name")
+        if (firstNameText) firstNameText.placeholder = data.first_name
+
+        const lastNameText = document.getElementById("last-name")
+        if (lastNameText) lastNameText.placeholder = data.last_name
+
+        const roleText = document.getElementById("role-text")
+        if (roleText) roleText.textContent = data.role
+
+        const emailText = document.getElementById("current-email-text")
+        if (emailText) emailText.textContent = data.email
+
     } catch (err) {
-        window.location.href = "/index.html"
-    }
-})();
-
-function setProfilePrivacyPages(data) {
-    // Update elements only if they exist on this page
-    const roleEl = document.getElementById("profile-role")
-    if (roleEl) roleEl.textContent = data.is_admin ? "Admin" : "Marker"
-
-    const firstNameEl = document.getElementById("profile-first-name")
-    if (firstNameEl) firstNameEl.textContent = data.name
-
-    const lastNameEl = document.getElementById("profile-last-name")
-    if (lastNameEl) lastNameEl.textContent = data.name
-
-    const emailEl = document.getElementById("profile-email-text")
-    if (emailEl) emailEl.textContent = data.email
-
-    const profileTextEl = document.getElementById("profile-text")
-    if (profileTextEl && data.name) {
-        const initials = data.name.split(" ").map(n => n[0]).join("").toUpperCase()
-        profileTextEl.textContent = initials
+        console.log("An error occurred: ", err);
     }
 }

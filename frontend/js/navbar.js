@@ -112,13 +112,13 @@ const navbarHTML = `
 
     <div class="nav-actions">
         <button class="icon-button profile-button" type="button" aria-label="Open profile" aria-haspopup="true" aria-expanded="false" aria-controls="profile-panel">
-            <span id="button-first-last-name-initials" aria-hidden="true">C</span>
+            <span id="button-first-last-name-initials" aria-hidden="true">...</span>
         </button>
         <div class="profile-panel" id="profile-panel" role="dialog" aria-label="Profile">
             <div class="profile-panel-body">
-                <div id="first-last-name-initials-text" class="profile-panel-avatar" aria-hidden="true">C</div>
-                <p id="profile-panel-first-last-name-text" class="profile-panel-name">Carrie Deakin</p>
-                <p id="profile-panel-email-text" class="profile-panel-email">carriedeakin@deakin.com</p>
+                <div id="first-last-name-initials-text" class="profile-panel-avatar" aria-hidden="true">...</div>
+                <p id="profile-panel-first-last-name-text" class="profile-panel-name">...</p>
+                <p id="profile-panel-email-text" class="profile-panel-email">...</p>
             </div>
             <div class="profile-panel-links">
                 <a class="profile-panel-link" href="settings-page-profile.html">
