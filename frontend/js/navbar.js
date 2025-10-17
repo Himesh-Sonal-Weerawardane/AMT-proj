@@ -35,7 +35,9 @@ async function signOut() {
         // Sign out
         localStorage.removeItem("supabase_session");
 
-        const res = await fetch("/api/logout", {})
+        const res = await fetch("/api/logout", {
+            method: "POST"
+        })
         const data = await res.json()
 
         if (res.status !== 200) {

@@ -24,10 +24,6 @@ window.addEventListener("DOMContentLoaded", () => {
                 errorMessage.style.display = "block"; // show error
             } else {
                 console.log("Successful login!")
-
-                // Store login session to check on other pages
-                localStorage.setItem("supabase_session", data.access_token)
-
                 window.location.href = data.redirect
             }
         } catch (err) {

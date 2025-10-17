@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Marker</title>
-    <link rel="stylesheet" href="css/settings-page.css">
-    <link rel="stylesheet" href="css/navbar.css">
+    <title>Settings - Admin</title>
+    <link rel="stylesheet" href="../css/settings-page.css">
+    <link rel="stylesheet" href="../css/navbar.css">
 </head>
 <body>
     <!-- Navigation bar -->
@@ -51,14 +51,14 @@
                 <label for="password"><b>New Password</b></label>
                 <div class="password-container">
                     <input type="password" placeholder="Enter new password" name="password" id="password" required>
-                    <img src="images/login-page/eye-closed.png" class="eye-icon" id="eye-new"
+                    <img src="../images/login-page/eye-closed.png" class="eye-icon" id="eye-new"
                         onclick="togglePassword('password', 'eye-new')">
                 </div>
 
                 <label for="confirm-password"><b>Confirm Password</b></label>
                 <div class="password-container">
                     <input type="password" placeholder="Confirm password" name="confirm-password" id="confirm-password" required>
-                    <img src="images/login-page/eye-closed.png" class="eye-icon" id="eye-confirm"
+                    <img src="../images/login-page/eye-closed.png" class="eye-icon" id="eye-confirm"
                         onclick="togglePassword('confirm-password', 'eye-confirm')">
                 </div>
             </div>
@@ -71,9 +71,8 @@
     </div>
 
     <!-- Script -->
-    <script src="js/login-session.js"></script>
-    <script src="js/settings-page.js"></script>
-    <script src="js/toggle-password.js"></script>
-    <script src="js/navbar.js"></script>
+    <script src="../js/settings-page.js"></script>
+    <script src="../js/toggle-password.js"></script>
+    <script src="../js/navbar.js"></script>
 </body>
 </html>

@@ -21,12 +21,47 @@ export default function authRoutes(supabase) {
       .single()
   
     if (userError) return res.status(500).json({ error: userError.message })  // Server/Database failed
+
+    // 3. Store cookie session info
+    res.cookie("supabase_session", authData.session.access_token, {
+      httpOnly: true,
+      secure: true, // true in production HTTPS, false for testing
+      // hours, mins, seconds, ms. 24*60*60*1000 = 1 day.
+      maxAge: 24 * 60 * 60 * 1000
+    });
   
     // 3. Redirect to corresponding webpage and send a session token
     if (userData.is_admin) {
-      res.json({ redirect: "/admin/front-page.html", access_token: authData.session.access_token })
+      res.json({ redirect: "/admin/front-page.html" })
     } else {
-      res.json({ redirect: "/marker/front-page.html", access_token: authData.session.access_token })
+      res.json({ redirect: "/marker/front-page.html" })
+    }
+  })
+
+  router.post("/is_loggedin", async (req, res) => {
+    try {
+      // Get token from cookie
+      const token = req.cookies?.supabase_session;
+      if (!token) return res.status(401).json({ error: "Not logged in" });
+
+      // Get user from Supabase
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !user) return res.status(401).json({ error: "Invalid session" });
+
+      // Get role from database
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("name, is_admin")
+        .eq("auth_id", user.id)
+        .single();
+
+      if (userError || !userData) return res.status(403).json({ error: "Access denied" });
+
+      // Return info
+      res.json({ redirect: userData.is_admin ? "/admin/front-page" : "/marker/front-page.html" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
     }
   })
 
@@ -40,59 +75,38 @@ export default function authRoutes(supabase) {
       res.status(500).json({ message: "Failed to log out" });
     }
   })
-  
-  // Check if user is logged in and is admin
-  router.get("/admin_session", async (req, res) => {
-    // Normally pass the JWT from the frontend in a header or cookie
-    const token = req.headers.authorization?.replace("Bearer ", "")
-    if (!token) return res.status(401).json({ error: "Not logged in" })
-  
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) return res.status(401).json({ error: "Invalid session" })
-  
-    // Check role in users table
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("is_admin, name")
-      .eq("auth_id", user.id)
-      .single()
-  
-    if (userError || !userData || !userData?.is_admin) return res.status(403).json({ error: "Access denied" })
-  
-    // Return user email from auth, and name and is_admin from database
-    res.json({
-      email: user.email,
-      name: userData.name,
-      is_admin: userData.is_admin
-    })
-  })
-  
-  // Check if user is logged in; can be admin or marker
-  router.post("/login_session", async (req, res) => {
-    // Normally pass the JWT from the frontend in a header or cookie
-    const token = req.headers.authorization?.replace("Bearer ", "")
-    if (!token) return res.status(401).json({ error: "Not logged in" })
-  
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) return res.status(401).json({ error: "Invalid session" })
-  
-    // Check role in users table
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("is_admin, name")
-      .eq("auth_id", user.id)
-      .single()
-  
-    if (userError || !userData ) return res.status(403).json({ error: "Access denied" })
-  
-    // Return user email from auth, and name and is_admin from database
-    res.json({
-      redirect: userData.is_admin ? "/admin/front-page.html" : "/marker/front-page.html",
-      email: user.email,
-      name: userData.name,
-      is_admin: userData.is_admin
-    })
-  })
+
+  // Get session info like name, email, role.
+  app.get("/user_info", async (req, res) => {
+    try {
+      // Get token from cookie
+      const token = req.cookies?.supabase_session;
+      if (!token) return res.status(401).json({ error: "Not logged in" });
+
+      // Get user from Supabase
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !user) return res.status(401).json({ error: "Invalid session" });
+
+      // Get role from database
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("name, is_admin")
+        .eq("auth_id", user.id)
+        .single();
+
+      if (userError || !userData) return res.status(403).json({ error: "Access denied" });
+
+      // Return info
+      res.json({
+        email: user.email,
+        name: userData.name,
+        role: userData.is_admin ? "Admin" : "Marker"
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
 
   return router
 }
