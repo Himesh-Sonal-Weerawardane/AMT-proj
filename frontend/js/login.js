@@ -35,3 +35,25 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     })
 })
+
+// Check if a user is already logged in and if so, redirect to correct page
+try {
+    const token = localStorage.getItem("supabase_session")
+    if (!token) exit
+
+    const res = await fetch("/api/login_session", {
+        headers: { "Authorization": "Bearer " + token }
+    })
+    const data = await res.json()
+
+    if (res.status !== 200) {
+        // Not logged in
+        exit
+    }
+
+    // Otherwise, redirect
+    window.location.href = data.redirect
+    
+} catch (err) {
+    console.log("An error occurred: ", err)
+}

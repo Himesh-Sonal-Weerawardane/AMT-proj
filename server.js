@@ -1,11 +1,13 @@
 // Put all the code that should run on the server here and call them from frontend.
 // See index.html and login.js for example.
 
-import 'dotenv/config'
+import dotenv from 'dotenv'
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

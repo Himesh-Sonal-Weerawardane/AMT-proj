@@ -26,7 +26,30 @@ window.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    document.getElementById("sign-out-button").addEventListener("click", signOut);
 })
+
+async function signOut() {
+    try {
+        // Sign out
+        localStorage.removeItem("supabase_session");
+
+        const res = await fetch("/api/logout", {})
+        const data = await res.json()
+
+        if (res.status !== 200) {
+            // Error logging out
+            console.log("Could not log out!")
+        }
+
+        // Logged out, redirect to login page
+        console.log(data.message)
+        window.location.href = data.redirect
+    } catch (err) {
+        console.error("Network or server error:", err)
+    }
+}
 
 const navbarHTML = `
 <header class="top-navigation" role="banner">
@@ -43,12 +66,13 @@ const navbarHTML = `
     </div>
 
     <!-- To change the links -->
+    <!-- If admin, add another link to staff-listings -->
     <nav class="nav-links" aria-label="Primary">
-        <a class="nav-link is-active" href="/frontend/admin/front-page.html">Home</a>
-        <a class="nav-link" href="/frontend/admin/moderation-frontpage.html">Assignment Modules</a>
-        <a class="nav-link" href="/frontend/admin/contact-help-page.html">Contact and Help</a>
-        <a class="nav-link" href="/frontend/admin/info-handbook-page.html">Information and Handbook</a>
-        <a class="nav-link" href="/frontend/settings-page-profile.html">Settings</a>
+        <a id="home-link" class="nav-link is-active" href="/admin/front-page.html">Home</a>
+        <a id="assignment-modules-link" class="nav-link" href="/admin/moderation-frontpage.html">Assignment Modules</a>
+        <a id="contact-help-link" class="nav-link" href="/admin/contact-help-page.html">Contact and Help</a>
+        <a id="information-handbook-link" class="nav-link" href="/admin/info-handbook-page.html">Information and Handbook</a>
+        <a id="settings-link" class="nav-link" href="/settings-page-profile.html">Settings</a>
     </nav>
 
     <div class="nav-actions">
@@ -84,6 +108,9 @@ const navbarHTML = `
                     <span class="profile-panel-link-label">Privacy</span>
                 </a>
             </div>
+            <button id="sign-out-button">
+                <span>Sign out</span>
+            </button>
         </div>
     </div>
 </header>

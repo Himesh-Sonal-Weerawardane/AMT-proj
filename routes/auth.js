@@ -24,9 +24,20 @@ export default function authRoutes(supabase) {
   
     // 3. Redirect to corresponding webpage and send a session token
     if (userData.is_admin) {
-      res.json({ redirect: "admin/moderation-frontpage.html", access_token: authData.session.access_token })
+      res.json({ redirect: "/admin/front-page.html", access_token: authData.session.access_token })
     } else {
-      res.json({ redirect: "marker/moderation-frontpage.html", access_token: authData.session.access_token })
+      res.json({ redirect: "/marker/front-page.html", access_token: authData.session.access_token })
+    }
+  })
+
+  // Logout
+  router.post("/logout", async (req, res) => {
+    try {
+      await supabase.auth.signOut({ scope: 'local'});
+      res.status(200).json({ redirect: "/index.html", message: "Logged out" });
+    } catch (error) {
+      console.error("Error during logout: ", error)
+      res.status(500).json({ message: "Failed to log out" });
     }
   })
   
@@ -76,6 +87,7 @@ export default function authRoutes(supabase) {
   
     // Return user email from auth, and name and is_admin from database
     res.json({
+      redirect: userData.is_admin ? "/admin/front-page.html" : "/marker/front-page.html",
       email: user.email,
       name: userData.name,
       is_admin: userData.is_admin
