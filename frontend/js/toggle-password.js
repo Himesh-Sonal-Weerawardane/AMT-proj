@@ -11,8 +11,8 @@ function togglePassword(psw, eye) {
   const eyeIcon = document.getElementById(eye);
   
   // absolute paths to eye icons
-  const eyeOpen = "/frontend/images/login-page/eye-open.png";
-  const eyeClosed = "/frontend/images/login-page/eye-closed.png";
+  const eyeOpen = "/images/login-page/eye-open.png";
+  const eyeClosed = "/images/login-page/eye-closed.png";
 
   if (passwordInput.type === "password") {
     passwordInput.type = "text";

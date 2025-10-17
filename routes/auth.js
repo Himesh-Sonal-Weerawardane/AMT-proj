@@ -85,7 +85,7 @@ export default function authRoutes(supabase) {
   })
 
   // Get session info like name, email, role.
-  router.get("/user_info", async (req, res) => {
+  router.post("/user_info", async (req, res) => {
     try {
       // Get token from cookie
       const token = req.cookies?.supabase_session;
@@ -98,7 +98,7 @@ export default function authRoutes(supabase) {
       // Get role from database
       const { data: userData, error: userError } = await supabase
         .from("users")
-        .select("name, is_admin")
+        .select("first_name, last_name, is_admin")
         .eq("auth_id", user.id)
         .single();
 
@@ -107,7 +107,8 @@ export default function authRoutes(supabase) {
       // Return info
       res.json({
         email: user.email,
-        name: userData.name,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
         role: userData.is_admin ? "Admin" : "Marker"
       });
     } catch (err) {
