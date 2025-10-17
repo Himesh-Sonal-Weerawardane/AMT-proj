@@ -1,7 +1,7 @@
 
 
 const markingAcc = document.querySelectorAll(".marking-accordion");
-const progressAcc = document.querySelectorAll(".progress-accordion");
+const generalAcc = document.querySelectorAll(".progress-accordion");
 
 
 markingAcc.forEach(a => {
@@ -18,7 +18,7 @@ markingAcc.forEach(a => {
 })
 
 
-progressAcc.forEach(a => {
+generalAcc.forEach(a => {
     a.addEventListener("click", function() {
         this.classList.toggle("active");
 
