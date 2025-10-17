@@ -51,14 +51,14 @@ export default function authRoutes(supabase) {
       // Get role from database
       const { data: userData, error: userError } = await supabase
         .from("users")
-        .select("name, is_admin")
+        .select("is_admin")
         .eq("auth_id", user.id)
         .single();
 
       if (userError || !userData) return res.status(403).json({ error: "Access denied" });
 
       // Return info
-      res.json({ redirect: userData.is_admin ? "/admin/front-page" : "/marker/front-page.html" });
+      res.json({ redirect: userData.is_admin ? "/admin/front-page.html" : "/marker/front-page.html" });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Server error" });
@@ -69,6 +69,14 @@ export default function authRoutes(supabase) {
   router.post("/logout", async (req, res) => {
     try {
       await supabase.auth.signOut({ scope: 'local'});
+
+      // Clear the cookie
+      res.clearCookie("supabase_session", {
+        httpOnly: true,
+        secure: true,
+        path: "/"
+      });
+
       res.status(200).json({ redirect: "/index.html", message: "Logged out" });
     } catch (error) {
       console.error("Error during logout: ", error)
