@@ -32,9 +32,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 async function signOut() {
     try {
-        // Sign out
-        localStorage.removeItem("supabase_session");
-
         const res = await fetch("/api/logout", {
             method: "POST"
         })
