@@ -9,22 +9,12 @@ body {
     letter-spacing: 0.04em;
 }
 
-
-/* Temporary Navigation Bar */
-.nav-bar {
-    width: 100%;
-    background-color: black;
-    padding: 30px 20px;
-    box-sizing: border-box;
-}
-
 .container {
     display: flex;
     width: 100%;
     height: 100%;
     justify-content: center;
     flex-direction: column;
-    margin: 40px auto 100px auto;
 }
 
 .listing-heading {

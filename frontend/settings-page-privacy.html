@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Marker</title>
-     <link rel="stylesheet" href="css/settings-page.css">
+    <link rel="stylesheet" href="css/settings-page.css">
+    <link rel="stylesheet" href="css/navbar.css">
 </head>
 <body>
+    <!-- Navigation bar -->
+    <div id="navbar-container"></div>
+
     <!-- Settings Sidebar -->
     <div class="settings-sidebar">
         <a href="settings-page-profile.html">Profile</a>
@@ -17,12 +21,12 @@
     <div class="page-content">
         <!-- Profile Form -->
         <!-- To change 'privacy_page_email.php' to whatever file will process email changes -->
-        <form id="email-form" action="privacy_page_email.php" method="post">
-            <h1>Change Email</h1>
+        <form id="email-form">
+            <h1 class="change-title">Change Email</h1>
 
             <div class="input-container">
-                <h3>Current Email</h3>
-                <p id="profile-email-text">examplemail@gmail.com</p>
+                <h3 id="current-email-title">Current Email</h3>
+                <p id="current-email-text" id="profile-email-text">examplemail@gmail.com</p>
 
                 <label for="email"><b>New Email</b></label>
                 <input type="email" placeholder="Enter new email" name="email" id="email" required>
@@ -33,33 +37,43 @@
 
             <p id="email-error-msg">Emails do not match!</p>
             <div class="button-container">
-                <button type="submit">Confirm Email</button>
+                <button class="submit-changes-button" type="submit">Confirm Email</button>
             </div>
         </form>
 
         <br>
         <hr>
         <!-- To change 'privacy_page_psw.php' to whatever file will process psw changes -->
-        <form id="psw-form" action="privacy_page_psw.php" method="post">
-            <h1>Change Password</h1>
+        <form id="psw-form">
+            <h1 class="change-title">Change Password</h1>
 
             <div class="input-container">
                 <label for="password"><b>New Password</b></label>
-                <input type="psw" placeholder="Enter new password" name="password" id="password" required>
+                <div class="password-container">
+                    <input type="password" placeholder="Enter new password" name="password" id="password" required>
+                    <img src="images/login-page/eye-closed.png" class="eye-icon" id="eye-new"
+                        onclick="togglePassword('password', 'eye-new')">
+                </div>
 
                 <label for="confirm-password"><b>Confirm Password</b></label>
-                <input type="psw" placeholder="Confirm password" name="confirm-password" id="confirm-password" required>
+                <div class="password-container">
+                    <input type="password" placeholder="Confirm password" name="confirm-password" id="confirm-password" required>
+                    <img src="images/login-page/eye-closed.png" class="eye-icon" id="eye-confirm"
+                        onclick="togglePassword('confirm-password', 'eye-confirm')">
+                </div>
             </div>
 
             <p id="psw-error-msg">Passwords do not match!</p>
             <div class="button-container">
-                <button type="submit">Confirm Password</button>
+                <button class="submit-changes-button" type="submit">Confirm Password</button>
             </div>
         </form>
     </div>
 
     <!-- Script -->
-    <script src="../js/login-session.js"></script>
-    <script src="../js/settings-page.js"></script>
+    <script src="js/login-session.js"></script>
+    <script src="js/settings-page.js"></script>
+    <script src="js/toggle-password.js"></script>
+    <script src="js/navbar.js"></script>
 </body>
 </html>

@@ -7,15 +7,7 @@ body {
     width: 100%;
     overflow: auto;
     letter-spacing: 0.04em;
-}
-
-
-/* Temporary Navigation Bar */
-.nav-bar {
-    width: 100%;
-    background-color: black;
-    padding: 30px 20px;
-    box-sizing: border-box;
+    background-color: #eeeeee;
 }
 
 .container {
@@ -26,6 +18,7 @@ body {
     flex-direction: column;
     overflow: auto;
     margin-bottom: 100px;
+    padding-top: 64px;
 }
 
 .container h2 {
@@ -58,7 +51,7 @@ body {
 
 .marking-accordion {
     margin: 5px 400px;
-    background-color: white;
+    background-color: #eeeeee;
     font-size: 15px;
     border: none;
     outline: none;
@@ -116,7 +109,7 @@ body {
 
 .progress-accordion {
     margin: 5px 400px;
-    background-color: white;
+    background-color: #eeeeee;
     font-size: 15px;
     border: none;
     outline: none;

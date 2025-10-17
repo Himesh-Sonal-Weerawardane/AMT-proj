@@ -11,11 +11,11 @@ body {
 /* https://www.w3schools.com/howto/howto_css_fixed_sidebar.asp */
 /* The sidebar menu */
 .settings-sidebar {
-  height: 100%; /* Full-height */
+  height: 100%;
   width: 120px; /* Set the width of the sidebar */
   position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-  z-index: 1; /* Stay on top */
-  top: 0; /* Stay at the top */
+  z-index: 0; /* Stay on top, below topbar */
+  top: 64px; /* Stay at the top */
   left: 0;
   background-color: black;
   overflow-x: hidden; /* Disable horizontal scroll */
@@ -50,20 +50,28 @@ body {
 /* Style page content */
 .page-content {
   margin-left: 120px; /* Same as the width of the sidebar */
-  padding: 0px 10px;
+  padding: 10px;
 }
 
 /********************************************************/
 /* Form */
-form {
+#email-form, #psw-form {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding-top: 40px;
+}
+
+#psw-form {
+  padding-top: 0;
 }
 
 .profile-page {
-  height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 /********************************************************/
@@ -107,12 +115,33 @@ label {
 }
 
 /* Input boxes */
-input[type=text], input[type=email], input[type=psw] {
+input[type=text], input[type=email], input[type=password] {
   width: 600px;
   border: 1px solid #6b7280;
   padding: 12px 10px;
-  margin: 10px 0 20px 0;
+  margin: 10px 0;
   box-sizing: border-box;
+}
+
+/* Password box and eye icon */
+.password-container {
+  position: relative;
+}
+
+/* Leave space inside password box for eye icon */
+.password-container input {
+  padding: 12px 40px 12px 10px;
+}
+
+/* Position of eye icon */
+.password-container .eye-icon {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  width: 30px;
+  height: 25px;
 }
 
 #email-error-msg, #psw-error-msg {
@@ -124,25 +153,25 @@ input[type=text], input[type=email], input[type=psw] {
 
 /********************************************************/
 /* Other text */
-h1 {
+.change-title {
   width: 600px;
   margin: 0 0 10px 0;
   font-size: 32px;
   font-weight: medium;
 }
 
-h3 {
+#current-email-title, #role-title {
   width: 600px;
-  margin: 10px 0;
+  margin: 10px 0 0 0;
   font-size: 20px;
   font-weight: medium;
 }
 
-p {
+#current-email-text, #role-text {
   width: 600px;
-  margin: 0 0 20px;
+  margin: 0 0 10px 0;
   font-size: 16px;
-  font-weight: 300;
+  font-weight: medium;
 }
 
 /********************************************************/
@@ -154,20 +183,20 @@ p {
   justify-content: flex-end;
 }
 
-/* Save Changes Button */
-button {
-  background-color: white;
+/* Login Button */
+.submit-changes-button {
+  background-color: #eeeeee;
   color: black;
   border: 1px solid #6b7280;
-  padding: 10px 20px;
-  margin: 30px 0 5px 0;
+  padding: 5px;
+  margin: 20px 0 0 0;
   cursor: pointer;
   width: 175px;
   font-size: 16px;
-  font-weight: medium;
+  font-weight: 500;
 }
 
-/* Add a hover effect for save button */
-button:hover {
-  opacity: 0.6;
+/* Add a hover effect for login button */
+.submit-changes-button:hover {
+  background-color: #6b7280;
 }

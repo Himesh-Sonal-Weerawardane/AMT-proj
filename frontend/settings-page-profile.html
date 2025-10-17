@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Marker</title>
-     <link rel="stylesheet" href="css/settings-page.css">
+    <link rel="stylesheet" href="css/settings-page.css">
+    <link rel="stylesheet" href="css/navbar.css">
 </head>
 <body>
+    <!-- Navigation bar -->
+    <div id="navbar-container"></div>
+
     <!-- Settings Sidebar -->
     <div class="settings-sidebar">
         <a class="active" href="settings-page-profile.html">Profile</a>
@@ -32,18 +36,19 @@
                 <input type="text" placeholder="Smith" name="last-name" id="last-name" required>
             </div>
 
-            <h3>Role</h3>
-            <p id="profile-role">Marker</p>
+            <h3 id="role-title">Role</h3>
+            <p id="role-text">Marker</p>
             
-            <h3>Email</h3>
-            <p id="profile-email-text">examplemail@gmail.com</p>
+            <h3 id="current-email-title">Email</h3>
+            <p id="current-email-text">examplemail@gmail.com</p>
 
             <div class="button-container">
-                <button type="submit">Save Changes</button>
+                <button class="submit-changes-button" type="submit">Save Changes</button>
             </div>
         </form>
     </div>
 
     <script src="../js/login-session.js"></script>
+    <script src="js/navbar.js"></script>
 </body>
 </html>
