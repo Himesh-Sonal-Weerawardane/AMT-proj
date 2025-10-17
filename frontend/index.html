@@ -12,14 +12,14 @@
 <body>
     <!-- Login Form -->
     <!-- To change 'login_page.php' to whatever file will process login -->
-    <form action="login_page.php" method="post">
+    <form id="login-form">
         <div class="logo-container">
             <h1 class="logo">AMT</h1>
         </div>
         <h3 class="logo-sub">Assignment Moderation Tool</h3>
 
         <!-- If incorrect email/password, then display this -->
-        <h3 class="error-message">The email and/or password that you've entered is incorrect.</h3>
+        <h3 class="error-message" id="error-message">The email and/or password that you've entered is incorrect.</h3>
 
         <h3 class="login-text">Log In</h3>
 
@@ -43,6 +43,7 @@
     </form>
 
     <!-- Script -->
-    <script src="js/login-page.js"></script>
+    <script src="js/toggle-password.js"></script>
+    <script type="module" src="js/login.js"></script>
 </body>
 </html>
