@@ -1,0 +1,42 @@
+/* Sidebar */
+/* https://www.w3schools.com/howto/howto_css_fixed_sidebar.asp */
+/* The sidebar menu */
+.settings-sidebar {
+  height: 100%;
+  width: 120px; /* Set the width of the sidebar */
+  position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 0; /* Stay on top, below topbar */
+  top: 64px; /* Stay at the top */
+  left: 0;
+  background-color: black;
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  white-space: normal; /* allow text to wrap */
+  word-wrap: break-word;
+}
+
+/* The navigation menu links */
+.settings-sidebar a {
+  padding: 0 0 10px 0;
+  text-decoration: none;
+  color: #eeeeee;
+  display: block;
+  font-size: 24px;
+  font-weight: medium;
+}
+
+/* Active page link */
+.settings-sidebar a.active {
+  color: #00a6b2; /* highlight color */
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* When you mouse over the navigation links, change their color */
+.settings-sidebar a:hover {
+  color: #6b7280;
+}

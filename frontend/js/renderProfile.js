@@ -5,7 +5,7 @@ const userID = params.get("id");
 
 
 document.addEventListener("DOMContentLoaded", async () => {
-    fetch("./data/staff.json")
+    fetch("../data/staff.json")
         .then(response => response.json())
         .then(data => {
             const user = data.find(u => u.id == userID);
