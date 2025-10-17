@@ -1,0 +1,90 @@
+
+<!-- Created by Naroline Lim -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Listings</title>
+    <link rel="stylesheet" href="css/staff-listings.css">
+
+</head>
+
+
+<body>
+    <!-- top navigation bar to be added... -->
+    <div class="nav-bar"></div>
+
+    <div class="container">
+
+        <div class="listing-heading">
+            <p id="staff-title">Staff Listings</p>
+            <input type="text" id="staff-search" placeholder="Search staff here...">
+            <button id="edit-button">Edit</button>
+            <button id="invite-button" onclick="openForm()">Invite</button>
+        </div>
+
+        <div class="staff-list-header">
+            <img src="image/minus-button.png" class="remove-user" alt="Remove">
+            <span class="name-header">Name</span>
+            <span class="email-header">Email</span>
+            <span class="role-header">Role</span>
+        </div>
+
+        <div id="horizontal-divider"></div>
+
+        <div id="staff-list"></div>
+
+    </div>
+
+
+    <div class="invite-popup" id="invite-form">
+        <form action="/action_page.php" class="form-container">
+
+            <div class="invite-top">
+                <h3>Invite People</h3>
+                <img src="image/close.png" alt="Close" class="close-button" onclick="closeForm()">
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="invite-section">
+
+                <input id="invite-email" type="email" placeholder="Enter email..." required>
+
+                <select required id="invite-role">
+                    <option value="" disabled selected>Select a role</option>
+                    <option>Admin</option>
+                    <option>Marker</option>
+                </select>
+
+                <button id="invite-submit">Invite</button>
+            </div>
+
+            <div class="invitation">
+
+                <h4>Recent Invitations</h4>
+                <div id="divider-2"></div>
+
+            </div>
+
+        </form>
+    </div>
+
+    <script src="js/listingHandler.js"></script>
+    <script src="js/formHandler.js"></script>
+    <script src="js/searchFilter.js"></script>
+
+
+</body>
+
+
+
+</html>
+
+
+
+

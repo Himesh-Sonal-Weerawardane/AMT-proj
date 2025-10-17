@@ -1,0 +1,280 @@
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", sans-serif;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    letter-spacing: 0.04em;
+}
+
+
+/* Temporary Navigation Bar */
+.nav-bar {
+    width: 100%;
+    background-color: black;
+    padding: 30px 20px;
+    box-sizing: border-box;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    flex-direction: column;
+    margin: 40px auto 100px auto;
+}
+
+.listing-heading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 40px;
+}
+
+#staff-title {
+    font-size: 30px;
+    margin: 0 500px 0 0;
+}
+
+
+#staff-search {
+    width: 250px;
+    padding: 10px 10px;
+    font-size: 15px;
+    margin-right: 20px;
+    border: 1px solid gray;
+    text-align: left;
+}
+
+
+
+/* Buttons */
+#edit-button {
+    padding: 10px 40px;
+    font-size: 15px;
+    background-color: #fff;
+    border: 1px solid gray;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+#edit-button:hover {
+    background-color: lightgray;
+}
+
+#invite-button {
+    padding: 10px 40px;
+    font-size: 15px;
+    background-color: #fff;
+    border: 1px solid gray;
+    cursor: pointer;
+}
+
+
+#invite-button:hover {
+    background-color: lightgray;
+}
+
+
+
+/* Listing Headers */
+
+
+.staff-list-header, .staff-row {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    padding: 10px 15px;
+    align-items: center;
+    margin: 0 auto;
+}
+
+
+.name-header,.email-header, .role-header {
+    width: 400px;
+}
+
+
+#horizontal-divider {
+    display: flex;
+    height: 5px;
+    width: 70%;
+    background-color: dimgray;
+    margin: 5px auto 10px auto;
+}
+
+
+/* Staff Listings */
+
+.staff-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+
+.staff-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px 15px;
+    gap: 20px;
+    flex-direction: column;
+}
+
+.staff-row {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    padding: 10px 0;
+    margin: auto;
+}
+
+.row-divider {
+    display: flex;
+    align-items: center;
+    height: 2px;
+    width: 1000px;
+    background-color: lightgray;
+    margin: auto;
+}
+
+
+.staff-name,.staff-email, .staff-role {
+    width: 400px;
+    text-align: center;
+}
+
+.staff-name {
+    flex-grow: 1;
+}
+
+.staff-email, .staff-role {
+    flex-grow: 2;
+}
+
+
+/* Invite Form */
+
+.invite-popup {
+    display: none;
+    position: fixed;
+    width: 800px;
+    height: 700px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #a9a9a9;
+    background-color: white;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    z-index: 9;
+    overflow: hidden;
+}
+
+.invite-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px;
+
+}
+
+.invite-top h3 {
+    font-size: 25px;
+    margin: 0;
+    text-align: left;
+}
+
+.close-button {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+
+.blur {
+    filter: blur(3px);
+}
+
+
+#invite-title h3 {
+    font-size: 20px;
+    text-align: left;
+}
+
+
+.divider {
+    width: 100%;
+    height: 3px;
+    background-color: dimgray;
+}
+
+.invite-section {
+    display: flex;
+    margin: 10px;
+
+}
+
+#invite-email {
+    flex: 9;
+    height: 25px;
+    border: 2px solid gray;
+    margin-right: 10px;
+    padding: 5px;
+}
+
+#invite-role {
+    flex: 1;
+    margin-right: 10px;
+    padding: 0 20px 0 10px;
+    appearance: none;
+    border-radius: 0;
+    border: 2px solid gray;
+    background-image: url('../image/dropdown-arrow.png');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-position-y: bottom 11px;
+    background-size: 10px 10px;
+}
+
+
+#invite-submit {
+    flex: 1;
+    padding: 10px 20px;
+    background-color: white;
+    border: 2px solid gray;
+    cursor: pointer;
+}
+
+
+.invitation h4 {
+    margin: 15px 25px 5px 25px;
+}
+
+
+#divider-2 {
+    width: 95%;
+    height: 3px;
+    background-color: lightgray;
+    margin: 5px auto 10px auto;
+}
+
+
+.remove-user {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    display: none;
+}
+
+
+
+
+
+
