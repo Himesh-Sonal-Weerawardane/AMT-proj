@@ -16,7 +16,7 @@ async function listingHandler() {
         staffCard.classList.add('staff-card');
         staffCard.innerHTML = `
             <div class="staff-row">
-                <img src="image/minus-button.png" class="remove-user" alt="Remove">
+                <img src="../images/front-page/minus-button.png" class="remove-user" alt="Remove">
                 <div class="staff-profile"></div>
                 <a href="user-profile.html?id=${staff.id}" class="staff-name">${staff.name}</a>
                 <div class="staff-email">${staff.email}</div>
