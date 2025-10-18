@@ -24,16 +24,23 @@ export default function userRoutes(supabase) {
                 role,
                 userID 
             }])
-    });
+    })
 
     //https://dev.to/therealmrmumba/beginners-guide-to-handling-delete-requests-in-nodejs-with-express-28dh
-    router.post("/delete_user", async (req, res) => {
+    router.post("/delete_user/ :userID", async (req, res) => {
         const id = parseInt(req.params.id);
-        const {data, error} = await supabase.auth.admin.deleteUser(id)
+        // const {data, error} = await supabase.auth.admin.deleteUser(id)
 
-        const{data2, error2} = await supabase
+        const{data, error} = await supabase
             .from("users")
-            .delete()
-            .eq('userID')
+            .update({
+                email: null,
+                first_name: null,
+                last_name: null,
+                is_deleted: null, 
+
+            })
+            .eq("userID",id)
+
     })
-};
+}
