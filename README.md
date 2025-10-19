@@ -29,7 +29,7 @@ This website allows admins to upload assignments and rubrics, manage marking wor
 
 ## Setup Instructions:
 - Clone the repo.
-  - $ git clone https://github.com/yourusername/AMT-proj.git
+  - $ git clone https://github.com/Himesh-Sonal-Weerawardane/AMT-proj.git
   - $ cd AMT-proj
 - Install dependencies (more information on the confluence webpage).
 - Set up .env with Supabase credentials.
