@@ -28,7 +28,7 @@ export default function userRoutes(supabase) {
 
     //https://dev.to/therealmrmumba/beginners-guide-to-handling-delete-requests-in-nodejs-with-express-28dh
     router.post("/delete_user/ :userID", async (req, res) => {
-        const id = parseInt(req.params.id);
+        const id = parseInt(req.params.id)
         // const {data, error} = await supabase.auth.admin.deleteUser(id)
 
         const{data, error} = await supabase
@@ -43,4 +43,5 @@ export default function userRoutes(supabase) {
             .eq("userID",id)
 
     })
+    return router
 }
