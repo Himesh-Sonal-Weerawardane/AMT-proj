@@ -17,10 +17,13 @@
     <div class="accordion-container">
         <!-- Edit Viewings and Publish New Modules buttons -->
         <div class="button-container" id="top-buttons-container">
-            <button class="top-btns" onclick="toggleEditViewings()">Edit Viewings</button>
+            <button class="top-btns" onclick="toggleEditViewings()">Edit</button>
             <!-- https://www.w3schools.com/html/html_links.asp -->
-            <button class="top-btns" onclick="window.location.href='publish-module.html'">Publish New Module</button>
+            <button class="top-btns" onclick="window.location.href='publish-module.html'">Create New Module</button>
         </div>
+
+        <h1 id="no-marking-attempts-message">No Marking Attempts found!</h1>
+        <h1 id="unknown-error-message">An Unknown Error has occurred...</h1>
 
         <div id="accordions"></div>
     </div>
@@ -28,9 +31,9 @@
     <!-- Button area that displays above the rest of the page -->
     <footer class="page-footer">
         <div class="button-container-edit" id="edit-buttons-container">
-            <button class="edit-btns" type="button" id="hide-btn" onclick="hideFromMarkers()">Hide From Markers</button>
-            <button class="edit-btns" type="button" id="download-btn" onclick="downloadStats()">Download Statistics</button>
-            <button class="edit-btns" type="button" id="delete-btn" onclick="deleteSelected()">Delete</button>
+            <button class="edit-btns" type="button" id="hide-btn" onclick="deleteModule()">Delete</button>
+            <button class="edit-btns" type="button" id="download-btn" onclick="editModule()">Edit</button>
+            <button class="edit-btns" type="button" id="delete-btn" onclick="publishModule()">Publish</button>
             <button class="edit-btns" type="button" id="done-btn" onclick="toggleEditViewings()">Done</button>
         </div>
     </footer>

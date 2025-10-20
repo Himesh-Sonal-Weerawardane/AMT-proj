@@ -1,66 +1,38 @@
 // Created by William Alexander Tang Wai on 10/10/2025
 
-// Fetch appropriate JSON file for admin and markers, and dynamically
-// generate the moderation tables
-window.addEventListener("DOMContentLoaded", async () => {
-    try {
-        const role = document.body.dataset.role;
-
-        // NOTE: TO CHANGE
-        // Check the login info (i.e. admin or marker) and filter data as appropriate
-        if (role == "admin") {
-            const response = await fetch('../example-moderation-data/admin-moderations.json');
-            if (!response.ok) throw new Error('Data could not be fetched');
-            const data = await response.json();
-            createModerationTables(data, createAdminTable);
-        } else if (role == "marker") {
-            // fetch marker-moderations.json and a filtered version of admin-moderations.json
-            // So server-side will filter the admin data and leave only "Admin Marks"
-            const [adminRes, markerRes] = await Promise.all([
-                fetch('../example-moderation-data/admin-moderations.json'),
-                fetch('../example-moderation-data/marker-moderations.json')
-            ]);
-
-            if (!adminRes.ok || !markerRes.ok) {
-                throw new Error('Failed to load moderation data');
-            }
-
-            const adminData = await adminRes.json();
-            const markerData = await markerRes.json();
-
-            const data = mergeModerationData(adminData, markerData);
-            createModerationTables(data, createMarkerTable);
-        }
-    } catch (error) {
-        console.error(error);
-    }
+window.addEventListener("DOMContentLoaded", () => {
+    showModules();
 });
 
-// Merges the filtered admin's table and the marker's table
-function mergeModerationData(adminData, markerData) {
-    const merged = [];
+async function showModules() {
+    try {
+        // Fetch the modules' data for this user
+        const res = await fetch("/api/display_modules_frontpage", { 
+            method: "POST" 
+        });
+        const data = await res.json();
 
-    for (const [objNum, years] of Object.entries(adminData)) {
-        yearObj = null;
-        for (const [year, semesters] of Object.entries(years)) {
-            yearObj = { [year]: {}};
-            for (const [sem, moderations] of Object.entries(semesters)) {
-                yearObj[year][sem] = {};
-                for (const [mod, adminMod] of Object.entries(moderations)) {
-                    // Find data at the same level in the markerData
-                    const markerMod = markerData?.[objNum]?.[year]?.[sem]?.[mod] || {};
-                    // Copy all properties into a new merged object
-                    yearObj[year][sem][mod] = {
-                        ...adminMod,
-                        ...markerMod
-                    };
-                }
+        // Something went wrong
+        if (!data || !data.results) {
+            if (data.error == "No marking attempts found") {
+                console.log("No results found", data);
+                const errorMessage = document.getElementById("no-marking-attempts-message");
+                errorMessage.style.display = "flex";
+            } else {
+                console.log("Invalid data", data);
+                const errorMessage = document.getElementById("unknown-error-message");
+                errorMessage.style.display = "flex";
+            }
+        } else {
+            if (data.role === "Admin") {
+                createModerationTables(data, createAdminTable);
+            } else {
+                createModerationTables(data, createMarkerTable);
             }
         }
-        merged.push(yearObj);
+    } catch (err) {
+        console.log("An error occurred: ", err);
     }
-
-    return merged;
 }
 
 // Creates collapsible accordions for years and semesters,
@@ -71,61 +43,84 @@ async function createModerationTables(data, createTableFn) {
     const container = document.getElementById("accordions");
     if (!container) return;
 
-    data.forEach(yearObj => {
-        // One key in each object which is the year
-        const year = Object.keys(yearObj)[0];
-        const semesters = yearObj[year];
+    const grouped = {};
+    data.results.forEach(result => {
+        const { year, semester, assignment_num } = result;
 
+        // Initialize year and semester groups if missing
+        if (!grouped[year]) grouped[year] = {};
+        if (!grouped[year][semester]) grouped[year][semester] = {};
+        if (!grouped[year][semester][assignment_num]) grouped[year][semester][assignment_num] = [];
+
+        // Push this result into its semester
+        grouped[year][semester][assignment_num].push(result);
+    })
+
+    for (const year in grouped) {
         // Create year accordion button
-        const yearBtn = document.createElement("button");
-        yearBtn.className = "accordion";
-        yearBtn.textContent = year;
+        const yearButton = document.createElement("button");
+        yearButton.className = "accordion";
+        yearButton.textContent = year;
 
         const yearPanel = document.createElement("div");
         yearPanel.className = "panel";
 
-        // Loop through semesters
-        Object.entries(semesters).forEach(([sem, moderations]) => {
-            const semBtn = document.createElement("button");
-            semBtn.className = "accordion1";
-            semBtn.textContent = `Semester ${sem}`;
+        for (const semester in grouped[year]) {
+            const semesterButton = document.createElement("button");
+            semesterButton.className = "accordion1";
+            semesterButton.textContent = `Semester ${semester}`;
 
-            const semPanel = document.createElement("div");
-            semPanel.className = "panel";
+            const semesterPanel = document.createElement("div");
+            semesterPanel.className = "panel";
 
-            const row = document.createElement("div");
-            row.className = "row";
+            for (const assignmentNum in grouped[year][semester]) {
+                const assignentButton = document.createElement("button");
+                assignentButton.className = "accordion2";
+                assignentButton.textContent = `Assignment ${assignmentNum}`;
 
-            // Loop through moderations
-            Object.entries(moderations).forEach(([modNumber, modData]) => {
-                const column = createTableFn(modNumber, modData);
-                row.appendChild(column);
-            });
+                const assignmentPanel = document.createElement("div");
+                assignmentPanel.className = "panel";
 
-            semPanel.appendChild(row);
-            yearPanel.appendChild(semBtn);
-            yearPanel.appendChild(semPanel);
+                const row = document.createElement("div");
+                row.className = "row";
+
+                // Loop through moderations
+                for (const moderationData of grouped[year][semester][assignmentNum]) {
+                    const column = createTableFn(moderationData);
+                    row.appendChild(column);
+                }
+
+                assignmentPanel.appendChild(row);
+                semesterPanel.appendChild(assignentButton);
+                semesterPanel.appendChild(assignmentPanel);
+            }
+
+            yearPanel.appendChild(semesterButton);
+            yearPanel.appendChild(semesterPanel);
 
             const lineBreak = document.createElement("br");
             yearPanel.appendChild(lineBreak);
-        });
+        }
 
-        container.appendChild(yearBtn);
+        container.appendChild(yearButton);
         container.appendChild(yearPanel);
 
         const lineBreak = document.createElement("br");
         container.appendChild(lineBreak);
-    });
+    }
 
+    // Initialise the interactive toggle
     // Call from accordions-toggle.js
     var accordion = document.getElementsByClassName("accordion");
     var accordion1 = document.getElementsByClassName("accordion1");
+    var accordion2 = document.getElementsByClassName("accordion2");
     toggleAccordion(accordion);
     toggleAccordion(accordion1);
+    toggleAccordion(accordion2);
 }
 
 // HTML code to generate the admin's moderation tables
-function createAdminTable(modNumber, modData) {
+function createAdminTable(moderationData) {
     const column = document.createElement("div");
     column.className = "column";
 
@@ -137,17 +132,17 @@ function createAdminTable(modNumber, modData) {
                 <th colspan="2">
                     <span class="table-header">
                         <span class="moderation-link" onclick="window.location.href=
-                            '../example-moderation-pages/admin-moderation.html'">
-                            Moderation ${modNumber}
+                            '../moderation-page.html?year=${moderationData.year}&semester=${moderationData.semester}&assignment=${moderationData.assignment_num}&moderation=${moderationData.moderation_num}'">
+                            Moderation ${moderationData.moderation_num ?? "-"}
                         </span>
                         <input type="checkbox" class="table-checkbox">
                     </span>
                 </th>
             </tr>
-            <tr><td>Admin Marks</td><td>${modData["Admin Marks"] ?? "-"}</td></tr>
-            <tr><td>Average</td><td>${modData["Average"] ?? "-"}</td></tr>
-            <tr><td>Variation</td><td>${modData["Variation"] ?? "-"}</td></tr>
-            <tr><td>Distribution</td><td>${modData["Distribution"] ?? "-"}</td></tr>
+            <tr><td>Admin Marks</td><td>${moderationData.admin_total ?? "-"}</td></tr>
+            <tr><td>Average</td><td>${moderationData.average ?? "-"}</td></tr>
+            <tr><td>Variation</td><td>${moderationData.variation ?? "-"}</td></tr>
+            <tr><td>Distribution</td><td>${moderationData.distribution ?? "-"}</td></tr>
         </table>
     `;
 
@@ -155,15 +150,33 @@ function createAdminTable(modNumber, modData) {
 }
 
 // HTML code to generate the marker's moderation tables
-function createMarkerTable(modNumber, modData) {
+function createMarkerTable(moderationData) {
     const column = document.createElement("div");
     column.className = "column";
 
-    const adminMarks = modData["Admin Marks"];
-    const markerMarks = modData["Marks"];
-    const difference = (adminMarks && markerMarks)
-        ? markerMarks - adminMarks
-        : "-";
+    const adminMarks = moderationData.admin_total;
+    const userMarks = moderationData.user_total;
+
+    let differenceText = "-";
+    let differenceClass = "";
+
+    if (!isNaN(adminMarks) && !isNaN(userMarks)) {
+        const difference = userMarks - adminMarks;
+
+        // 10% of admin's marks
+        const threshold = adminMarks * 0.1;
+
+        if (Math.abs(difference) <= threshold) {
+            differenceText = `+${difference}`;
+            differenceClass = "within-threshold"; // green
+        } else {
+            differenceText = `${difference}`;
+            differenceClass = "outside-threshold"; // red
+        }
+    } else {
+        differenceText = "N/A";
+        differenceClass = "no-data";
+    }
 
     column.innerHTML = `
         <table class="moderation-table">
@@ -171,15 +184,15 @@ function createMarkerTable(modNumber, modData) {
                 <th colspan="2">
                     <span class="table-header">
                         <span class="moderation-link" onclick="window.location.href=
-                            '../example-moderation-pages/marker-moderation.html'">
-                            Moderation ${modNumber}
+                            '../moderation-page.html?year=${moderationData.year}&semester=${moderationData.semester}&assignment=${moderationData.assignment_num}&moderation=${moderationData.moderation_num}'">
+                            Moderation ${moderationData.moderation_num ?? "-"}
                         </span>
                     </span>
                 </th>
             </tr>
             <tr><td>Admin Marks</td><td>${adminMarks ?? "-"}</td></tr>
-            <tr><td>Your Marks</td><td>${markerMarks ?? "-"}</td></tr>
-            <tr><td>Difference</td><td>${difference}</td></tr>
+            <tr><td>Your Marks</td><td>${userMarks ?? "-"}</td></tr>
+            <tr><td>Difference</td><td class="${differenceClass}">${differenceText}</td></tr>
         </table>
     `;
 
