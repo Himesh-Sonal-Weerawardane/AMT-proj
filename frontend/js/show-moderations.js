@@ -24,7 +24,7 @@ async function showModules() {
                 errorMessage.style.display = "flex";
             }
         } else {
-            if (data.role == "Admin") {
+            if (data.role === "Admin") {
                 createModerationTables(data, createAdminTable);
             } else {
                 createModerationTables(data, createMarkerTable);
@@ -132,7 +132,7 @@ function createAdminTable(moderationData) {
                 <th colspan="2">
                     <span class="table-header">
                         <span class="moderation-link" onclick="window.location.href=
-                            '../example-moderation-pages/admin-moderation.html'">
+                            '../moderation-page.html?year=${moderationData.year}&semester=${moderationData.semester}&assignment=${moderationData.assignment_num}&moderation=${moderationData.moderation_num}'">
                             Moderation ${moderationData.moderation_num ?? "-"}
                         </span>
                         <input type="checkbox" class="table-checkbox">
@@ -156,20 +156,26 @@ function createMarkerTable(moderationData) {
 
     const adminMarks = moderationData.admin_total;
     const userMarks = moderationData.user_total;
-    const difference = userMarks - adminMarks;
 
     let differenceText = "-";
     let differenceClass = "";
 
-    // 10% of admin's marks
-    const threshold = adminMarks * 0.1;
+    if (!isNaN(adminMarks) && !isNaN(userMarks)) {
+        const difference = userMarks - adminMarks;
 
-    if (Math.abs(difference) <= threshold) {
-        differenceText = `+${difference}`;
-        differenceClass = "within-threshold"; // green
+        // 10% of admin's marks
+        const threshold = adminMarks * 0.1;
+
+        if (Math.abs(difference) <= threshold) {
+            differenceText = `+${difference}`;
+            differenceClass = "within-threshold"; // green
+        } else {
+            differenceText = `${difference}`;
+            differenceClass = "outside-threshold"; // red
+        }
     } else {
-        differenceText = `${difference}`;
-        differenceClass = "outside-threshold"; // red
+        differenceText = "N/A";
+        differenceClass = "no-data";
     }
 
     column.innerHTML = `

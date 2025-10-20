@@ -28,19 +28,21 @@ export default function authRoutes(supabase) {
                 return res.status(403).json({ error: "Access denied" });
             }
 
-            let result;
             if (userData.is_admin) {
                 // Call function to return statistics and other
-                result = await adminData(userData);
+                const result = await adminData(userData);
+                if (result.error) {
+                    return res.json({ error: result.error })
+                }
+                return res.json({ results: result, role: "Admin" });
             } else {
                 // Call function to return data for this marker
                 result = await markerData(userData);
+                if (result.error) {
+                    return res.json({ error: result.error })
+                }
+                return res.json({ results: result, role: "Marker" });
             }
-
-            if (result.error) {
-                return res.json({ error: result.error })
-            }
-            return res.json({ results: result });
         } catch (err) {
             console.error(err);
             res.status(500).json({ error: "Server error" });
@@ -49,7 +51,91 @@ export default function authRoutes(supabase) {
 
     // Return data for an admin
     async function adminData(userData) {
-        
+        // Get the marking attempts of markers for all moderations
+        const { data: markData, error: markError } = await supabase
+            .from("marks")
+            .select("user_id, moderation_id, scores")
+        // No marking attempts for this user, return nothing
+        if (markError || !markData || markData.length === 0) {
+            return { error: "No marking attempts found" };
+        }
+
+        // Collect all moderation IDs
+        const moderationIDs = markData.map(m => m.moderation_id);
+
+        // Get the moderation information for the marking attempts
+        const { data: moderationData, error: moderationError } = await supabase
+            .from("moderations")
+            .select("moderation_id, name, year, semester, assignment_num, moderation_num, admin_id")
+            .in("moderation_id", moderationIDs);
+        // Cannot find module information
+        if (moderationError || !moderationData || moderationData.length === 0) {
+            return { error: "Module Information not found" };
+        }
+
+        // Get the marking attempts for admin for those moderation IDs
+        const { data: adminMarksData, error: adminMarksError } = await supabase
+            .from("marks")
+            .select("moderation_id, scores")
+            .in("moderation_id", moderationIDs)
+            .eq("user_id", userData.user_id);
+        // Cannot find admin information
+        if (adminMarksError || !adminMarksData) {
+            return { error: "Error fetching marks" };
+        }
+
+        // Calculate statistics per moderation
+        const result = {}
+        for (const moderation of moderationData) {
+            const modID = moderation.moderation_id;
+
+            if (!result[modID]) {
+                result[modID] = { admin_total: 0, average: 0, variation: 0, distribution: 0 };
+            }
+
+            const adminMark = adminMarksData.find(a => a.moderation_id === modID);
+            if (adminMark) {
+                result[modID].admin_total = getTotalScore(adminMark.scores);
+            }
+
+            let sum = 0, count = 0;
+            for (const mark of markData) {
+                // Do not count admin
+                if (mark.moderation_id === modID && mark.user_id !== userData.user_id) {
+                    count++;
+                    sum = getTotalScore(mark.scores);
+                }
+            }
+
+            const average = sum / count;
+
+            result[modID].average = average;
+        }
+
+        // Merge with moderation info
+        const combinedResult = moderationData.map(m => ({
+            moderation_id: m.moderation_id,
+            name: m.name,
+            year: m.year,
+            semester: m.semester,
+            assignment_num: m.assignment_num,
+            moderation_num: m.moderation_num,
+            admin_total: result[m.moderation_id]?.admin_total || 0,
+            average: result[m.moderation_id]?.average || 0,
+            variation: result[m.moderation_id]?.variation || 0,
+            distribution: result[m.moderation_id]?.distribution || 0,
+            role: "Admin",
+        }));
+
+        // Sort after mapping
+        combinedResult.sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;                  // Descending order
+            if (a.semester !== b.semester) return a.semester - b.semester;  // Ascending order
+            if (a.assignment_num !== b.assignment_num) return a.assignment_num - b.assignment_num;  // Ascending order
+            return a.moderation_num - b.moderation_num;                     // Ascending order
+        });
+
+        return combinedResult;
     }
 
     // Return data for a marker
@@ -118,9 +204,16 @@ export default function authRoutes(supabase) {
             assignment_num: m.assignment_num,
             moderation_num: m.moderation_num,
             user_total: result[m.moderation_id]?.user_total || 0,
-            admin_total: result[m.moderation_id]?.admin_total || 0,
-            role: "Marker",
+            admin_total: result[m.moderation_id]?.admin_total || 0
         }));
+
+        // Sort after mapping
+        combinedResult.sort((a, b) => {
+            if (a.year !== b.year) return b.year - a.year;                  // Descending order
+            if (a.semester !== b.semester) return a.semester - b.semester;  // Ascending order
+            if (a.assignment_num !== b.assignment_num) return a.assignment_num - b.assignment_num;  // Ascending order
+            return a.moderation_num - b.moderation_num;                     // Ascending order
+        });
 
         return combinedResult;
     }
