@@ -9,8 +9,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moderation</title>
-    <link rel="stylesheet" href="css/moderation-page.css">
-    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="../css/moderation-page.css">
+    <link rel="stylesheet" href="../css/navbar.css">
 </head>
 
 <body>
@@ -41,7 +41,9 @@
         <div class="tabs">
 
             <button class="tab-links" onclick="openTabContent(event, 'Rubric')" id="defaultOpen">Rubric</button>
+            <button class="tab-links" onclick="openTabContent(event, 'Description')">Description</button>
             <button class="tab-links" onclick="openTabContent(event, 'Statistics')">Statistics</button>
+            <button class="tab-links" onclick="openTabContent(event, 'Feedback')">Feedback</button>
 
         </div>
 
@@ -54,19 +56,30 @@
 
         </div>
 
+        <div id="Description" class="tab-content">
+            <h3 style="margin: 10px 0 20px 10px; font-size: 20px">Description</h3>
+            <p>To be parsed...</p>
+        </div>
+
 
         <div id="Statistics" class="tab-content">
             <h3 style="margin: 10px 0 20px 10px; font-size: 20px">Statistics</h3>
             <p>No stats yet...</p>
         </div>
 
+        <div id="Feedback" class="tab-content">
+            <h3 style="margin: 10px 0 20px 10px; font-size: 20px">Feedback</h3>
+            <p>No feedback yet...</p>
+        </div>
+
     </div>
+
 </div>
 
-<script src="js/openTabContent.js"></script>
-<script src="js/draggingFeature.js"></script>
-<script src="js/moderationHandler.js"></script>
-<script src="js/navbar.js"></script>
+<script src="../js/openTabContent.js"></script>
+<script src="../js/draggingFeature.js"></script>
+<script src="../js/moderationHandler.js"></script>
+<script src="../js/navbar.js"></script>
 
 </body>
 </html>

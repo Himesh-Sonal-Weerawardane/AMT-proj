@@ -1,0 +1,29 @@
+{
+  "criteria1": {
+    "criteriaText": "Introduction: Applies theoretical framework/s to topic",
+    "maxScore": 15,
+    "highDistinction": "Articulates a compelling justification for investigating the phenomenon. Provides a clear, comprehensive definition of all relevant key terms and constructs. Applies highly relevant theoretical framework/s to provide an insightful explanation of the impacts of caregiving on developement (12 - 15 points)",
+    "distinction": "Articulates a strong justification for investigating the phenomenon. Provides a thorough definition of all relevant key terms and constructs. Applies relevant theoretical framework/s to explain the impacts of caregiving on developement (10.5 - 11.5 points)",
+    "credit": "Articulates a justification for investigating the phenomenon which indicates its relevance. Provides definitions for most relevant key terms and constructs. Applies relevant theoretical framework/s to broadly explain the impacts of caregiving on developement (9 - 10 points)",
+    "pass": "Identifies the importance of the phenomenon. Provides broad definitions or defines some relevant key terms and constructs. Draws a connection between caregiving and the impact on development with reference to a theoretical framework (7.5 - 8.5 points)",
+    "fail": "Provides a minimal justification for investigating the phenomenon. Provides limited or unclear definitions of key terms and constructs. Provides an incorrect explanation of the connection between caregiving and development with or without a reference to a theoretical framework (0 - 7 points)"
+  },
+  "criteria2": {
+    "criteriaText": "Methodology: Clear and appropriate research design",
+    "maxScore": 20,
+    "highDistinction": "Outstanding research design with clear rationale and appropriate methodology (18-20 points)",
+    "distinction": "Strong research design, mostly appropriate methodology (15-17 points)",
+    "credit": "Adequate research design, methodology generally clear (12-14 points)",
+    "pass": "Basic research design, some methodology flaws (10-11 points)",
+    "fail": "Poor research design, methodology unclear or incorrect (0-9 points)"
+  },
+  "criteria3": {
+    "criteriaText": "Analysis & Discussion: Insightful interpretation of results",
+    "maxScore": 25,
+    "highDistinction": "Excellent interpretation, shows deep understanding and critical analysis (22-25 points)",
+    "distinction": "Good interpretation, mostly clear and reasoned (19-21 points)",
+    "credit": "Adequate interpretation, some insights present (15-18 points)",
+    "pass": "Basic interpretation, mostly descriptive (12-14 points)",
+    "fail": "Poor interpretation, missing or incorrect conclusions (0-11 points)"
+  }
+}

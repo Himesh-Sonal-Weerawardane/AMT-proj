@@ -4,7 +4,7 @@
 
   "rubric": {
     "rubricTitle": "HSP302 2025 T1 - Rubric AT1",
-    "pdfFile": "./pdf/sample.pdf"
+    "pdfFile": "../pdf/sample.pdf"
   },
 
   "criteria": [

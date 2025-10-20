@@ -10,7 +10,6 @@ html, body {
     letter-spacing: 0.04em;
 }
 
-
 /* Titles */
 
 .title-tab {
@@ -56,6 +55,7 @@ html, body {
 
 #total-score {
     font-weight: bold;
+    font-size: 18px;
 }
 
 
@@ -82,9 +82,8 @@ html, body {
     height: 100%;
     width: 95%;
     border: none;
-    margin: 20px;
+    margin: auto 20px;
     display: flex;
-    margin-top: 0;
 }
 
 
@@ -106,6 +105,9 @@ html, body {
     width: 100%;
     box-sizing: border-box;
     height: 56px;
+    top: 0;
+    position: sticky;
+    z-index: 100;
 }
 
 
@@ -201,14 +203,43 @@ html, body {
     height: 200px;
     padding: 10px;
     overflow-y: auto;
-    margin: 20px 20px 20px 30px;
+    margin: 25px;
 }
 
-.grade-description {
-    margin-top: 30px;
-    padding-right: 20px;
+.grade-table {
+    margin: 10px 10px;
+    border: 1px solid darkgray;
+    border-spacing: 0;
+    overflow-x: auto;
 }
 
+.grade-table th {
+    border-bottom: 1px solid darkgray;
+    text-align: center;
+    padding: 20px;
+}
+
+.grade-table th:not(:last-child) {
+    border-right: 1px solid darkgray;
+}
+
+.grade-table td {
+    padding: 10px;
+}
+
+.grade-table td:not(:last-child) {
+    border-right: 1px solid darkgray;
+}
+
+.grade-table div {
+    padding: 10px 0;
+}
+
+.grade-table th.highlighted,
+.grade-table td.highlighted {
+    background-color: rgba(123, 224, 123, 0.54);
+    transition: background-color .7s ease;
+}
 
 .criterion-title {
     margin-left: 25px;
@@ -216,14 +247,91 @@ html, body {
 
 
 .input-wrapper {
-    border: 3px solid lightgray;
+    border: 2px solid lightgray;
     margin: 0 10px;
 }
 
 
 
+/* Marked Moderation */
+
+.marked-score-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 25px;
+}
+
+.score-bar-container {
+    display: flex;
+    height: 30px;
+    width: 100%;
+    border-radius: 5px;
+    border: 2px solid darkgray;
+
+}
+
+.score-block {
+    flex: 1;
+    border-right: 2px solid darkgray;
+    transition: background-color .7s ease;
+}
+
+.score-block:last-child {
+    border-right: none;
+}
+
+.score-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.highlighted-grade {
+    font-weight: bold;
+    color: dodgerblue;
+}
 
 
+.score-view {
+    font-weight: bold;
+    text-align: right;
+    min-width: 70px;
+}
+
+
+.marked-grade-description {
+    margin: auto 25px;
+}
+
+
+.marked-grade-points {
+    margin-top: 15px
+}
+
+
+
+.marked-criterion {
+    border-bottom: 1px solid darkgray;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+
+.marked-criterion:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+
+.marked-score-view {
+    font-weight: bold;
+    text-align: right;
+    min-width: 70px;
+    color: dodgerblue;
+}
 
 
 
