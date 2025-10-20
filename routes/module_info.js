@@ -37,7 +37,7 @@ export default function authRoutes(supabase) {
                 return res.json({ results: result, role: "Admin" });
             } else {
                 // Call function to return data for this marker
-                result = await markerData(userData);
+                const result = await markerData(userData);
                 if (result.error) {
                     return res.json({ error: result.error })
                 }
@@ -51,37 +51,22 @@ export default function authRoutes(supabase) {
 
     // Return data for an admin
     async function adminData(userData) {
-        // Get the marking attempts of markers for all moderations
+        // Get the module information
+        const { data: moderationData, error: moderationError } = await supabase
+            .from("moderations")
+            .select("moderation_id, name, year, semester, assignment_num, moderation_num, admin_id")
+        // Cannot find module information
+        if (moderationError || !moderationData || moderationData.length === 0) {
+            return { error: "Module Information not found" };
+        }
+
+        // Get the marking attempts of users (admin + markers) for all moderations
         const { data: markData, error: markError } = await supabase
             .from("marks")
             .select("user_id, moderation_id, scores")
         // No marking attempts for this user, return nothing
         if (markError || !markData || markData.length === 0) {
             return { error: "No marking attempts found" };
-        }
-
-        // Collect all moderation IDs
-        const moderationIDs = markData.map(m => m.moderation_id);
-
-        // Get the moderation information for the marking attempts
-        const { data: moderationData, error: moderationError } = await supabase
-            .from("moderations")
-            .select("moderation_id, name, year, semester, assignment_num, moderation_num, admin_id")
-            .in("moderation_id", moderationIDs);
-        // Cannot find module information
-        if (moderationError || !moderationData || moderationData.length === 0) {
-            return { error: "Module Information not found" };
-        }
-
-        // Get the marking attempts for admin for those moderation IDs
-        const { data: adminMarksData, error: adminMarksError } = await supabase
-            .from("marks")
-            .select("moderation_id, scores")
-            .in("moderation_id", moderationIDs)
-            .eq("user_id", userData.user_id);
-        // Cannot find admin information
-        if (adminMarksError || !adminMarksData) {
-            return { error: "Error fetching marks" };
         }
 
         // Calculate statistics per moderation
@@ -93,22 +78,20 @@ export default function authRoutes(supabase) {
                 result[modID] = { admin_total: 0, average: 0, variation: 0, distribution: 0 };
             }
 
-            const adminMark = adminMarksData.find(a => a.moderation_id === modID);
-            if (adminMark) {
-                result[modID].admin_total = getTotalScore(adminMark.scores);
-            }
-
             let sum = 0, count = 0;
             for (const mark of markData) {
-                // Do not count admin
-                if (mark.moderation_id === modID && mark.user_id !== userData.user_id) {
-                    count++;
-                    sum = getTotalScore(mark.scores);
+                if (mark.moderation_id === modID) {
+                    // Admin marks
+                    if (mark.user_id === userData.user_id) {
+                        result[modID].admin_total = getTotalScore(mark.scores);
+                    } else {
+                        count++;
+                        sum = getTotalScore(mark.scores);
+                    }
                 }
             }
 
             const average = sum / count;
-
             result[modID].average = average;
         }
 

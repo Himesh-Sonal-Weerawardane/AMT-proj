@@ -17,7 +17,7 @@
     <header class="module-card__header">
       <h1 class="module-card__title">New Module</h1>
     </header>
-    <form class="module-form" id="module-form">
+    <form class="module-form" id="module-form" enctype="multipart/form-data">
 
       <div class="form-group">
         <label class="form-label" for="year">Year</label>
@@ -27,6 +27,7 @@
                 id="year"
                 name="year"
                 placeholder="Enter Year (Eg: 2025)"
+                required
         />
       </div>
 
@@ -38,6 +39,21 @@
                 id="semester"
                 name="semester"
                 placeholder="Enter Semester (1 or 2)"
+                pattern="[1-2]"
+                required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="assignment-number">Assignment Number</label>
+        <input
+                class="form-control"
+                type="text"
+                id="assignment-number"
+                name="assignment-number"
+                placeholder="Enter Assignment Number (1 or 2)"
+                pattern="[1-2]"
+                required
         />
       </div>
 
@@ -49,6 +65,8 @@
                 id="moderation-number"
                 name="moderation-number"
                 placeholder="Enter Moderation Number (1 or 2)"
+                pattern="[1-2]"
+                required
         />
       </div>
 
@@ -59,16 +77,17 @@
                 type="text"
                 id="module-title"
                 name="module-title"
-                placeholder="Module Name"
+                placeholder="Module Name (Not required)"
         />
       </div>
       <div class="form-group">
         <label class="form-label" for="module-deadline">Set Deadline</label>
         <input
                 class="form-control"
-                type="date"
+                type="datetime-local"
                 id="module-deadline"
                 name="module-deadline"
+                required
         />
       </div>
       <div class="form-group form-group--description">
@@ -77,7 +96,7 @@
                 class="form-control form-control--textarea"
                 id="module-description"
                 name="module-description"
-                placeholder="Provide a detailed module description here..."
+                placeholder="Provide a detailed module description here... (Not required)"
         ></textarea>
       </div>
 
@@ -89,16 +108,14 @@
         <div class="upload-section__content">
           <article class="preview-card" aria-label="Assignment preview">
             <header class="preview-card__header">
-              <h3 class="preview-card__title">Preview: Moderation 1.docx</h3>
+              <h3 id="preview-assignment-title" class="preview-card__title">Preview:</h3>
             </header>
+            <p id="assignment-preview-unavailable-text">Preview Unavailable</p>
             <object
                     class="preview-card__document"
-                    data="../pdf/sample.pdf"
+                    id="preview-assignment-document"
                     type="application/pdf"
             >
-              <p class="preview-card__fallback">
-                Preview unavailable. <a href="../pdf/sample-pdf.pdf">Download file</a>
-              </p>
             </object>
           </article>
           <label class="file-dropzone" for="assignment-upload">
@@ -108,6 +125,7 @@
                     id="assignment-upload"
                     name="assignment-upload"
                     accept=".pdf,.doc,.docx"
+                    required
             />
             <span class="file-dropzone__text">Upload here</span>
           </label>
@@ -122,16 +140,14 @@
         <div class="upload-section__content">
           <article class="preview-card" aria-label="Rubric preview">
             <header class="preview-card__header">
-              <h3 class="preview-card__title">Preview: Rubric.docx</h3>
+              <h3 id="preview-rubric-title" class="preview-card__title">Preview:</h3>
             </header>
+            <p id="rubric-preview-unavailable-text">Preview Unavailable</p>
             <object
                     class="preview-card__document"
-                    data="../pdf/sample.pdf"
+                    id="preview-rubric-document"
                     type="application/pdf"
             >
-              <p class="preview-card__fallback">
-                Preview unavailable. <a href="../pdf/sample-pdf.pdf">Download file</a>
-              </p>
             </object>
           </article>
           <label class="file-dropzone" for="rubric-upload">

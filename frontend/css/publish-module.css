@@ -159,6 +159,13 @@ body {
     background: white;
 }
 
+#rubric-preview-unavailable-text, #assignment-preview-unavailable-text {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    margin-top: 100px;
+}
+
 .preview-card__fallback {
     margin: 0;
     padding: 16px;
