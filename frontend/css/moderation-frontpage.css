@@ -17,12 +17,12 @@ body {
 }
 
 #no-marking-attempts-message, #unknown-error-message {
-  display: flex;
+  display: none;
   justify-content: center;
   font-size: 24px;
   font-weight: 500;
   padding-top: 200px;
-  color: #d41a1a;
+  color: black;
 }
 
 /*****************************************************************/
@@ -151,4 +151,15 @@ td {
 
 tr:nth-child(even) {
   background-color: #dddddd;
+}
+
+/*****************************************************************/
+.within-threshold {
+  color: #22c55e;
+  font-weight: bold;
+}
+
+.outside-threshold {
+  color: #d41a1a;
+  font-weight: bold;
 }

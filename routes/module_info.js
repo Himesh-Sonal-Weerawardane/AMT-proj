@@ -70,7 +70,7 @@ export default function authRoutes(supabase) {
         // Get the moderation information for the marking attempts
         const { data: moderationData, error: moderationError } = await supabase
             .from("moderations")
-            .select("name, year, semester, assignment_num, moderation_num, admin_id")
+            .select("moderation_id, name, year, semester, assignment_num, moderation_num, admin_id")
             .in("moderation_id", moderationIDs);
         // Cannot find module information
         if (moderationError || !moderationData || moderationData.length === 0) {
@@ -119,7 +119,7 @@ export default function authRoutes(supabase) {
             moderation_num: m.moderation_num,
             user_total: result[m.moderation_id]?.user_total || 0,
             admin_total: result[m.moderation_id]?.admin_total || 0,
-            role: "Marker"
+            role: "Marker",
         }));
 
         return combinedResult;
@@ -130,7 +130,6 @@ export default function authRoutes(supabase) {
 
 // Sum the total from a JSON file
 function getTotalScore(scoresJson) {
-  if (!scoresJson) return 0;
-  return 50;
-  // return Object.values(scoresJson).reduce((sum, val) => sum + (Number(val) || 0), 0);
+    if (!scoresJson) return 0;
+    return Object.values(scoresJson).reduce((sum, val) => sum + (Number(val) || 0), 0);
 }

@@ -17,11 +17,11 @@ async function showModules() {
             if (data.error == "No marking attempts found") {
                 console.log("No results found", data);
                 const errorMessage = document.getElementById("no-marking-attempts-message");
-                errorMessage.style.display = flex;
+                errorMessage.style.display = "flex";
             } else {
                 console.log("Invalid data", data);
                 const errorMessage = document.getElementById("unknown-error-message");
-                errorMessage.style.display = flex;
+                errorMessage.style.display = "flex";
             }
         } else {
             if (data.role == "Admin") {
@@ -85,7 +85,7 @@ async function createModerationTables(data, createTableFn) {
                 row.className = "row";
 
                 // Loop through moderations
-                for (const moderationData in grouped[year][semester][assignmentNum]) {
+                for (const moderationData of grouped[year][semester][assignmentNum]) {
                     const column = createTableFn(moderationData);
                     row.appendChild(column);
                 }
@@ -133,16 +133,16 @@ function createAdminTable(moderationData) {
                     <span class="table-header">
                         <span class="moderation-link" onclick="window.location.href=
                             '../example-moderation-pages/admin-moderation.html'">
-                            Moderation ${moderationData.moderation_num}
+                            Moderation ${moderationData.moderation_num ?? "-"}
                         </span>
                         <input type="checkbox" class="table-checkbox">
                     </span>
                 </th>
             </tr>
-            <tr><td>Admin Marks</td><td>${moderationData.admin_total}</td></tr>
-            <tr><td>Average</td><td>${moderationData.average}</td></tr>
-            <tr><td>Variation</td><td>${moderationData.variation}</td></tr>
-            <tr><td>Distribution</td><td>${moderationData.distribution}</td></tr>
+            <tr><td>Admin Marks</td><td>${moderationData.admin_total ?? "-"}</td></tr>
+            <tr><td>Average</td><td>${moderationData.average ?? "-"}</td></tr>
+            <tr><td>Variation</td><td>${moderationData.variation ?? "-"}</td></tr>
+            <tr><td>Distribution</td><td>${moderationData.distribution ?? "-"}</td></tr>
         </table>
     `;
 
@@ -156,7 +156,21 @@ function createMarkerTable(moderationData) {
 
     const adminMarks = moderationData.admin_total;
     const userMarks = moderationData.user_total;
-    const difference = adminMarks - userMarks;
+    const difference = userMarks - adminMarks;
+
+    let differenceText = "-";
+    let differenceClass = "";
+
+    // 10% of admin's marks
+    const threshold = adminMarks * 0.1;
+
+    if (Math.abs(difference) <= threshold) {
+        differenceText = `+${difference}`;
+        differenceClass = "within-threshold"; // green
+    } else {
+        differenceText = `${difference}`;
+        differenceClass = "outside-threshold"; // red
+    }
 
     column.innerHTML = `
         <table class="moderation-table">
@@ -164,15 +178,15 @@ function createMarkerTable(moderationData) {
                 <th colspan="2">
                     <span class="table-header">
                         <span class="moderation-link" onclick="window.location.href=
-                            '../example-moderation-pages/marker-moderation.html'">
-                            Moderation ${moderationData.moderation_num}
+                            '../moderation-page.html?year=${moderationData.year}&semester=${moderationData.semester}&assignment=${moderationData.assignment_num}&moderation=${moderationData.moderation_num}'">
+                            Moderation ${moderationData.moderation_num ?? "-"}
                         </span>
                     </span>
                 </th>
             </tr>
-            <tr><td>Admin Marks</td><td>${moderationData.admin_total}</td></tr>
-            <tr><td>Your Marks</td><td>${moderationData.user_total}</td></tr>
-            <tr><td>Difference</td><td>${difference}</td></tr>
+            <tr><td>Admin Marks</td><td>${adminMarks ?? "-"}</td></tr>
+            <tr><td>Your Marks</td><td>${userMarks ?? "-"}</td></tr>
+            <tr><td>Difference</td><td class="${differenceClass}">${differenceText}</td></tr>
         </table>
     `;
 
