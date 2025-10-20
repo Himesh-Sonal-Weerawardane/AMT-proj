@@ -45,11 +45,10 @@ window.addEventListener("DOMContentLoaded", () => {
             const data = await res.json()
 
             if (res.status !== 200 || data.error) {
-                console.error("Error publishing module:", data.error)
-                alert("Error publishing module. Check console for details.")
+                alert(`Error Publishing Module: ${data.error}`)
                 return
             } else {
-                console.log("Successfully published module!")
+                alert("Successfully published module!")
                 window.location.href = data.redirect
             }
         } catch (err) {
