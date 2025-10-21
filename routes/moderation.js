@@ -4,33 +4,6 @@ const router = express.Router();
 
 export default function moderationRoutes(supabase) {
 
-    router.get("/test", async (req, res) => {
-        console.log("Testing Supabase connection...");
-        res.json({ ok: true });
-    });
-
-    router.get("/test", async (req, res) => {
-        console.log("Testing Supabase connection...");
-
-        try {
-            const { data, error } = await supabase
-                .from("moderations")
-                .select("*")
-                .limit(1);
-
-            if (error) {
-                console.error("Supabase query error:", error);
-                return res.status(500).json({ message: "Query failed", details: error });
-            }
-
-            console.log("Supabase data:", data);
-            res.json(data);
-        } catch (err) {
-            console.error("Unexpected error:", err);
-            res.status(500).json({ message: "Unexpected error", details: err.message });
-        }
-    });
-
 
     // fetching moderation
     router.get("/moderations/:id", async (req, res) => {

@@ -40,6 +40,11 @@ app.use("/api", authRoutes(supabase))
 app.use("/api", uploadRoutes(supabase))
 app.use("/api", moderationRoutes(supabase))
 
+// Serve public frontend HTML files (login page)
+app.use(express.static(path.join(__dirname, "frontend")));
+// #################################
+
+
 // When someone tries to access any page starting with /admin, this checks
 // if they are signed in first, then checks if they are an admin.
 // If so, allow access to the page, otherwise redirects.
@@ -83,11 +88,6 @@ app.use("/marker", async (req, res, next) => {
   }
 }, express.static(path.join(__dirname, "frontend/marker")));
 
-
-
-// Serve public frontend HTML files (login page)
-app.use(express.static(path.join(__dirname, "frontend")));
-// #################################
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
