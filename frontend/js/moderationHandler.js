@@ -9,21 +9,22 @@ let rubricData;
 /* Fetching and rendering the rubric */
 document.addEventListener('DOMContentLoaded', () => {
 
-    fetch("../data/rubric.json")
+    fetch("http://localhost:3000/api/moderations/1")
         .then(response => response.json())
         .then(data => {
             rubricData = data;
 
-            document.getElementById("moderation-doc").src = rubricData.rubric.pdfFile;
-            document.getElementById("moderation-title").textContent = rubricData.rubric.rubricTitle;
+            document.getElementById("moderation-doc").src = rubricData.pdf_url;
+            document.getElementById("moderation-title").textContent = rubricData.moderation_title;
 
-            renderUnmarkedModeration(rubricData);
+            renderUnmarkedModeration(rubricData.rubric_json);
 
-            calculateTotalScore(rubricData);
+            calculateTotalScore(rubricData.rubric_json);
 
             alertSubmission();
 
-        });
+        })
+        .catch(error => console.error("Error fetching moderation data.", err));
 
 });
 
