@@ -6,9 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moderation Front Page - Admin</title>
+
     <link rel="stylesheet" href="../css/moderation-frontpage.css">
-    <link rel="stylesheet" href="../css/admin/edit-viewings.css">
     <link rel="stylesheet" href="../css/navbar.css">
+
+    <link rel="stylesheet" href="../css/admin/edit-viewings.css">
+    <link rel="stylesheet" href="../css/admin/pop-up-confirmation.css">
 </head>
 <body data-role="admin">
     <!-- Navigation bar -->
@@ -28,6 +31,16 @@
         <div id="accordions"></div>
     </div>
 
+    <!-- Pop up for confirmation -->
+    <div id="moderationModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Selected Modules</h2>
+            <ul id="moderationList"></ul>
+            <button id="closeModal">Cancel</button>
+            <button id="confirmSelected">Confirm</button>
+        </div>
+    </div>
+
     <!-- Button area that displays above the rest of the page -->
     <footer class="page-footer">
         <div class="button-container-edit" id="edit-buttons-container">
@@ -38,10 +51,13 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script src="../js/accordions-toggle.js"></script>
-    <script src="../js/admin/edit-viewings.js"></script>
     <script src="../js/show-moderations.js"></script>
     <script src="../js/navbar.js"></script>
+
+    <!-- Delete, Edit, Publish Scripts -->
+    <script src="../js/admin/edit-viewings.js"></script>
+    <script src="../js/admin/pop-up-confirmation.js"></script>
+    <script src="../js/admin/publish-module.js"></script>
 </body>
 </html>

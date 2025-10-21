@@ -135,7 +135,14 @@ function createAdminTable(moderationData) {
                             '../moderation-page.html?year=${moderationData.year}&semester=${moderationData.semester}&assignment=${moderationData.assignment_num}&moderation=${moderationData.moderation_num}'">
                             Moderation ${moderationData.moderation_num ?? "-"}
                         </span>
-                        <input type="checkbox" class="table-checkbox">
+                        <input 
+                            type="checkbox"
+                            class="table-checkbox"
+                            data-year="${moderationData.year}"
+                            data-semester="${moderationData.semester}"
+                            data-assignment-num="${moderationData.assignment_num}"
+                            data-moderation-num="${moderationData.moderation_num}"
+                        >
                     </span>
                 </th>
             </tr>

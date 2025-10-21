@@ -48,7 +48,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 alert(`Error Publishing Module: ${data.error}`)
                 return
             } else {
-                alert("Successfully published module!")
+                alert("Successfully created module!")
                 window.location.href = data.redirect
             }
         } catch (err) {
