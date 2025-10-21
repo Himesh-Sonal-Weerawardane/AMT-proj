@@ -5,30 +5,67 @@
 
 
 let rubricData;
+let currentUser = null;
+let moderationId = null;
 
-/* Fetching and rendering the rubric */
-document.addEventListener('DOMContentLoaded', () => {
+/* ------------------------------LOADING MAIN MODERATION PAGE---------------------------------- */
+document.addEventListener('DOMContentLoaded', async () => {
+    await getUserInfo();
+    getModerationID();
 
-    fetch("http://localhost:3000/api/moderations/1")
+    fetch(`http://localhost:3000/api/moderations/${moderationId}`)
         .then(response => response.json())
         .then(data => {
+            console.log("Fetched moderation:", data);
             rubricData = data;
 
             document.getElementById("moderation-doc").src = rubricData.pdf_url;
             document.getElementById("moderation-title").textContent = rubricData.moderation_title;
 
-            renderUnmarkedModeration(rubricData.rubric_json);
 
-            calculateTotalScore(rubricData.rubric_json);
-
-            alertSubmission();
+            fetch(`http://localhost:3000/api/marks/${moderationId}/${currentUser.id}`)
+                .then(response => response.ok ? response.json() : null)
+                .then(marksData => {
+                    if (marksData && marksData.scores) {
+                        renderMarkedModeration({
+                            scores: marksData.scores,
+                            comments: marksData.comments,
+                            submitted_at: marksData.submitted_at
+                        });
+                    } else {
+                        renderUnmarkedModeration(rubricData.rubric_json);
+                        calculateTotalScore(rubricData.rubric_json);
+                        alertSubmission();
+                    }
+                })
 
         })
-        .catch(error => console.error("Error fetching moderation data.", err));
+        .catch(error => console.error("Error fetching moderation data.", error));
 
 });
 
-/* Render the Unmarked Moderation */
+/* -----------------------------------Fetch User Info--------------------------------------- */
+async function getUserInfo() {
+
+    const user = await fetch(`http://localhost:3000/api/user_info`, {
+        method: 'POST',
+        credentials: 'include',
+    });
+
+    if (!user.ok) throw new Error("Failed to fetch user data");
+    currentUser = await user.json();
+
+}
+
+/* ----------------------------------Get Moderation ID----------------------------------------*/
+
+function getModerationID() {
+    const urlParams = new URLSearchParams(window.location.search);
+    moderationId = urlParams.get("id") || 1;
+}
+
+/* ---------------------------Render the Unmarked Moderation--------------------------------- */
+
 function renderUnmarkedModeration(data) {
 
     const criteria = document.getElementById("criteria");
@@ -138,7 +175,8 @@ function renderUnmarkedModeration(data) {
 }
 
 
-/* Render the Marked Moderation */
+/* -----------------------------Render the Marked Moderation---------------------------------- */
+
 function renderMarkedModeration(results) {
 
     const submitButton = document.getElementById("moderation-submit");
@@ -152,11 +190,27 @@ function renderMarkedModeration(results) {
     const criteria = document.getElementById("criteria");
     criteria.innerHTML = "";
 
-    const resultStorage = results || JSON.parse(localStorage.getItem("moderationResults"));
-    if (!resultStorage) return;
 
-    resultStorage.forEach((element, index) => {
-        const criterionData = rubricData.criteria[element.criterionID]
+    const resultStorage = Array.isArray(results)
+        ? results
+        : results?.scores?.map((s, i) => ({
+        criterionID: s?.criterionID ?? i,
+        score: s?.score ?? "0 / 0",
+        comment: results.comments?.[i]?.comment ?? "",
+    })) || [];
+
+    if (!resultStorage.length) {
+        console.warn("No result data to render");
+        return;
+    }
+
+    resultStorage.forEach((element) => {
+        if (!element || !rubricData?.rubric_json?.criteria[element.criterionID]) {
+            console.warn("Skipping invalid entry:", element);
+            return;
+        }
+
+        const criterionData = rubricData.rubric_json.criteria[element.criterionID]
         const criterion = document.createElement("div");
         criterion.classList.add("marked-criterion");
 
@@ -171,7 +225,10 @@ function renderMarkedModeration(results) {
         scoreWrapper.classList.add("marked-score-wrapper");
 
         /* Criterion Score Bar */
-        const scoreValue = parseFloat(element.score.split(" / ")[0]);
+        const rawScore = element.score || "0 / 0";
+        const scoreValue = parseFloat(rawScore.split(" / ")[0]) || 0;
+
+
         const gradeGroups = criterionData.grades;
 
         const activeGroup = gradeGroups.find((g) => {
@@ -274,7 +331,8 @@ function renderMarkedModeration(results) {
 
 }
 
-/* Highlight the grade group of each criterion based on user input */
+/* -----------Highlight the grade group of each criterion based on user input--------------- */
+
 function highlightGrade(score, gradeDes, grades) {
     const groupDes = gradeDes.querySelectorAll("tr:nth-child(2) td");
     const gradeHead = gradeDes.querySelectorAll("tr:first-child th");
@@ -294,14 +352,16 @@ function highlightGrade(score, gradeDes, grades) {
 
 }
 
-/* Alert the user when submission is made */
-function alertSubmission() {
+/* -----------------------Alert the user when submission is made----------------------------- */
+
+async function alertSubmission() {
     const submitButton = document.getElementById("moderation-submit");
 
-    submitButton.addEventListener("click", () => {
+    submitButton.addEventListener("click", async () => {
         const criteria = document.querySelectorAll(".criterion");
         let allScoresFilled = true;
-        const results = [];
+        const scores = [];
+        const comments = [];
 
         criteria.forEach((criterion, index) => {
             const scoreInput = criterion.querySelector(".score-view");
@@ -314,26 +374,58 @@ function alertSubmission() {
                 allScoresFilled = false;
             }
 
-            results.push({
-                criterionID: index,
-                score: score,
-                comment: comment
-            });
+            scores.push({ criterionID: index, score });
+            comments.push({ criterionID: index, comment });
 
         });
 
-        if (allScoresFilled) {
-            alert("Moderation submitted successfully!");
-            localStorage.setItem("moderationResults", JSON.stringify(results));
-            renderMarkedModeration(results);
-        } else {
+        if (!allScoresFilled) {
             alert("Please fill in all scores before submission!");
+            return;
+        }
+
+        try {
+            const totalScore = document.getElementById("total-score").textContent.trim();
+
+            const res = await fetch(`http://localhost:3000/api/marks`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    moderation_id: moderationId,
+                    marker_id: currentUser.user_id,
+                    scores,
+                    comments,
+                    total_score: totalScore,
+                    submitted_at: new Date().toISOString(),
+                }),
+            });
+
+            const result = await res.json();
+
+            if (!res.ok || !result?.data) throw new Error("Could not find moderation results.");
+
+            alert("Moderation submitted successfully!");
+
+            const safeScores = Array.isArray(result.data.scores) ? result.data.scores : [];
+            const safeComments = Array.isArray(result.data.comments) ? result.data.comments : [];
+
+            const merged = safeScores.map((s, i) => ({
+                criterionID: s?.criterionID ?? i,
+                score: s?.score ?? "0 / 0",
+                comment: safeComments[i]?.comment ?? "",
+            }));
+
+            renderMarkedModeration(merged);
+        } catch (err) {
+            console.error("Error saving marks.", err);
+            alert("Error saving marks.");
         }
     });
 
 }
 
 
+/* -------------------------Calculate moderation total score------------------------------ */
 
 function calculateTotalScore(data) {
     const scoreInput = document.querySelectorAll(".score-bar");

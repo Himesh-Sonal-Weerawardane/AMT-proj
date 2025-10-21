@@ -1,9 +1,10 @@
+
+
 import express from 'express';
 const router = express.Router();
 
 
 export default function moderationRoutes(supabase) {
-
 
     // fetching moderation
     router.get("/moderations/:id", async (req, res) => {
@@ -24,13 +25,17 @@ export default function moderationRoutes(supabase) {
 
     });
 
+
     // saving marker's marks
-    router.post("/marks/:moderationId/:markerId", async (req, res) => {
-        const { moderation_id, marker_id, scores, comments } = req.body;
+    router.post("/marks", async (req, res) => {
+        const { moderation_id, marker_id, scores, comments, total_score, submitted_at } = req.body;
+
+        console.log("Incoming POST /marks:", req.body);
+
 
         const { data, error } = await supabase
             .from("marks")
-            .insert([{ moderation_id, marker_id, scores, comments }])
+            .insert([{ moderation_id, marker_id, scores, comments, total_score, submitted_at }])
             .select()
             .single();
 
@@ -39,7 +44,13 @@ export default function moderationRoutes(supabase) {
             return res.status(404).json({ error: "Failed to save marks" });
         }
 
-        res.json(data);
+        return res.status(200).json({
+            message: "Marks saved successfully",
+            data: data
+        })
+
+
+
     });
 
     // get marker's mark

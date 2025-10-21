@@ -26,24 +26,12 @@ app.use(express.json())
 // Parses form submissions
 app.use(express.urlencoded({ extended: true }))
 
+
+
 // #################################
 // Cookies can be used to track session, see auth.js /session_info for more info
 import cookieParser from "cookie-parser";
 app.use(cookieParser());
-
-// Attach routes and pass supabase instance
-import authRoutes from "./routes/auth.js"
-import uploadRoutes from "./routes/upload.js"
-import moderationRoutes from "./routes/moderation.js"
-import { Session } from 'inspector';
-app.use("/api", authRoutes(supabase))
-app.use("/api", uploadRoutes(supabase))
-app.use("/api", moderationRoutes(supabase))
-
-// Serve public frontend HTML files (login page)
-app.use(express.static(path.join(__dirname, "frontend")));
-// #################################
-
 
 // When someone tries to access any page starting with /admin, this checks
 // if they are signed in first, then checks if they are an admin.
@@ -89,5 +77,22 @@ app.use("/marker", async (req, res, next) => {
 }, express.static(path.join(__dirname, "frontend/marker")));
 
 
+// Attach routes and pass supabase instance
+import authRoutes from "./routes/auth.js"
+import uploadRoutes from "./routes/upload.js"
+import moderationRoutes from "./routes/moderation.js"
+
+import { Session } from 'inspector';
+app.use("/api", authRoutes(supabase))
+app.use("/api", uploadRoutes(supabase))
+app.use("/api", moderationRoutes(supabase))
+
+
+// Serve public frontend HTML files (login page)
+app.use(express.static(path.join(__dirname, "frontend")));
+// #################################
+
+
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
