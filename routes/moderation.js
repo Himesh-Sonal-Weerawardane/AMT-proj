@@ -54,7 +54,7 @@ export default function moderationRoutes(supabase) {
     });
 
     // get marker's mark
-    router.get("/marks/:id", async (req, res) => {
+    router.get("/marks/:moderationId/:markerId", async (req, res) => {
         const { moderationId, markerId } = req.params;
 
         const { data, error } = await supabase

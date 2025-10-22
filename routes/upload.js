@@ -63,7 +63,7 @@ export default function uploadRoutes(supabase) {
             console.log("Rubric URL:", rubricUrl)
 
             // Access text fields
-            const { year, semester, moderation_number, name, deadline_date, description } = req.body
+            const { year, semester, moderation_number, name, due_date, description } = req.body
 
             const { data, error } = await supabase
                 .from("moderations")
@@ -72,12 +72,12 @@ export default function uploadRoutes(supabase) {
                     year,
                     semester,
                     moderation_number,
-                    deadline_date,
+                    due_date,
                     description,
-                    assignment_url: assignmentUrl,
+                    pdf_url: assignmentUrl,
                     rubric_url: rubricUrl,
-                    rubric: rubricJSON,
-                    upload_date: new Date().toISOString()
+                    rubric_json: rubricJSON,
+                    created_at: new Date().toISOString()
             }])
 
             if (error) {

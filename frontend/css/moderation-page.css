@@ -335,3 +335,13 @@ html, body {
 
 
 
+.moderation-desc {
+    font-size: 17px;
+    margin: 10px 0 20px 10px;
+    white-space: pre-wrap;
+}
+
+
+#due-date {
+    margin: 10px 0 20px 10px;
+}
