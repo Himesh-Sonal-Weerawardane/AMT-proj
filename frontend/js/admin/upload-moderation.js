@@ -1,5 +1,6 @@
 // Submit publish module form
 window.addEventListener("DOMContentLoaded", () => {
+    console.log("[PublishModule] Initialising publish module form handlers")
     const cleanupObjectUrl = (card) => {
         const objectHolder = card.__objectUrl
         if (objectHolder) {
@@ -19,9 +20,14 @@ window.addEventListener("DOMContentLoaded", () => {
         const fallbackDefaultMessage = fallbackMessage?.dataset.defaultMessage ?? ""
 
         input.addEventListener("change", () => {
+            console.log("[PublishModule] File input changed", {
+                inputName: input.name,
+                fileCount: input.files.length
+            })
             const file = input.files[0]
 
             if (!file) {
+                console.log("[PublishModule] No file selected for", input.name)
                 cleanupObjectUrl(card)
                 if (objectEl) {
                     objectEl.removeAttribute("data")
@@ -42,10 +48,17 @@ window.addEventListener("DOMContentLoaded", () => {
             card.dataset.hasPreview = "true"
 
             if (fileNameEl) fileNameEl.textContent = file.name
+            console.log("[PublishModule] Selected file details", {
+                inputName: input.name,
+                name: file.name,
+                size: file.size,
+                type: file.type
+            })
 
             cleanupObjectUrl(card)
 
             const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")
+            console.log("[PublishModule] File preview check", { inputName: input.name, isPdf })
 
             if (isPdf) {
                 const objectUrl = URL.createObjectURL(file)
@@ -73,6 +86,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault() // Prevent URL parameters from being added
+        console.log("[PublishModule] Form submission triggered")
 
         const year = document.getElementById("year").value
         const semester = document.getElementById("semester").value
@@ -82,7 +96,17 @@ window.addEventListener("DOMContentLoaded", () => {
         const moduleDescription = document.getElementById("module-description").value
         const assignmentUpload = document.getElementById("assignment-upload").files[0]
         const rubricUpload = document.getElementById("rubric-upload").files[0]
-        
+
+        console.log("[PublishModule] Collected form values", {
+            year,
+            semester,
+            moderationNumber,
+            name,
+            moduleDeadline,
+            hasAssignment: Boolean(assignmentUpload),
+            hasRubric: Boolean(rubricUpload)
+        })
+
         try {
             const formData = new FormData()
             formData.append("year", year)
@@ -91,10 +115,25 @@ window.addEventListener("DOMContentLoaded", () => {
             formData.append("name", name)
             formData.append("deadline_date", moduleDeadline)
             formData.append("description", moduleDescription)
-            if (assignmentUpload) formData.append("assignment", assignmentUpload)
-            if (rubricUpload) formData.append("rubric", rubricUpload)
+            if (assignmentUpload) {
+                console.log("[PublishModule] Appending assignment file to form data", {
+                    name: assignmentUpload.name,
+                    size: assignmentUpload.size,
+                    type: assignmentUpload.type
+                })
+                formData.append("assignment", assignmentUpload)
+            }
+            if (rubricUpload) {
+                console.log("[PublishModule] Appending rubric file to form data", {
+                    name: rubricUpload.name,
+                    size: rubricUpload.size,
+                    type: rubricUpload.type
+                })
+                formData.append("rubric", rubricUpload)
+            }
             // Set upload_date in api
 
+            console.log("[PublishModule] Sending fetch request to /api/upload_moderation")
             const res = await fetch("/api/upload_moderation", {
                 method: "POST",
                 headers: {
@@ -102,7 +141,12 @@ window.addEventListener("DOMContentLoaded", () => {
                 },
                 body: formData  // send multipart/form-data
             })
+            console.log("[PublishModule] Received response", {
+                status: res.status,
+                statusText: res.statusText
+            })
             const data = await res.json()
+            console.log("[PublishModule] Response JSON payload", data)
 
             if (res.status !== 200 || data.error) {
                 console.error("Error publishing module:", data.error)
@@ -111,6 +155,7 @@ window.addEventListener("DOMContentLoaded", () => {
             } else {
                 console.log("Successfully published module!")
                 const moduleId = data.moduleId
+                console.log("[PublishModule] Navigating after successful publish", { moduleId })
                 if (moduleId) {
                     window.location.href = `module-detail.html?id=${encodeURIComponent(moduleId)}`
                 } else {
@@ -119,6 +164,7 @@ window.addEventListener("DOMContentLoaded", () => {
             }
         } catch (err) {
             console.error("Network or server error:", err)
+            alert("Network or server error occurred while publishing the module. Check console for details.")
         }
     })
 })
