@@ -173,7 +173,6 @@ export default function uploadRoutes(supabase) {
                 .insert([{
                     // automatic moderation id
                     admin_id: userData.user_id,
-                    moderation_title,
                     year,
                     semester,
                     assignment_number,
