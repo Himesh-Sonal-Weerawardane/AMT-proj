@@ -84,12 +84,12 @@ export default function userRoutes(supabase) {
         try{
             const{data, error} = await supabase
                 .from("users")
-                .select("id, first-name, last-name, email, is_admin")
+                .select("auth_id, first_name, last_name, email, is_admin")
             if(error){
                 console.error("be error", error)
                 return res.status(400).json({ error: error.message })  // User has wrong email/password
             }
-            res.json({success: true, data})
+            res.json(data)
         } catch (err){
             console.error("Network or server error:", err);
             res.status(500).json({err}); 

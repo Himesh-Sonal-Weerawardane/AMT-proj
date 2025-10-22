@@ -11,16 +11,23 @@ async function listingHandler() {
 
 
     data.forEach((staff) => {
-        staffNames.push(staff.name);
+        const fullName = `${staff.first_name} ${staff.last_name}`
+        let role
+        if(staff.is_admin){
+            role = "Admin"
+        } else {
+            role = "Marker"
+        }
+        staffNames.push(fullName);
         const staffCard = document.createElement('div');
         staffCard.classList.add('staff-card');
         staffCard.innerHTML = `
             <div class="staff-row">
                 <img src="../images/front-page/minus-button.png" class="remove-user" alt="Remove">
                 <div class="staff-profile"></div>
-                <a href="user-profile.html?id=${staff.id}" class="staff-name">${staff.name}</a>
+                <a href="user-profile.html?id=${staff.id}" class="staff-name">${fullName}</a>
                 <div class="staff-email">${staff.email}</div>
-                <div class="staff-role">${staff.role}</div>
+                <div class="staff-role">${role}</div>
             </div>
             <div class="row-divider"></div>
         `;
