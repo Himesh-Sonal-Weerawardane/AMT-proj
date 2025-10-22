@@ -134,13 +134,18 @@ window.addEventListener("DOMContentLoaded", () => {
             // Set upload_date in api
 
             console.log("[PublishModule] Sending fetch request to /api/upload_moderation")
-            const res = await fetch("/api/upload_moderation", {
+            const options = {
                 method: "POST",
-                headers: {
-                    "Authorization": "Bearer " + token  // keep token for backend auth
-                },
                 body: formData  // send multipart/form-data
-            })
+            }
+
+            if (typeof token !== "undefined" && token) {
+                options.headers = {
+                    Authorization: `Bearer ${token}`  // keep token for backend auth when available
+                }
+            }
+
+            const res = await fetch("/api/upload_moderation", options)
             console.log("[PublishModule] Received response", {
                 status: res.status,
                 statusText: res.statusText
