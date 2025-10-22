@@ -113,7 +113,7 @@ window.addEventListener("DOMContentLoaded", () => {
             formData.append("semester", semester)
             formData.append("moderation_number", moderationNumber)
             formData.append("name", name)
-            formData.append("deadline_date", moduleDeadline)
+            formData.append("due_date", moduleDeadline)
             formData.append("description", moduleDescription)
             if (assignmentUpload) {
                 console.log("[PublishModule] Appending assignment file to form data", {

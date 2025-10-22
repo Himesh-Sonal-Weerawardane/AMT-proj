@@ -210,7 +210,7 @@ function downloadStats() {
     module.moderation_number ?? "",
     module.year ?? "",
     module.semester ?? "",
-    formatDateForCsv(module.deadline_date),
+    formatDateForCsv(module.due_date),
     formatDateForCsv(module.upload_date),
     module.hidden_from_markers ? "Yes" : "No",
   ]);

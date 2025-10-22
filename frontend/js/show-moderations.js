@@ -174,12 +174,12 @@ const createModuleColumn = (module, role) => {
 
     if (role === "admin") {
         appendRow(table, "Moderation", module.moderation_number ?? "-");
-        appendRow(table, "Deadline", formatDate(module.deadline_date));
+        appendRow(table, "Deadline", formatDate(module.due_date));
         appendRow(table, "Uploaded", formatDate(module.upload_date));
         appendRow(table, "Visibility", "", { wrap: createVisibilityIndicator(module.hidden_from_markers) });
         appendRow(table, "Description", module.description || "No description provided.");
     } else {
-        appendRow(table, "Deadline", formatDate(module.deadline_date));
+        appendRow(table, "Deadline", formatDate(module.due_date));
         appendRow(table, "Uploaded", formatDate(module.upload_date));
         appendRow(table, "Description", module.description || "No description provided.");
     }
