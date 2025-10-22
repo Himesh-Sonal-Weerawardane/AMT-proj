@@ -196,3 +196,36 @@ export default function (props) {
     })
   })
 }
+
+// import util from "util";
+// import libre from "libreoffice-convert";
+// libre.convertAsync = util.promisify(libre.convert);
+
+// /**
+//  * Convert a .doc file to .docx and parse it into rubric JSON
+//  * @param {string} inputPath - Path to the uploaded .doc file
+//  * @returns {Promise<Object>} rubricJSON
+//  */
+// export async function parseDOC(inputPath) {
+//   try {
+//     // Output path: same folder, with .converted.docx suffix
+//     const outputPath = inputPath + ".converted.docx";
+
+//     // Read, convert, and write the DOCX
+//     const docBuf = await fs.promises.readFile(inputPath);
+//     const docxBuf = await libre.convertAsync(docBuf, ".docx", undefined);
+//     await fs.promises.writeFile(outputPath, docxBuf);
+//     console.log("DOC converted to DOCX successfully!");
+
+//     // Parse the converted DOCX
+//     const { title, tables } = await parseDOCX({ file: outputPath });
+//     const rubricJSON = transformTableToRubric(tables, title, {
+//       originalname: path.basename(outputPath),
+//     });
+
+//     return rubricJSON;
+//   } catch (err) {
+//     console.error("Error converting/parsing DOC:", err);
+//     throw err;
+//   }
+// }

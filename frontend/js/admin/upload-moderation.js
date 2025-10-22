@@ -27,13 +27,13 @@ window.addEventListener("DOMContentLoaded", () => {
         
         try {
             const formData = new FormData()
+            formData.append("moderation_title", name)
             formData.append("year", year)
             formData.append("semester", semester)
-            formData.append("assignment_num", assignmentNumber)
-            formData.append("moderation_num", moderationNumber)
-            formData.append("name", name)
-            formData.append("deadline_date", moduleDeadline)
+            formData.append("assignment_number", assignmentNumber)
+            formData.append("moderation_number", moderationNumber)
             formData.append("description", moduleDescription)
+            formData.append("due_date", moduleDeadline)
             if (assignmentUpload) formData.append("assignment", assignmentUpload)
             if (rubricUpload) formData.append("rubric", rubricUpload)
             // Set upload_date in api
