@@ -89,11 +89,51 @@ export default function uploadRoutes(supabase) {
             res.json({ success: true, moduleId: data[0].id })
 
         } catch (err) {
-            console.error("Failed to insert module:", error)
-            console.error(err)
+            console.error("Failed to insert module:", err)
             res.status(500).json({ error: "Server error" })
         }
-  })
+    })
 
-  return router
+    router.get("/moderations/:id", async (req, res) => {
+        const { id } = req.params
+
+        try {
+            const { data, error } = await supabase
+                .from("moderations")
+                .select("*")
+                .eq("id", id)
+                .single()
+
+            if (error) {
+                console.error("Failed to fetch module:", error)
+                return res.status(404).json({ error: "Module not found" })
+            }
+
+            const assignmentPath = data.assignment_url
+            const rubricPath = data.rubric_url
+
+            const assignmentPublicUrl = assignmentPath
+                ? supabase.storage
+                    .from("comp30022-amt")
+                    .getPublicUrl(assignmentPath).data.publicUrl
+                : null
+
+            const rubricPublicUrl = rubricPath
+                ? supabase.storage
+                    .from("moderations")
+                    .getPublicUrl(rubricPath).data.publicUrl
+                : null
+
+            res.json({
+                ...data,
+                assignment_public_url: assignmentPublicUrl,
+                rubric_public_url: rubricPublicUrl
+            })
+        } catch (err) {
+            console.error("Failed to fetch module:", err)
+            res.status(500).json({ error: "Server error" })
+        }
+    })
+
+    return router
 }

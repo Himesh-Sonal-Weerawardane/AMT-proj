@@ -110,7 +110,12 @@ window.addEventListener("DOMContentLoaded", () => {
                 return
             } else {
                 console.log("Successfully published module!")
-                window.location.href = "moderation-frontpage.html"
+                const moduleId = data.moduleId
+                if (moduleId) {
+                    window.location.href = `module-detail.html?id=${encodeURIComponent(moduleId)}`
+                } else {
+                    window.location.href = "moderation-frontpage.html"
+                }
             }
         } catch (err) {
             console.error("Network or server error:", err)
