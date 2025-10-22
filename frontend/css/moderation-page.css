@@ -313,7 +313,7 @@ html, body {
 
 
 .marked-criterion {
-    border-bottom: 1px solid darkgray;
+    border-bottom: 1px solid lightgray;
     padding-bottom: 20px;
     margin-bottom: 25px;
 }
@@ -344,4 +344,38 @@ html, body {
 
 #due-date {
     margin: 10px 0 20px 10px;
+}
+
+
+.criterion-wrapper {
+    border-bottom: 1px solid lightgray;
+}
+
+.criterion-wrapper:last-child {
+    border-bottom: none;
+}
+
+.feedback-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px;
+}
+
+.feedback-comment {
+    margin: 20px 25px 40px 25px;
+    padding: 10px;
+    border: 1px solid lightgray;
+    overflow-y: auto;
+    height: 200px;
+}
+
+.feedback-title {
+    margin: 0;
+}
+
+.feedback-score {
+    font-weight: bold;
+    text-align: right;
+    color: red;
 }

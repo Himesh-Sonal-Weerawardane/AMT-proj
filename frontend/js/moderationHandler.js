@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         rubricData = moderationData;
 
         document.getElementById("moderation-title").textContent = rubricData.moderation_title;
-        document.getElementById("moderation-doc").src = rubricData.pdf_url;
+        document.getElementById("moderation-doc").src = rubricData.assignment_url;
 
         document.getElementById("moderation-description").textContent = rubricData.description || "No description";
         const dueDate = document.getElementById("due-date");
@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-
         const marksRes = await fetch(`http://localhost:3000/api/marks/${moderationId}/${currentUser.user_id}`)
         if (marksRes.ok) {
             const marksData = await marksRes.json();
@@ -58,6 +57,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     total_score: marksData.total_score,
                     submitted_at: marksData.submitted_at
                 });
+
+                renderAdminFeedback(rubricData.admin_feedback);
             } else {
                 renderUnmarkedModeration(rubricData.rubric_json);
                 calculateTotalScore(rubricData.rubric_json);
@@ -211,14 +212,6 @@ function renderMarkedModeration(results) {
     const submitButton = document.getElementById("moderation-submit");
     if (submitButton) submitButton.remove();
 
-    /*
-    const totalScore = document.getElementById("total-score");
-    if (totalScore) {
-        totalScore.style.marginRight = "20px";
-
-    }
-
-     */
 
     if (results.total_score) {
         const totalDisplay = document.getElementById("total-score");
@@ -368,6 +361,42 @@ function renderMarkedModeration(results) {
 
     });
 
+}
+
+/* ---------------------------------Render Admin Feedback------------------------------------*/
+
+function renderAdminFeedback(adminFeedback) {
+    const feedbackContainer = document.getElementById("feedbacks");
+    feedbackContainer.innerHTML = "";
+
+    adminFeedback.criteria.forEach((element) => {
+        const criterionWrapper = document.createElement("div");
+        criterionWrapper.classList.add("criterion-wrapper");
+
+        const feedbackHead = document.createElement("div");
+        feedbackHead.classList.add("feedback-head");
+
+        const criterion = document.createElement("h4");
+        criterion.classList.add("feedback-title");
+        criterion.textContent = element.criterion;
+
+        const score = document.createElement("span");
+        score.classList.add("feedback-score");
+        score.textContent = `${element.admin_score}`;
+
+        feedbackHead.appendChild(criterion);
+        feedbackHead.appendChild(score);
+        criterionWrapper.appendChild(feedbackHead);
+
+        const feedbackText = document.createElement("p");
+        feedbackText.classList.add("feedback-comment");
+        feedbackText.contentEditable = "false";
+        feedbackText.textContent = element.feedback || "No feedback";
+        criterionWrapper.appendChild(feedbackText);
+
+
+        feedbackContainer.appendChild(criterionWrapper);
+    })
 }
 
 /* -----------Highlight the grade group of each criterion based on user input--------------- */
