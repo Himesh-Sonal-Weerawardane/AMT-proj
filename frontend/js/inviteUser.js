@@ -1,27 +1,28 @@
-const inviteUser = document.getElementById("invite-submit");
+const inviteUser = document.getElementById('invite-submit')
 inviteUser.addEventListener('click', async (e) => {
     e.preventDefault()
 
-    const firstName = document.getElementById('invite-first-name').value
-    const surname = document.getElementById('invite-surname').value
+    const first_name = document.getElementById('invite-first-name').value.trim()
+    const last_name = document.getElementById('invite-last-name').value.trim()
     const role = document.getElementById('invite-role').value
-    const email = document.getElementById('invite-email').value
+    const email = document.getElementById('invite-email').value.trim().toLowerCase()
 
     try{
         const res = await fetch('/api/add_user', {
             method: 'POST',
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({firstName, surname, role, email})
+            body: JSON.stringify({first_name, last_name, email, role})
         })
         const data = await res.json()
 
-        if (!data.ok) {
-            alert('Invite Unsuccessful')
+        if (!data.success) {
+            alert('Invite Unsuccessful      ' + data.error)
         } else {
-            alert('Invite Successful    '+ data.error)
+            alert('Invite Successful')
         }
     } catch (err) {
         console.error("Network or server error:", err);
     }
     
 })
+

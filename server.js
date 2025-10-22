@@ -81,9 +81,11 @@ app.use(express.static(path.join(__dirname, "frontend")));
 // Attach routes and pass supabase instance
 import authRoutes from "./routes/auth.js"
 import uploadRoutes from "./routes/upload.js"
+import userRoutes from "./routes/users.js"
 import { Session } from 'inspector';
 app.use("/api", authRoutes(supabase))
 app.use("/api", uploadRoutes(supabase))
+app.use("/api", userRoutes(supabase))
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
