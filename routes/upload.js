@@ -28,6 +28,47 @@ export default function uploadRoutes(supabase) {
         return trimmed === "" ? null : trimmed
     }
 
+    const toPositiveInteger = (value) => {
+        const numberValue = Number(value)
+        return Number.isFinite(numberValue) && numberValue >= 0 ? Math.floor(numberValue) : null
+    }
+
+    const defaultStatisticsColumns = [
+        { key: "student", label: "Student", align: "left" },
+        { key: "student_grade", label: "Student Grade", align: "right" },
+        { key: "marker_average", label: "Marker Average", align: "right" },
+        { key: "difference", label: "Difference", align: "right" }
+    ]
+
+    const buildFallbackStatistics = (moduleMeta = null) => {
+        const label = moduleMeta?.moderation_number
+            ? `Moderation ${moduleMeta.moderation_number}`
+            : moduleMeta?.name || "Moderation"
+
+        return {
+            meta: {
+                module_id: moduleMeta?.id ?? null,
+                is_fallback: true
+            },
+            overall: {
+                title: `${label} overall statistics`,
+                subtitle: moduleMeta?.name ? moduleMeta.name : "",
+                columns: [...defaultStatisticsColumns],
+                rows: [],
+                empty_message: "No statistics are available yet.",
+                updated_at: null
+            },
+            progress: {
+                title: `${label} progress`,
+                subtitle: "Progress updates will appear once marking begins.",
+                totals: { marked: 0, unmarked: 0, total: 0 },
+                entries: [],
+                empty_message: "No progress has been recorded yet.",
+                updated_at: null
+            }
+        }
+    }
+
     const safeUnlink = async (path) => {
         if (!path) return
         try { await fs.unlink(path) } catch { /* ignore */ }
@@ -212,6 +253,134 @@ export default function uploadRoutes(supabase) {
             }
         }
     )
+
+    router.get("/moderations/:id/statistics", async (req, res) => {
+        const { id } = req.params
+
+        let moduleMeta = null
+        try {
+            const { data: moduleData } = await supabase
+                .from("moderations")
+                .select("id, name, moderation_number")
+                .eq("id", id)
+                .maybeSingle()
+            moduleMeta = moduleData || null
+        } catch (err) {
+            console.warn("[ModerationStatistics] Failed to fetch module metadata", err)
+        }
+
+        const fallback = buildFallbackStatistics(moduleMeta)
+
+        try {
+            const { data: statsRow, error } = await supabase
+                .from("moderation_statistics")
+                .select("*")
+                .eq("moderation_id", id)
+                .maybeSingle()
+
+            if (error) {
+                console.warn("[ModerationStatistics] Failed to fetch statistics", error)
+                return res.json(fallback)
+            }
+
+            if (!statsRow) {
+                return res.json(fallback)
+            }
+
+            const response = {
+                meta: { ...fallback.meta, is_fallback: false },
+                overall: {
+                    ...fallback.overall,
+                    columns: [...fallback.overall.columns]
+                },
+                progress: {
+                    ...fallback.progress,
+                    totals: { ...fallback.progress.totals }
+                }
+            }
+
+            if (statsRow.meta && typeof statsRow.meta === "object") {
+                response.meta = { ...response.meta, ...statsRow.meta, is_fallback: false }
+            }
+
+            if (statsRow.updated_at) {
+                response.meta.updated_at = statsRow.updated_at
+            }
+
+            const overallSource = statsRow.overall || statsRow.summary || null
+            if (overallSource && typeof overallSource === "object") {
+                const rows = Array.isArray(overallSource.rows)
+                    ? overallSource.rows
+                    : Array.isArray(overallSource.data)
+                        ? overallSource.data
+                        : response.overall.rows
+
+                const columns = Array.isArray(overallSource.columns) && overallSource.columns.length > 0
+                    ? overallSource.columns
+                    : response.overall.columns
+
+                response.overall = {
+                    ...response.overall,
+                    ...overallSource,
+                    columns,
+                    rows,
+                    empty_message: overallSource.empty_message || overallSource.emptyMessage || response.overall.empty_message,
+                    updated_at: overallSource.updated_at || overallSource.updatedAt || response.overall.updated_at
+                }
+            }
+
+            const progressSource = statsRow.progress || statsRow.marker_progress || null
+            if (progressSource && typeof progressSource === "object") {
+                const entries = Array.isArray(progressSource.entries)
+                    ? progressSource.entries
+                    : Array.isArray(progressSource.markers)
+                        ? progressSource.markers
+                        : Array.isArray(progressSource.rows)
+                            ? progressSource.rows
+                            : response.progress.entries
+
+                const totalsSource = progressSource.totals || {}
+                const marked = toPositiveInteger(progressSource.marked ?? totalsSource.marked ?? totalsSource.completed)
+                const unmarked = toPositiveInteger(progressSource.unmarked ?? totalsSource.unmarked ?? totalsSource.remaining ?? totalsSource.pending)
+                const total = toPositiveInteger(progressSource.total ?? totalsSource.total ?? totalsSource.count)
+
+                response.progress = {
+                    ...response.progress,
+                    ...progressSource,
+                    entries,
+                    totals: {
+                        marked: marked ?? response.progress.totals.marked,
+                        unmarked: unmarked ?? response.progress.totals.unmarked,
+                        total: total ?? response.progress.totals.total
+                    },
+                    empty_message: progressSource.empty_message || progressSource.emptyMessage || response.progress.empty_message,
+                    updated_at: progressSource.updated_at || progressSource.updatedAt || response.progress.updated_at
+                }
+
+                if (response.progress.totals.total === 0) {
+                    const inferredTotal = (response.progress.totals.marked ?? 0) + (response.progress.totals.unmarked ?? 0)
+                    if (inferredTotal > 0) {
+                        response.progress.totals.total = inferredTotal
+                    } else if (entries.length > 0) {
+                        response.progress.totals.total = entries.length
+                    }
+                }
+
+                if (
+                    response.progress.totals.total > 0
+                    && response.progress.totals.unmarked === 0
+                    && response.progress.totals.total > response.progress.totals.marked
+                ) {
+                    response.progress.totals.unmarked = response.progress.totals.total - response.progress.totals.marked
+                }
+            }
+
+            return res.json(response)
+        } catch (err) {
+            console.error("[ModerationStatistics] Unexpected error", err)
+            return res.json(fallback)
+        }
+    })
 
     /**
      * GET /moderations/:id
