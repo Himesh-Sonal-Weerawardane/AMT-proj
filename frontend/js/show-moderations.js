@@ -1,187 +1,261 @@
-// Created by William Alexander Tang Wai on 10/10/2025
-
-// Fetch appropriate JSON file for admin and markers, and dynamically
-// generate the moderation tables
-window.addEventListener("DOMContentLoaded", async () => {
+const formatDate = (isoString) => {
+    if (!isoString) return "-";
     try {
-        const role = document.body.dataset.role;
-
-        // NOTE: TO CHANGE
-        // Check the login info (i.e. admin or marker) and filter data as appropriate
-        if (role == "admin") {
-            const response = await fetch('../example-moderation-data/admin-moderations.json');
-            if (!response.ok) throw new Error('Data could not be fetched');
-            const data = await response.json();
-            createModerationTables(data, createAdminTable);
-        } else if (role == "marker") {
-            // fetch marker-moderations.json and a filtered version of admin-moderations.json
-            // So server-side will filter the admin data and leave only "Admin Marks"
-            const [adminRes, markerRes] = await Promise.all([
-                fetch('../example-moderation-data/admin-moderations.json'),
-                fetch('../example-moderation-data/marker-moderations.json')
-            ]);
-
-            if (!adminRes.ok || !markerRes.ok) {
-                throw new Error('Failed to load moderation data');
-            }
-
-            const adminData = await adminRes.json();
-            const markerData = await markerRes.json();
-
-            const data = mergeModerationData(adminData, markerData);
-            createModerationTables(data, createMarkerTable);
-        }
-    } catch (error) {
-        console.error(error);
+        const date = new Date(isoString);
+        if (Number.isNaN(date.getTime())) return "-";
+        return date.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+    } catch (err) {
+        console.error("Failed to format date", err);
+        return "-";
     }
-});
+};
 
-// Merges the filtered admin's table and the marker's table
-function mergeModerationData(adminData, markerData) {
-    const merged = [];
+const toNumber = (value) => {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+        const parsed = parseInt(value, 10);
+        return Number.isNaN(parsed) ? NaN : parsed;
+    }
+    return NaN;
+};
 
-    for (const [objNum, years] of Object.entries(adminData)) {
-        yearObj = null;
-        for (const [year, semesters] of Object.entries(years)) {
-            yearObj = { [year]: {}};
-            for (const [sem, moderations] of Object.entries(semesters)) {
-                yearObj[year][sem] = {};
-                for (const [mod, adminMod] of Object.entries(moderations)) {
-                    // Find data at the same level in the markerData
-                    const markerMod = markerData?.[objNum]?.[year]?.[sem]?.[mod] || {};
-                    // Copy all properties into a new merged object
-                    yearObj[year][sem][mod] = {
-                        ...adminMod,
-                        ...markerMod
-                    };
-                }
-            }
+const compareYears = (a, b) => {
+    const numA = toNumber(a);
+    const numB = toNumber(b);
+    if (!Number.isNaN(numA) && !Number.isNaN(numB)) return numB - numA;
+    return String(b).localeCompare(String(a));
+};
+
+const compareSemesters = (a, b) => {
+    const numA = toNumber(a);
+    const numB = toNumber(b);
+    if (!Number.isNaN(numA) && !Number.isNaN(numB)) return numA - numB;
+    return String(a).localeCompare(String(b));
+};
+
+const compareModerations = (a, b) => {
+    const numA = toNumber(a.moderation_number);
+    const numB = toNumber(b.moderation_number);
+    if (!Number.isNaN(numA) && !Number.isNaN(numB)) return numA - numB;
+    return String(a.name || "").localeCompare(String(b.name || ""));
+};
+
+const normalizeModerations = (modules) => {
+    const grouped = new Map();
+
+    modules.forEach((module) => {
+        const yearKey = module.year ?? "Other";
+        const semesterKey = module.semester ?? "Other";
+
+        if (!grouped.has(yearKey)) {
+            grouped.set(yearKey, new Map());
         }
-        merged.push(yearObj);
+        const semesterMap = grouped.get(yearKey);
+        if (!semesterMap.has(semesterKey)) {
+            semesterMap.set(semesterKey, []);
+        }
+        semesterMap.get(semesterKey).push(module);
+    });
+
+    return Array.from(grouped.entries())
+        .sort((a, b) => compareYears(a[0], b[0]))
+        .map(([year, semesterMap]) => ({
+            year,
+            semesters: Array.from(semesterMap.entries())
+                .sort((a, b) => compareSemesters(a[0], b[0]))
+                .map(([semester, mods]) => ({
+                    semester,
+                    modules: mods.sort(compareModerations)
+                }))
+        }));
+};
+
+const createStatusMessage = (message, state = "info") => {
+    const paragraph = document.createElement("p");
+    paragraph.className = "modules-status";
+    paragraph.dataset.state = state;
+    paragraph.textContent = message;
+    return paragraph;
+};
+
+const appendRow = (table, label, value, options = {}) => {
+    const row = document.createElement("tr");
+    const labelCell = document.createElement("td");
+    labelCell.textContent = label;
+    row.appendChild(labelCell);
+
+    const valueCell = document.createElement("td");
+    if (options.link) {
+        const link = document.createElement("a");
+        link.href = options.link;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = value || "Open";
+        valueCell.appendChild(link);
+    } else if (options.wrap instanceof HTMLElement) {
+        valueCell.appendChild(options.wrap);
+    } else {
+        valueCell.textContent = value || "-";
     }
 
-    return merged;
-}
+    row.appendChild(valueCell);
+    table.appendChild(row);
+};
 
-// Creates collapsible accordions for years and semesters,
-// and moderation tables inside the semesters' accordions.
-// Collapsibles/Accordion Tutorial on https://www.w3schools.com/howto/howto_js_accordion.asp
-// https://www.w3schools.com/html/html_table_headers.asp
-async function createModerationTables(data, createTableFn) {
-    const container = document.getElementById("accordions");
-    if (!container) return;
+const createModuleColumn = (module, role) => {
+    const column = document.createElement("div");
+    column.className = "column";
 
-    data.forEach(yearObj => {
-        // One key in each object which is the year
-        const year = Object.keys(yearObj)[0];
-        const semesters = yearObj[year];
+    const table = document.createElement("table");
+    table.className = "moderation-table";
 
-        // Create year accordion button
-        const yearBtn = document.createElement("button");
-        yearBtn.className = "accordion";
-        yearBtn.textContent = year;
+    const headerRow = document.createElement("tr");
+    const headerCell = document.createElement("th");
+    headerCell.colSpan = 2;
+
+    const headerWrapper = document.createElement("span");
+    headerWrapper.className = "table-header";
+
+    const title = module.name || (module.moderation_number ? `Moderation ${module.moderation_number}` : "Moderation");
+    const moduleUrl = role === "admin"
+        ? `/admin/module-detail.html?id=${encodeURIComponent(module.id)}`
+        : `/marker/moderation-page.html?id=${encodeURIComponent(module.id)}`;
+
+    const link = document.createElement("span");
+    link.className = "moderation-link";
+    link.textContent = title;
+    link.addEventListener("click", () => {
+        window.location.href = moduleUrl;
+    });
+
+    headerWrapper.appendChild(link);
+
+    if (role === "admin") {
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "table-checkbox";
+        checkbox.style.display = "none";
+        headerWrapper.appendChild(checkbox);
+    }
+
+    headerCell.appendChild(headerWrapper);
+    headerRow.appendChild(headerCell);
+    table.appendChild(headerRow);
+
+    if (role === "admin") {
+        appendRow(table, "Moderation", module.moderation_number ?? "-");
+        appendRow(table, "Deadline", formatDate(module.deadline_date));
+        appendRow(table, "Uploaded", formatDate(module.upload_date));
+        appendRow(table, "Description", module.description || "No description provided.");
+    } else {
+        appendRow(table, "Deadline", formatDate(module.deadline_date));
+        appendRow(table, "Uploaded", formatDate(module.upload_date));
+        appendRow(table, "Description", module.description || "No description provided.");
+    }
+
+    if (module.assignment_public_url) {
+        appendRow(table, "Assignment", "Download", { link: module.assignment_public_url });
+    }
+
+    if (module.rubric_public_url) {
+        appendRow(table, "Rubric", "Download", { link: module.rubric_public_url });
+    }
+
+    column.appendChild(table);
+    return column;
+};
+
+const renderModerations = (groupedData, role, container) => {
+    groupedData.forEach(({ year, semesters }) => {
+        const yearButton = document.createElement("button");
+        yearButton.className = "accordion";
+        yearButton.textContent = year === "Other" ? "Year not specified" : `Year ${year}`;
 
         const yearPanel = document.createElement("div");
         yearPanel.className = "panel";
 
-        // Loop through semesters
-        Object.entries(semesters).forEach(([sem, moderations]) => {
-            const semBtn = document.createElement("button");
-            semBtn.className = "accordion1";
-            semBtn.textContent = `Semester ${sem}`;
+        semesters.forEach(({ semester, modules }) => {
+            const semesterButton = document.createElement("button");
+            semesterButton.className = "accordion1";
+            semesterButton.textContent = semester === "Other"
+                ? "Semester not specified"
+                : `Semester ${semester}`;
 
-            const semPanel = document.createElement("div");
-            semPanel.className = "panel";
+            const semesterPanel = document.createElement("div");
+            semesterPanel.className = "panel";
 
             const row = document.createElement("div");
             row.className = "row";
 
-            // Loop through moderations
-            Object.entries(moderations).forEach(([modNumber, modData]) => {
-                const column = createTableFn(modNumber, modData);
-                row.appendChild(column);
+            modules.forEach((module) => {
+                row.appendChild(createModuleColumn(module, role));
             });
 
-            semPanel.appendChild(row);
-            yearPanel.appendChild(semBtn);
-            yearPanel.appendChild(semPanel);
-
-            const lineBreak = document.createElement("br");
-            yearPanel.appendChild(lineBreak);
+            semesterPanel.appendChild(row);
+            yearPanel.appendChild(semesterButton);
+            yearPanel.appendChild(semesterPanel);
+            yearPanel.appendChild(document.createElement("br"));
         });
 
-        container.appendChild(yearBtn);
+        container.appendChild(yearButton);
         container.appendChild(yearPanel);
-
-        const lineBreak = document.createElement("br");
-        container.appendChild(lineBreak);
+        container.appendChild(document.createElement("br"));
     });
 
-    // Call from accordions-toggle.js
-    var accordion = document.getElementsByClassName("accordion");
-    var accordion1 = document.getElementsByClassName("accordion1");
-    toggleAccordion(accordion);
-    toggleAccordion(accordion1);
-}
+    const accordion = document.getElementsByClassName("accordion");
+    const accordion1 = document.getElementsByClassName("accordion1");
+    if (typeof toggleAccordion === "function") {
+        toggleAccordion(accordion);
+        toggleAccordion(accordion1);
+    }
+};
 
-// HTML code to generate the admin's moderation tables
-function createAdminTable(modNumber, modData) {
-    const column = document.createElement("div");
-    column.className = "column";
+window.addEventListener("DOMContentLoaded", async () => {
+    const container = document.getElementById("accordions");
+    if (!container) return;
 
-    // Also add a link to a page for each moderation (and generate the content depending on the link clicked)
-    // Eg: Get the Year, Semester, and Moderation of the link and extract the appropriate data from the DB
-    column.innerHTML = `
-        <table class="moderation-table">
-            <tr>
-                <th colspan="2">
-                    <span class="table-header">
-                        <span class="moderation-link" onclick="window.location.href=
-                            '../example-moderation-pages/admin-moderation.html'">
-                            Moderation ${modNumber}
-                        </span>
-                        <input type="checkbox" class="table-checkbox">
-                    </span>
-                </th>
-            </tr>
-            <tr><td>Admin Marks</td><td>${modData["Admin Marks"] ?? "-"}</td></tr>
-            <tr><td>Average</td><td>${modData["Average"] ?? "-"}</td></tr>
-            <tr><td>Variation</td><td>${modData["Variation"] ?? "-"}</td></tr>
-            <tr><td>Distribution</td><td>${modData["Distribution"] ?? "-"}</td></tr>
-        </table>
-    `;
+    const role = document.body.dataset.role || "admin";
 
-    return column;
-}
+    container.textContent = "";
+    container.appendChild(createStatusMessage("Loading modules…"));
 
-// HTML code to generate the marker's moderation tables
-function createMarkerTable(modNumber, modData) {
-    const column = document.createElement("div");
-    column.className = "column";
+    const headers = {};
+    if (typeof token !== "undefined" && token) {
+        headers["Authorization"] = "Bearer " + token;
+    }
 
-    const adminMarks = modData["Admin Marks"];
-    const markerMarks = modData["Marks"];
-    const difference = (adminMarks && markerMarks)
-        ? markerMarks - adminMarks
-        : "-";
+    try {
+        const res = await fetch("/api/moderations", { headers });
+        if (!res.ok) {
+            throw new Error(`Failed to fetch modules: ${res.status}`);
+        }
 
-    column.innerHTML = `
-        <table class="moderation-table">
-            <tr>
-                <th colspan="2">
-                    <span class="table-header">
-                        <span class="moderation-link" onclick="window.location.href=
-                            '../example-moderation-pages/marker-moderation.html'">
-                            Moderation ${modNumber}
-                        </span>
-                    </span>
-                </th>
-            </tr>
-            <tr><td>Admin Marks</td><td>${adminMarks ?? "-"}</td></tr>
-            <tr><td>Your Marks</td><td>${markerMarks ?? "-"}</td></tr>
-            <tr><td>Difference</td><td>${difference}</td></tr>
-        </table>
-    `;
+        const payload = await res.json();
+        const modules = Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload.moderations)
+                ? payload.moderations
+                : [];
 
-    return column;
-}
+        container.textContent = "";
+
+        if (modules.length === 0) {
+            container.appendChild(createStatusMessage("No modules have been published yet."));
+            return;
+        }
+
+        const grouped = normalizeModerations(modules);
+        renderModerations(grouped, role, container);
+    } catch (err) {
+        console.error("Failed to load moderations", err);
+        container.textContent = "";
+        container.appendChild(createStatusMessage(
+            "We couldn't load the modules right now. Please try again later.",
+            "error"
+        ));
+    }
+});

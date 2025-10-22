@@ -183,5 +183,54 @@ export default function uploadRoutes(supabase) {
         }
     })
 
+    router.get("/moderations", async (_req, res) => {
+        try {
+            const { data, error } = await supabase
+                .from("moderations")
+                .select("*")
+                .order("year", { ascending: false, nullsFirst: false })
+                .order("semester", { ascending: true, nullsFirst: false })
+                .order("moderation_number", { ascending: true, nullsFirst: false })
+
+            if (error) {
+                console.error("Failed to fetch modules:", error)
+                return res.status(500).json({ error: "Failed to fetch modules" })
+            }
+
+            const moderations = (data || []).map((module) => {
+                const assignmentPublicUrl = module.assignment_url
+                    ? supabase.storage
+                        .from("comp30022-amt")
+                        .getPublicUrl(module.assignment_url).data.publicUrl
+                    : null
+
+                const rubricPublicUrl = module.rubric_url
+                    ? supabase.storage
+                        .from("comp30022-amt")
+                        .getPublicUrl(module.rubric_url).data.publicUrl
+                    : null
+
+                return {
+                    id: module.id,
+                    name: module.name,
+                    year: module.year,
+                    semester: module.semester,
+                    moderation_number: module.moderation_number,
+                    deadline_date: module.deadline_date,
+                    upload_date: module.upload_date,
+                    description: module.description,
+                    assignment_public_url: assignmentPublicUrl,
+                    rubric_public_url: rubricPublicUrl,
+                    rubric: module.rubric
+                }
+            })
+
+            res.json({ moderations })
+        } catch (err) {
+            console.error("Failed to fetch modules:", err)
+            res.status(500).json({ error: "Server error" })
+        }
+    })
+
     return router
 }
