@@ -29,9 +29,44 @@ async function listingHandler() {
 
     });
 
-
 }
 
-window.addEventListener('DOMContentLoaded', listingHandler);
+window.addEventListener('DOMContentLoaded', async() => {
+    await listingHandler()
+
+    const editButton = document.getElementById('edit-button')
+    let editFunction = false
+
+    editButton.addEventListener('click', () => {
+        editFunction = !editFunction
+        const deleteImage = document.querySelectorAll('.remove-user')
+        deleteImage.forEach(image => {
+            if(editFunction){
+                image.style.display = 'inline'
+            } else {
+                image.style.display = 'none'
+            }
+        })
+        if(editFunction) {
+            editButton.textContent = 'Done'
+        } else {
+            editButton.textContent = 'Edit'
+        }
+    })
+
+    const listOfStaff = document.getElementById("staff-list")
+    listOfStaff.addEventListener("click", (e) => {
+        const button = e.target.closest(".remove-user")
+        if(!button){
+            return
+        }
+        const staffCard = button.closest(".staff-card")
+        if(staffCard){
+            staffCard.remove()
+        }
+
+    })
+
+})
 
 
