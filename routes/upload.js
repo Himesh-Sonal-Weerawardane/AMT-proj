@@ -95,13 +95,38 @@ export default function uploadRoutes(supabase) {
             console.log("[UploadModeration] Rubric URL:", rubricUrl)
 
             // Access text fields
-            const { year, semester, moderation_number, name, deadline_date, description } = req.body
-            console.log("[UploadModeration] Preparing database insert with:", {
+            const {
                 year,
                 semester,
                 moderation_number,
                 name,
                 deadline_date,
+                due_date,
+                description
+            } = req.body
+            const resolvedDueDate = due_date || deadline_date || null
+            const normaliseNumber = (value) => {
+                if (value === undefined || value === null || value === "") return null
+                const numberValue = Number(value)
+                return Number.isNaN(numberValue) ? null : numberValue
+            }
+            const normaliseText = (value) => {
+                if (typeof value !== "string") return null
+                const trimmed = value.trim()
+                return trimmed === "" ? null : trimmed
+            }
+            const normaliseDate = (value) => {
+                if (typeof value !== "string") return null
+                const trimmed = value.trim()
+                return trimmed === "" ? null : trimmed
+            }
+            const normalizedDueDate = normaliseDate(resolvedDueDate)
+            console.log("[UploadModeration] Preparing database insert with:", {
+                year,
+                semester,
+                moderation_number,
+                name,
+                due_date: normalizedDueDate,
                 description,
                 assignmentUrl,
                 rubricUrl,
@@ -112,17 +137,16 @@ export default function uploadRoutes(supabase) {
             const { data, error } = await supabase
                 .from("moderations")
                 .insert([{
-                    name,
-                    year,
-                    semester,
-                    moderation_number,
-                    deadline_date,
-                    description,
+                    name: normaliseText(name),
+                    year: normaliseNumber(year),
+                    semester: normaliseNumber(semester),
+                    moderation_number: normaliseNumber(moderation_number),
+                    description: normaliseText(description),
+                    due_date: normalizedDueDate,
+                    rubric_json: rubricJSON.length ? rubricJSON : null,
                     assignment_url: assignmentUrl,
-                    rubric_url: rubricUrl,
-                    rubric: rubricJSON,
-                    upload_date: new Date().toISOString()
-            }])
+                    rubric_url: rubricUrl
+                }])
 
             if (error) {
                 console.error("[UploadModeration] Failed to insert module:", error)
