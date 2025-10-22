@@ -20,6 +20,8 @@
 
 <div class="container">
 
+    <div id="moderation-status" class="moderation-status" hidden></div>
+
     <!-- left panel: assignment document-->
     <div class="left-panel">
         <div class="title-tab">
@@ -30,7 +32,8 @@
             </div>
         </div>
         <div id="moderation-subtitle">Moderation 1</div>
-        <iframe id="moderation-doc"></iframe>
+        <iframe id="moderation-doc" title="Assignment document"></iframe>
+        <p id="assignment-placeholder" class="assignment-placeholder" hidden>No assignment file is available for this module yet.</p>
     </div>
 
     <div id="drag-bar" class="vertical-divider"></div>
@@ -58,7 +61,7 @@
 
         <div id="Description" class="tab-content">
             <h3 style="margin: 10px 0 20px 10px; font-size: 20px">Description</h3>
-            <p>To be parsed...</p>
+            <p id="module-description">To be parsed...</p>
         </div>
 
 

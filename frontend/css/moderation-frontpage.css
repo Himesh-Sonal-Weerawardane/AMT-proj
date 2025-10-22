@@ -81,6 +81,22 @@ body {
   overflow: hidden;
 }
 
+.modules-status {
+  font-size: 16px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  color: #1f2937;
+}
+
+.modules-status[data-state="error"] {
+  background-color: #fff5f5;
+  border-color: #ffc9c9;
+  color: #c92a2a;
+}
+
 /*****************************************************************/
 .table-header {
   display: flex;
@@ -116,6 +132,26 @@ body {
 .column {
   flex: 50%;
   padding: 10px;
+}
+
+.column--hidden .moderation-table {
+  opacity: 0.55;
+}
+
+.column--hidden .moderation-link {
+  position: relative;
+}
+
+.column--hidden .moderation-link::after {
+  content: " (Hidden)";
+  font-size: 14px;
+  font-weight: 400;
+  color: #b91c1c;
+}
+
+td [data-visibility-label] {
+  font-weight: 500;
+  color: #1f2937;
 }
 
 table {

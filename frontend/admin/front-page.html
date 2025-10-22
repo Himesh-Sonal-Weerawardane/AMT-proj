@@ -73,14 +73,40 @@
                         <a href="moderation.html">Moderation 1</a>
                     </div>
                     <div class="mini-divider-2"></div>
-                    <canvas id="myChart1"></canvas>
+                    <div class="moderation-progress">
+                        <div class="chart-wrapper" data-chart-id="myChart1" data-marked="5" data-unmarked="3">
+                            <canvas id="myChart1"></canvas>
+                            <div class="chart-center">
+                                <span class="chart-count"></span>
+                                <span class="chart-center-label">Marked</span>
+                            </div>
+                        </div>
+                        <ul class="progress-breakdown">
+                            <li><span class="legend-dot legend-marked"></span>Marked: <span class="detail-value" data-detail="marked"></span></li>
+                            <li><span class="legend-dot legend-unmarked"></span>Unmarked: <span class="detail-value" data-detail="unmarked"></span></li>
+                            <li>Total: <span class="detail-value" data-detail="total"></span></li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="moderation-box">
                     <div class="moderation-title-2">
                         <a href="moderation2.html">Moderation 2</a>
                     </div>
                     <div class="mini-divider-2"></div>
-                    <canvas id="myChart2"></canvas>
+                    <div class="moderation-progress">
+                        <div class="chart-wrapper" data-chart-id="myChart2" data-marked="0" data-unmarked="8">
+                            <canvas id="myChart2"></canvas>
+                            <div class="chart-center">
+                                <span class="chart-count"></span>
+                                <span class="chart-center-label">Marked</span>
+                            </div>
+                        </div>
+                        <ul class="progress-breakdown">
+                            <li><span class="legend-dot legend-marked"></span>Marked: <span class="detail-value" data-detail="marked"></span></li>
+                            <li><span class="legend-dot legend-unmarked"></span>Unmarked: <span class="detail-value" data-detail="unmarked"></span></li>
+                            <li>Total: <span class="detail-value" data-detail="total"></span></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 

@@ -1,39 +1,75 @@
+const chartWrappers = document.querySelectorAll('.chart-wrapper');
 
-
-var xValues = ["Marked", "Unmarked"];
-var yValues = [3,3];
-var barColors = ["green", "red"];
-
-new Chart("myChart1", {
-    type: "doughnut",
-    data: {
-        labels: xValues,
-        datasets: [{
-            backgroundColor: barColors,
-            data: yValues
-        }]
-    },
-    options: {
-        cutoutPercentage: 80,
+chartWrappers.forEach((wrapper) => {
+    const canvas = wrapper.querySelector('canvas');
+    if (!canvas) {
+        return;
     }
-});
 
-var xValues2 = ["Pending"];
-var yValues2 = [100];
-var barColors2 = ["grey"];
+    const marked = parseInt(wrapper.dataset.marked, 10) || 0;
+    const unmarked = parseInt(wrapper.dataset.unmarked, 10) || 0;
+    const total = marked + unmarked;
 
+    new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: ['Marked', 'Unmarked'],
+            datasets: [{
+                backgroundColor: ['#1B998B', '#E94F37'],
+                borderWidth: 0,
+                hoverOffset: 6,
+                data: [marked, unmarked]
+            }]
+        },
+        options: {
+            cutoutPercentage: 72,
+            legend: {
+                display: false
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        const label = data.labels[tooltipItem.index] || '';
+                        const value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                        return `${label}: ${value}`;
+                    }
+                }
+            },
+            maintainAspectRatio: false
+        }
+    });
 
+    const countEl = wrapper.querySelector('.chart-count');
+    const labelEl = wrapper.querySelector('.chart-center-label');
+    if (countEl) {
+        if (marked === 0 && labelEl) {
+            countEl.textContent = 'Pending';
+            countEl.classList.add('pending');
+            labelEl.textContent = '';
+        } else {
+            countEl.textContent = marked;
+            if (labelEl) {
+                labelEl.textContent = 'Marked';
+            }
+        }
+    }
 
-new Chart("myChart2", {
-    type: "doughnut",
-    data: {
-        labels: xValues2,
-        datasets: [{
-            backgroundColor: barColors2,
-            data: yValues2
-        }]
-    },
-    options: {
-        cutoutPercentage: 80,
+    const parent = wrapper.closest('.moderation-progress');
+    if (!parent) {
+        return;
+    }
+
+    const markedDetail = parent.querySelector('[data-detail="marked"]');
+    const unmarkedDetail = parent.querySelector('[data-detail="unmarked"]');
+    const totalDetail = parent.querySelector('[data-detail="total"]');
+
+    if (markedDetail) {
+        markedDetail.textContent = marked;
+    }
+    if (unmarkedDetail) {
+        unmarkedDetail.textContent = unmarked;
+    }
+    if (totalDetail) {
+        totalDetail.textContent = total;
     }
 });

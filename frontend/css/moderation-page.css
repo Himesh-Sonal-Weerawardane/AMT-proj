@@ -10,6 +10,21 @@ html, body {
     letter-spacing: 0.04em;
 }
 
+.moderation-status {
+    margin: 20px;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    color: #1f2937;
+}
+
+.moderation-status[data-state="error"] {
+    background-color: #fff5f5;
+    border-color: #ffc9c9;
+    color: #c92a2a;
+}
+
 /* Titles */
 
 .title-tab {
@@ -157,6 +172,24 @@ html, body {
     content: attr(data-placeholder);
     color: lightgray;
     pointer-events: none;
+}
+
+.assignment-placeholder {
+    margin: 20px;
+    color: #6b7280;
+    font-style: italic;
+}
+
+.rubric-empty-message {
+    margin: 30px;
+    color: #6b7280;
+    font-style: italic;
+}
+
+.score-unavailable {
+    margin: 20px 30px;
+    color: #6b7280;
+    font-style: italic;
 }
 
 .score-wrapper {
