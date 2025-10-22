@@ -143,9 +143,13 @@ body {
 
 .moderation-box {
     border: 3px solid darkgray;
-    border-radius: 5px;
-    width: 800px;
+    border-radius: 12px;
+    width: 430px;
     height: 270px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .moderation-title-2 {
@@ -159,10 +163,96 @@ body {
     background-color: darkgray;
 }
 
+.moderation-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    gap: 24px;
+    flex: 1;
+}
 
-#myChart1, #myChart2 {
-    width: 300px;
-    height: 300px;
+.chart-wrapper {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    flex-shrink: 0;
+}
+
+.chart-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.chart-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.chart-count {
+    font-size: 42px;
+    font-weight: 600;
+    color: #333333;
+    line-height: 1;
+}
+
+.chart-count.pending {
+    font-size: 24px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6c6c6c;
+}
+
+.chart-center-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c6c6c;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.progress-breakdown {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 15px;
+    color: #3a3a3a;
+}
+
+.progress-breakdown li {
+    display: flex;
+    align-items: center;
+}
+
+.legend-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.legend-marked {
+    background-color: #1B998B;
+}
+
+.legend-unmarked {
+    background-color: #E94F37;
+}
+
+.detail-value {
+    font-weight: 600;
+    margin-left: 6px;
 }
 
 .panel-2 {
