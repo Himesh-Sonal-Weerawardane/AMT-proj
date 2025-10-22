@@ -1,16 +1,10 @@
 import express from "express";
 import multer from "multer";
 import fs from "fs";
-import parseDOCX from './parse.js';
-
-// Required Imports
+import parseDOCX from './parseDoc&Docx.js';
+import parsePDF from './parsePDF.js';
+import parseXLSX from './parseXlsx.js';
 import path from "path"; // Used for file type filtering
-
-import * as XLSX from "xlsx";
-import path from "path";
-import util from "util";
-import libre from "libreoffice-convert";
-import pdf from "pdf-parse";
 
 const upload = multer({ dest: "uploads/" }); // temp folder
 
@@ -46,7 +40,8 @@ export default function uploadRoutes(supabase) {
             }
 
             // Module to be created
-            const { year, semester, assignment_num, moderation_num, name, deadline_date, description } = req.body
+            const { moderation_title, year, semester, assignment_number, 
+                moderation_number, description, due_date } = req.body
 
             // Check if the data (year and deadline_date) is valid
 
@@ -59,11 +54,11 @@ export default function uploadRoutes(supabase) {
             // Check if this module does not already exist
             const { data: moderationData, error: moderationError } = await supabase
                 .from("moderations")
-                .select("moderation_id")
+                .select("id")
                 .eq("year", year)
                 .eq("semester", semester)
-                .eq("assignment_num", assignment_num)
-                .eq("moderation_num", moderation_num)
+                .eq("assignment_number", assignment_number)
+                .eq("moderation_number", moderation_number)
 
             if (moderationError) {
                 return res.json({ error: "Error trying to access the database" });
@@ -85,29 +80,15 @@ export default function uploadRoutes(supabase) {
                 console.log("Automated rubric parsing begins...");
                 const ext = path.extname(rubricFile.originalname).toLowerCase();
                 try {
-                    if (ext === ".docx") {
-                        console.log("DOCX parsing started...");
+                    if (ext === ".doc" || ext === ".docx") {
+                        console.log("DOC/DOCX parsing started...");
                         const { title, tables } = await parseDOCX({ file: rubricFile.path });
                         rubricJSON = transformTableToRubric(tables, title, rubricFile);
-                        console.log("DOCX parsing completed!");
-
-                    } else if (ext === ".doc") {
-                        // Convert .doc to .docx and, re-use the parse.
-                        try {
-                            rubricJSON = await parseDOC(rubricFile.path);
-                        } catch (err) {
-                            return res.json({ error: "DOC parsing failed" });
-                        }
-
+                        console.log("DOC/DOCX parsing completed!");
                     } else if (ext === ".pdf") {
-                        // Adapted from: https://www.npmjs.com/package/pdf-parse 
                         rubricJSON = parsePDF(rubricFile.path);
-
                     } else if (ext === ".xlsx") {
-                        // Uses .xlsx npm package to read the spreadsheet
-                        // Requires the xlsx to follow a fixed structure. Multiple sheets are allowed.
                         rubricJSON = await parseXLSX(rubricFile.path);
-
                     } else {
                         return res.json({ error: "Unsupported rubric file type" });
                     }
@@ -121,6 +102,10 @@ export default function uploadRoutes(supabase) {
                 console.log("Automated rubric parsing completed!");
             } else {
                 return res.json({ error: "Rubric required (file or manual entry)" });
+            }
+
+            if (Object.keys(rubricJSON).length === 0) {
+                return res.json({ error: "Rubric parsing failed" });
             }
 
             // Module does not exist, can create module
@@ -186,18 +171,19 @@ export default function uploadRoutes(supabase) {
             const { data, error } = await supabase
                 .from("moderations")
                 .insert([{
-                    name,
+                    // automatic moderation id
+                    admin_id: userData.user_id,
+                    moderation_title,
                     year,
                     semester,
-                    assignment_num,
-                    moderation_num,
-                    deadline_date,
+                    assignment_number,
+                    moderation_number,
                     description,
-                    assignment_path: assignmentPath,
-                    rubric_path: rubricPath,
-                    rubric: rubricJSON,
-                    upload_date: new Date().toISOString(),
-                    admin_id: userData.user_id
+                    due_date,
+                    rubric_json: rubricJSON,
+                    created_at: new Date().toISOString(),
+                    assignment_url: assignmentPath,
+                    rubric_url: rubricPath,
             }]);
 
             if (error) {
@@ -220,163 +206,7 @@ export default function uploadRoutes(supabase) {
 }
 
 
-// import * as XLSX from "xlsx";
-
-export async function parseXLSX(filePath) {
-  const workbook = XLSX.readFile(filePath);
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-  if (rows.length < 2) {
-    throw new Error("Invalid rubric XLSX: not enough rows");
-  }
-
-  // First row = header
-  const header = rows[0];
-  const gradeNames = header.slice(1, header.length - 1); // skip first col (criterion) and last col (max points)
-
-  const rubricJSON = {
-    rubric: {
-      rubricTitle: sheetName,
-      xlsxFile: filePath.split("/").pop()
-    },
-    criteria: []
-  };
-
-  // Loop over each criterion row
-  for (let i = 1; i < rows.length; i++) {
-    const row = rows[i];
-    const criterion = row[0];
-    const maxPoints = Number(row[row.length - 1]) || 0;
-
-    const criterionObj = {
-      criterion,
-      maxPoints,
-      grades: []
-    };
-
-    // Loop over grade columns
-    for (let j = 0; j < gradeNames.length; j++) {
-      const grade = gradeNames[j];
-      const description = (row[j + 1] || "").toString().split("\n").map(l => l.trim()).filter(Boolean);
-
-      criterionObj.grades.push({
-        grade,
-        pointsRange: "", // XLSX may not have explicit ranges
-        description
-      });
-    }
-
-    rubricJSON.criteria.push(criterionObj);
-  }
-
-  return rubricJSON;
-}
-
-
-// import fs from "fs";
-// import path from "path";
-// import util from "util";
-// import libre from "libreoffice-convert";
-
-libre.convertAsync = util.promisify(libre.convert);
-
-/**
- * Convert a .doc file to .docx and parse it into rubric JSON
- * @param {string} inputPath - Path to the uploaded .doc file
- * @returns {Promise<Object>} rubricJSON
- */
-export async function parseDOC(inputPath) {
-  try {
-    // Output path: same folder, with .converted.docx suffix
-    const outputPath = inputPath + ".converted.docx";
-
-    // Read, convert, and write the DOCX
-    const docBuf = await fs.promises.readFile(inputPath);
-    const docxBuf = await libre.convertAsync(docBuf, ".docx", undefined);
-    await fs.promises.writeFile(outputPath, docxBuf);
-    console.log("DOC converted to DOCX successfully!");
-
-    // Parse the converted DOCX
-    const { title, tables } = await parseDOCX({ file: outputPath });
-    const rubricJSON = transformTableToRubric(tables, title, {
-      originalname: path.basename(outputPath),
-    });
-
-    return rubricJSON;
-  } catch (err) {
-    console.error("Error converting/parsing DOC:", err);
-    throw err;
-  }
-}
-
-
-// import fs from "fs";
-// import pdf from "pdf-parse";
-
-/**
- * Parse a rubric PDF into JSON structure
- * @param {string} filePath - Path to the uploaded PDF file
- * @returns {Promise<Object>} rubricJSON
- */
-export default async function parsePDF(filePath) {
-  try {
-    const dataBuffer = fs.readFileSync(filePath);
-    const data = await pdf(dataBuffer);
-
-    // Extract raw text
-    const text = data.text;
-    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-
-    // First line = rubric title
-    const rubricTitle = lines[0] || "Recommended Rubric";
-
-    // Assumes criteria are separated by blank lines or keywords / can change based on pdf structure.
-    const criteria = [];
-    let currentCriterion = null;
-
-    for (let line of lines.slice(1)) {
-      // Example: detect criterion headers by "Criterion:" or numbering
-      if (/^Criterion/i.test(line) || /^\d+\./.test(line)) {
-        if (currentCriterion) criteria.push(currentCriterion);
-        currentCriterion = {
-          criterion: line.replace(/^Criterion[:\s]*/i, ""),
-          maxPoints: 0,
-          grades: []
-        };
-      } else if (/^\(.*\)$/.test(line)) {
-        // Points range in parentheses, e.g. "(8-10)"
-        if (currentCriterion) {
-          currentCriterion.grades.push({
-            grade: "Unknown",
-            pointsRange: line,
-            description: []
-          });
-        }
-      } else {
-        // Treat as description text
-        if (currentCriterion && currentCriterion.grades.length > 0) {
-          currentCriterion.grades[currentCriterion.grades.length - 1].description.push(line);
-        }
-      }
-    }
-    if (currentCriterion) criteria.push(currentCriterion);
-        return {
-            rubric: {
-                rubricTitle,
-                pdfFile: filePath.split("/").pop()
-            },
-            criteria
-        };
-    } catch (err) {
-        console.error("Error parsing PDF rubric:", err);
-        throw err;
-    }
-}
-
-
-// Transform the rubric into a JSON file
+// Transform the rubric doc/docx parsed file into a JSON file
 function transformTableToRubric(tableData, rubricTitle, rubricFile) {
     const rubricJSON = {
         rubric: {
