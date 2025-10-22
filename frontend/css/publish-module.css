@@ -209,6 +209,16 @@ body {
     padding-top: 16px;
 }
 
+#handsontable-grid {
+    width: 100%;
+    height: 400px; /* or whatever height you want */
+    overflow: hidden; /* prevent double scrollbar */
+}
+
+#manual-rubric {
+    display: none;
+}
+
 .publish-button {
     font-size: 16px;
     padding: 12px 32px;

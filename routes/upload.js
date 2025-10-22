@@ -40,16 +40,26 @@ export default function uploadRoutes(supabase) {
             }
 
             // Module to be created
-            const { moderation_title, year, semester, assignment_number, 
-                moderation_number, description, due_date } = req.body
+            // rubric_input_method is either "automatic" or "manual"
+            const { name, year, semester, assignment_number, 
+                moderation_number, description, due_date,
+                is_rubric_uploaded, rubric_table } = req.body
+            
+            const isRubricUploaded = is_rubric_uploaded === "true";
+            // console.log(JSON.stringify(rubric_table, null, 2));
 
             // Check if the data (year and deadline_date) is valid
 
-            // Assignment and Rubric files
+            // Assignment file
             const assignmentFile = req.files.assignment?.[0];
-            const rubricFile = req.files.rubric?.[0];
             if (!assignmentFile) return res.json({ error: "Assignment file required" });
-            if (!rubricFile) return res.json({ error: "Rubric file required" });
+
+            // Rubric
+            let rubricFile;
+            if (isRubricUploaded) {
+                rubricFile = req.files.rubric?.[0];
+                if (!rubricFile) return res.json({ error: "Rubric file required" });
+            }
 
             // Check if this module does not already exist
             const { data: moderationData, error: moderationError } = await supabase
@@ -71,10 +81,10 @@ export default function uploadRoutes(supabase) {
             // Added the file parsing here.
             let rubricJSON = {};
 
-            if (req.body.rubric) {
+            if (!isRubricUploaded) {
                 // Manual JSON entry
                 console.log("Manual rubric entry begins...");
-                rubricJSON = JSON.parse(req.body.rubric);
+                rubricJSON = JSON.parse(rubric_table);
                 console.log("Manual rubric entry completed!");
             } else if (rubricFile) {
                 console.log("Automated rubric parsing begins...");
@@ -153,16 +163,19 @@ export default function uploadRoutes(supabase) {
             // if (error) throw error;
 
             // Upload rubric to storage bucket
-            const rubricPath = `rubrics/${year}/${rubricFile.originalname}`;
-            if (rubricFile) {
-                const fileBuffer = fs.readFileSync(rubricFile.path);
-                const { data, error } = await supabase.storage
-                    .from("comp30022-amt")
-                    .upload(rubricPath, fileBuffer, {
-                        contentType: rubricFile.mimetype,
-                        upsert: true
-                    });
-                if (error) throw error;
+            let rubricPath = null;
+            if (isRubricUploaded) {
+                rubricPath = `rubrics/${year}/${rubricFile.originalname}`;
+                if (rubricFile) {
+                    const fileBuffer = fs.readFileSync(rubricFile.path);
+                    const { data, error } = await supabase.storage
+                        .from("comp30022-amt")
+                        .upload(rubricPath, fileBuffer, {
+                            contentType: rubricFile.mimetype,
+                            upsert: true
+                        });
+                    if (error) throw error;
+                }
             }
 
             console.log("Trying to insert in database...")
@@ -173,6 +186,7 @@ export default function uploadRoutes(supabase) {
                 .insert([{
                     // automatic moderation id
                     admin_id: userData.user_id,
+                    name,
                     year,
                     semester,
                     assignment_number,
@@ -219,7 +233,7 @@ function transformTableToRubric(tableData, rubricTitle, rubricFile) {
     // Loop through grade columns (columns 1 to 5)
     // Loop through grade columns (columns 1 to 5)
     for (let i = 1; i <= 5; i++) {
-        const gradeName = tableData[0][i]?.data?.trim();
+        const gradeName = tableData[0][0][i]?.data?.trim();
         if (gradeName) {
             gradesOrder.push(gradeName);
         }
@@ -265,6 +279,8 @@ function transformTableToRubric(tableData, rubricTitle, rubricFile) {
                 lines.pop(); // remove last line - points range from description
             }
 
+            // NOTE: CHECK THIS
+            // Check this, grad is not being input
             const gradeObj = {
                 grade: gradesOrder[colIndex - 1],
                 pointsRange,

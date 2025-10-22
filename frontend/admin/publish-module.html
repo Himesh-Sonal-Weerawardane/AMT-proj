@@ -6,6 +6,14 @@
   <title>Publish New Module - Admin</title>
   <link rel="stylesheet" href="../css/publish-module.css" />
   <link rel="stylesheet" href="../css/navbar.css">
+  <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/handsontable/styles/handsontable.min.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/handsontable/styles/ht-theme-main.min.css"
+  />
 </head>
 <body>
 
@@ -137,7 +145,17 @@
           <h2 class="upload-section__title">Upload Rubric</h2>
           <span class="upload-section__icon" aria-hidden="true">♡</span>
         </div>
-        <div class="upload-section__content">
+
+        <div class="rubric-mode-toggle">
+          <label for="rubric-mode">Rubric Input Method:</label>
+          <select id="rubric-mode">
+            <option value="automatic" selected>Automatic (Upload DOC/DOCX)</option>
+            <option value="manual">Manual (Enter Table)</option>
+          </select>
+        </div>
+
+        <!-- Automatic Rubric Section (Automatic Upload) -->
+        <div class="upload-section__content" id="automatic-rubric">
           <article class="preview-card" aria-label="Rubric preview">
             <header class="preview-card__header">
               <h3 id="preview-rubric-title" class="preview-card__title">Preview:</h3>
@@ -150,6 +168,7 @@
             >
             </object>
           </article>
+
           <label class="file-dropzone" for="rubric-upload">
             <input
                     class="file-dropzone__input"
@@ -161,6 +180,30 @@
             <span class="file-dropzone__text">Upload here</span>
           </label>
         </div>
+
+        <!-- Manual Rubric Section (Copy data into a table) -->
+        <div id="manual-rubric">
+          <div class="form-group">
+          <label class="form-label" for="rubric-title">Rubric Title</label>
+            <input
+                    class="form-control"
+                    type="text"
+                    id="rubric-title"
+                    name="rubric-title"
+                    placeholder="Enter Rubric Title (Not required)"
+            />
+          </div>
+
+          <br>
+          <div id="rubric-table">
+            <div id="handsontable-grid"></div>
+          </div>
+
+          <ul>How to use:
+            <li>Copy the whole Rubric table from a word document into this table.</li>
+            <li>Right Click to add/delete a row.</li>
+          </ul>
+        </div>
       </section>
 
       <div class="form-actions">
@@ -170,6 +213,7 @@
   </section>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
 <script src="../js/admin/upload-moderation.js"></script>
 <script src="../js/navbar.js"></script>
 
