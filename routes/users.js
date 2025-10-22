@@ -56,19 +56,16 @@ export default function userRoutes(supabase) {
     //Deletes User
     
     router.post("/delete_user/:userID", async (req, res) => {
-        const id = parseInt(req.params.userID)
+        const id = req.params.userID
         try{
             const{data, error} = await supabase
             .from("users")
             .update({
-                email: null,
-                first_name: null,
-                last_name: null,
                 is_deleted: true,
                 current_marker: false
 
             })
-            .eq("userID",id)
+            .eq("auth_id",id)
             if(error) {
                 console.error("be error", error)
                 return res.status(400).json({ error: error.message })  // User has wrong email/password   
@@ -85,6 +82,7 @@ export default function userRoutes(supabase) {
             const{data, error} = await supabase
                 .from("users")
                 .select("auth_id, first_name, last_name, email, is_admin")
+                .eq("is_deleted", false)
             if(error){
                 console.error("be error", error)
                 return res.status(400).json({ error: error.message })  // User has wrong email/password
