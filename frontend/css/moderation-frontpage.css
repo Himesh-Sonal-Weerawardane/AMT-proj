@@ -134,6 +134,26 @@ body {
   padding: 10px;
 }
 
+.column--hidden .moderation-table {
+  opacity: 0.55;
+}
+
+.column--hidden .moderation-link {
+  position: relative;
+}
+
+.column--hidden .moderation-link::after {
+  content: " (Hidden)";
+  font-size: 14px;
+  font-weight: 400;
+  color: #b91c1c;
+}
+
+td [data-visibility-label] {
+  font-weight: 500;
+  color: #1f2937;
+}
+
 table {
   border-radius: 10px;
   border-spacing: 0;

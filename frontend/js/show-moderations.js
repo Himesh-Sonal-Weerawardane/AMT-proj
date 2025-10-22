@@ -102,13 +102,39 @@ const appendRow = (table, label, value, options = {}) => {
         valueCell.textContent = value || "-";
     }
 
+    if (options.dataset && typeof options.dataset === "object") {
+        Object.entries(options.dataset).forEach(([key, val]) => {
+            if (val !== undefined) {
+                valueCell.dataset[key] = String(val);
+            }
+        });
+    }
+
     row.appendChild(valueCell);
     table.appendChild(row);
+};
+
+const createVisibilityIndicator = (hidden) => {
+    const indicator = document.createElement("span");
+    indicator.dataset.visibilityLabel = "true";
+    indicator.textContent = hidden ? "Hidden from markers" : "Visible to markers";
+    return indicator;
 };
 
 const createModuleColumn = (module, role) => {
     const column = document.createElement("div");
     column.className = "column";
+    column.dataset.moduleId = module.id ?? "";
+    column.dataset.moduleName = module.name ?? "";
+    column.dataset.moduleModeration = module.moderation_number ?? "";
+    column.dataset.moduleYear = module.year ?? "";
+    column.dataset.moduleSemester = module.semester ?? "";
+    column.dataset.hiddenFromMarkers = module.hidden_from_markers ? "true" : "false";
+    column.__moduleData = module;
+
+    if (module.hidden_from_markers) {
+        column.classList.add("column--hidden");
+    }
 
     const table = document.createElement("table");
     table.className = "moderation-table";
@@ -150,6 +176,7 @@ const createModuleColumn = (module, role) => {
         appendRow(table, "Moderation", module.moderation_number ?? "-");
         appendRow(table, "Deadline", formatDate(module.deadline_date));
         appendRow(table, "Uploaded", formatDate(module.upload_date));
+        appendRow(table, "Visibility", "", { wrap: createVisibilityIndicator(module.hidden_from_markers) });
         appendRow(table, "Description", module.description || "No description provided.");
     } else {
         appendRow(table, "Deadline", formatDate(module.deadline_date));
@@ -229,7 +256,9 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-        const res = await fetch("/api/moderations", { headers });
+        const url = new URL("/api/moderations", window.location.origin);
+        url.searchParams.set("role", role);
+        const res = await fetch(url.toString(), { headers });
         if (!res.ok) {
             throw new Error(`Failed to fetch modules: ${res.status}`);
         }

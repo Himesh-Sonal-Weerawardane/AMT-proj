@@ -134,6 +134,7 @@ export default function uploadRoutes(supabase) {
             })
 
             console.log("[UploadModeration] Executing Supabase insert for moderations")
+            const timestamp = new Date().toISOString()
             const { data, error } = await supabase
                 .from("moderations")
                 .insert([{
@@ -143,6 +144,9 @@ export default function uploadRoutes(supabase) {
                     moderation_number: normaliseNumber(moderation_number),
                     description: normaliseText(description),
                     due_date: normalizedDueDate,
+                    deadline_date: normalizedDueDate,
+                    upload_date: timestamp,
+                    hidden_from_markers: false,
                     rubric_json: rubricJSON.length ? rubricJSON : null,
                     assignment_url: assignmentUrl,
                     rubric_url: rubricUrl
@@ -207,14 +211,22 @@ export default function uploadRoutes(supabase) {
         }
     })
 
-    router.get("/moderations", async (_req, res) => {
+    router.get("/moderations", async (req, res) => {
         try {
-            const { data, error } = await supabase
+            const { role } = req.query
+
+            let query = supabase
                 .from("moderations")
                 .select("*")
                 .order("year", { ascending: false, nullsFirst: false })
                 .order("semester", { ascending: true, nullsFirst: false })
                 .order("moderation_number", { ascending: true, nullsFirst: false })
+
+            if (role === "marker") {
+                query = query.or("hidden_from_markers.is.null,hidden_from_markers.eq.false")
+            }
+
+            const { data, error } = await query
 
             if (error) {
                 console.error("Failed to fetch modules:", error)
@@ -243,6 +255,7 @@ export default function uploadRoutes(supabase) {
                     deadline_date: module.deadline_date,
                     upload_date: module.upload_date,
                     description: module.description,
+                    hidden_from_markers: module.hidden_from_markers,
                     assignment_public_url: assignmentPublicUrl,
                     rubric_public_url: rubricPublicUrl,
                     rubric: module.rubric
@@ -252,6 +265,58 @@ export default function uploadRoutes(supabase) {
             res.json({ moderations })
         } catch (err) {
             console.error("Failed to fetch modules:", err)
+            res.status(500).json({ error: "Server error" })
+        }
+    })
+
+    router.post("/moderations/batch-delete", async (req, res) => {
+        const { ids } = req.body
+
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: "No module IDs supplied" })
+        }
+
+        try {
+            const { error } = await supabase
+                .from("moderations")
+                .delete()
+                .in("id", ids)
+
+            if (error) {
+                console.error("Failed to delete modules:", error)
+                return res.status(500).json({ error: "Failed to delete modules" })
+            }
+
+            res.json({ success: true })
+        } catch (err) {
+            console.error("Unhandled error deleting modules:", err)
+            res.status(500).json({ error: "Server error" })
+        }
+    })
+
+    router.post("/moderations/batch-visibility", async (req, res) => {
+        const { ids, hidden } = req.body
+
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: "No module IDs supplied" })
+        }
+
+        const shouldHide = Boolean(hidden)
+
+        try {
+            const { error } = await supabase
+                .from("moderations")
+                .update({ hidden_from_markers: shouldHide })
+                .in("id", ids)
+
+            if (error) {
+                console.error("Failed to update module visibility:", error)
+                return res.status(500).json({ error: "Failed to update module visibility" })
+            }
+
+            res.json({ success: true, hidden: shouldHide })
+        } catch (err) {
+            console.error("Unhandled error updating visibility:", err)
             res.status(500).json({ error: "Server error" })
         }
     })
