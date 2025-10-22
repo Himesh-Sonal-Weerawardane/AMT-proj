@@ -49,55 +49,134 @@
         </section>
 
         <section id="module-statistics" class="module-statistics" hidden>
-            <div class="statistics-head">
-                <div>
-                    <h2 id="statistics-heading" class="statistics-heading">Moderation statistics</h2>
-                    <p id="statistics-description" class="statistics-description">Track the current state of marking for this moderation.</p>
-                </div>
-                <p id="statistics-updated" class="statistics-meta" hidden></p>
-            </div>
-
             <div id="statistics-status" class="statistics-status" role="status" hidden></div>
 
-            <div class="statistics-grid">
-                <article class="statistics-card statistics-card--wide">
-                    <header class="statistics-card__header">
-                        <div>
-                            <h3 id="overall-title" class="statistics-card__title">Overall statistics</h3>
-                            <p id="overall-subtitle" class="statistics-card__subtitle" hidden></p>
-                        </div>
-                        <p id="overall-updated" class="statistics-card__meta" hidden></p>
-                    </header>
-                    <div class="statistics-card__body">
-                        <div id="overall-table-wrapper" class="statistics-table-wrapper"></div>
-                    </div>
-                </article>
+            <div class="statistics-wireframe">
+                <h1 class="wireframe-title">Moderation 1</h1>
 
-                <article class="statistics-card">
-                    <header class="statistics-card__header">
-                        <div>
-                            <h3 id="progress-title" class="statistics-card__title">Progress</h3>
-                            <p id="progress-subtitle" class="statistics-card__subtitle" hidden></p>
+                <section class="wireframe-card">
+                    <header class="wireframe-card-header">Moderation 1: Overall Statistics</header>
+                    <div class="wireframe-browser" aria-hidden="true">
+                        <div class="browser-bar">
+                            <div class="browser-address">moderation.example.edu</div>
+                            <div class="browser-action"></div>
                         </div>
-                        <p id="progress-updated" class="statistics-card__meta" hidden></p>
-                    </header>
-                    <div class="statistics-card__body">
-                        <div class="progress-summary">
-                            <div id="progress-ring" class="progress-ring" aria-hidden="true">
-                                <div class="progress-ring__inner">
-                                    <span id="progress-ring-value" class="progress-ring__value">0</span>
-                                    <span class="progress-ring__label">Marked</span>
-                                </div>
-                            </div>
-                            <ul class="progress-breakdown">
-                                <li>Marked <span id="progress-marked" class="progress-breakdown__value">0</span></li>
-                                <li>Unmarked <span id="progress-unmarked" class="progress-breakdown__value">0</span></li>
-                                <li>Total <span id="progress-total" class="progress-breakdown__value">0</span></li>
-                            </ul>
+                        <div class="browser-content">
+                            <table class="wireframe-table" aria-label="Moderation 1 overall statistics table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Full Mark</th>
+                                        <th scope="col">Unit Chair Marks</th>
+                                        <th scope="col">5% Lower Range</th>
+                                        <th scope="col">5% Upper Range</th>
+                                        <th scope="col">Marker A</th>
+                                        <th scope="col">Marker B</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" class="row-label">
+                                            <span class="row-label-text">Introduction:<br>Applies theoretical framework</span>
+                                        </th>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="row-label">&nbsp;</th>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="row-label">&nbsp;</th>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="row-label">&nbsp;</th>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="row-label">&nbsp;</th>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                        <td>&nbsp;</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <ul id="progress-list" class="progress-list"></ul>
                     </div>
-                </article>
+                </section>
+
+                <section class="wireframe-card">
+                    <header class="wireframe-card-header">Moderation 1: Progress</header>
+                    <div class="progress-track" role="img" aria-label="Moderation progress is 50 percent">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-pill">50% Done</div>
+                    </div>
+                    <table class="wireframe-list" aria-label="Moderation progress list">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="sortable sortable-name">Name</th>
+                                <th scope="col">Submitted</th>
+                                <th scope="col" class="sortable sortable-score">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="list-cell">
+                                        <span class="avatar" aria-hidden="true">JD</span>
+                                        <a href="#" class="name-link">John Doe</a>
+                                    </div>
+                                </td>
+                                <td>Aug 22 at 5:00PM</td>
+                                <td class="score">70 / 100</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="list-cell">
+                                        <span class="avatar" aria-hidden="true">JS</span>
+                                        <span class="name-link">John Smith</span>
+                                    </div>
+                                </td>
+                                <td class="status-missing">Missing</td>
+                                <td class="score">_ / 100</td>
+                            </tr>
+                            <tr>
+                                <td><div class="placeholder-row"></div></td>
+                                <td></td>
+                                <td class="score"></td>
+                            </tr>
+                            <tr>
+                                <td><div class="placeholder-row"></div></td>
+                                <td></td>
+                                <td class="score"></td>
+                            </tr>
+                            <tr>
+                                <td><div class="placeholder-row"></div></td>
+                                <td></td>
+                                <td class="score"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
             </div>
         </section>
     </main>
