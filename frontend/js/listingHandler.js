@@ -3,7 +3,7 @@
 let staffNames = [];
 
 async function listingHandler() {
-    const response = await fetch("../data/staff.json");
+    const response = await fetch("/api/get_user");
     const data = await response.json();
 
     const staffList = document.getElementById('staff-list');
@@ -55,16 +55,28 @@ window.addEventListener('DOMContentLoaded', async() => {
     })
 
     const listOfStaff = document.getElementById("staff-list")
-    listOfStaff.addEventListener("click", (e) => {
+    listOfStaff.addEventListener("click", async (e) => {
         const button = e.target.closest(".remove-user")
         if(!button){
             return
         }
         const staffCard = button.closest(".staff-card")
-        if(staffCard){
-            staffCard.remove()
+        if(!staffCard){
+            return
         }
+        try{
+            const res = await fetch("/api/delete_user/${id}", { method: "POST" });
+            const data = await res.json()
 
+            if(res.ok){
+                staffCard.remove()
+                console.log("user removed ")
+            } else {
+                console.error("failed to remove user", data.error)
+            }
+        } catch(err){
+            console.error(err)
+        }
     })
 
 })

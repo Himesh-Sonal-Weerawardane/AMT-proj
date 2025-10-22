@@ -54,22 +54,48 @@ export default function userRoutes(supabase) {
     //https://dev.to/therealmrmumba/beginners-guide-to-handling-delete-requests-in-nodejs-with-express-28dh
 
     //Deletes User
-    /*
+    
     router.post("/delete_user/:userID", async (req, res) => {
         const id = parseInt(req.params.userID)
-        // const {data, error} = await supabase.auth.admin.deleteUser(id)
-
-        const{data, error} = await supabase
+        try{
+            const{data, error} = await supabase
             .from("users")
             .update({
                 email: null,
                 first_name: null,
                 last_name: null,
-                is_deleted: true, 
+                is_deleted: true,
+                current_marker: false
 
             })
             .eq("userID",id)
+            if(error) {
+                console.error("be error", error)
+                return res.status(400).json({ error: error.message })  // User has wrong email/password   
+            }
+            res.json({ success: true, message: "user deleted"})
+        } catch (err){
+            console.error("Network or server error:", err);
+            res.status(500).json({err});         
+        }
+    })
 
-    })*/
+    router.get("/get_user", async (req, res) =>{
+        try{
+            const{data, error} = await supabase
+                .from("users")
+                .select("id, first-name, last-name, email, is_admin")
+            if(error){
+                console.error("be error", error)
+                return res.status(400).json({ error: error.message })  // User has wrong email/password
+            }
+            res.json({success: true, data})
+        } catch (err){
+            console.error("Network or server error:", err);
+            res.status(500).json({err}); 
+        }
+    }
+    )
+
     return router
 }
