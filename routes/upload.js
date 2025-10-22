@@ -60,7 +60,7 @@ export default function uploadRoutes(supabase) {
                 const fileBuffer = fs.readFileSync(assignmentFile.path)
                 const { data, error } = await supabase.storage
                     .from("comp30022-amt")
-                    .upload(`assignments/${assignmentFile.originalname}`, fileBuffer, {
+                    .upload(`modules/assignments/${assignmentFile.originalname}`, fileBuffer, {
                         contentType: assignmentFile.mimetype,
                         upsert: true
                     })
@@ -77,8 +77,8 @@ export default function uploadRoutes(supabase) {
                 console.log("[UploadModeration] Uploading rubric to Supabase storage")
                 const fileBuffer = fs.readFileSync(rubricFile.path)
                 const { data, error } = await supabase.storage
-                    .from("moderations")
-                    .upload(`rubrics/${rubricFile.originalname}`, fileBuffer, {
+                    .from("comp30022-amt")
+                    .upload(`modules/rubrics/${rubricFile.originalname}`, fileBuffer, {
                         contentType: rubricFile.mimetype,
                         upsert: true
                 })
@@ -168,7 +168,7 @@ export default function uploadRoutes(supabase) {
 
             const rubricPublicUrl = rubricPath
                 ? supabase.storage
-                    .from("moderations")
+                    .from("comp30022-amt")
                     .getPublicUrl(rubricPath).data.publicUrl
                 : null
 
