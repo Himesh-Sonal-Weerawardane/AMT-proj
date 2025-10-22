@@ -313,10 +313,7 @@ export default function uploadRoutes(supabase) {
                     hidden_from_markers: module.hidden_from_markers,
                     assignment_public_url: assignmentPublicUrl,
                     rubric_public_url: rubricPublicUrl,
-                    // Keep existing outward key if your frontend expects `rubric`;
-                    // if your DB column is rubric_json, you might map it as:
-                    // rubric: module.rubric_json
-                    rubric: module.rubric
+                    rubric: module.rubric_json
                 }
             })
 
