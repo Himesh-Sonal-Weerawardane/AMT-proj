@@ -181,7 +181,7 @@ export default function (props) {
             const title = getFirstLine(xmlJsonData)
 
             const res = parseTables(xmlJsonData)
-            // console.log(JSON.stringify(res, null, 3));
+            // console.log(JSON.stringify(res, null, 2));
             resolve({
               title,
               tables: res
