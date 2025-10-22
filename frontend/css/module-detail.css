@@ -17,8 +17,8 @@ body {
 
 .module-page {
     max-width: 1200px;
-    margin: 3rem auto;
-    padding: 0 1.5rem 3rem;
+    margin: 0 auto;
+    padding: 6rem 1.5rem 3rem;
 }
 
 .module-header {
@@ -154,8 +154,8 @@ body {
 
 @media (max-width: 600px) {
     .module-page {
-        margin: 2rem auto;
-        padding: 0 1rem 2rem;
+        margin: 0 auto;
+        padding: 5rem 1rem 2rem;
     }
 
     .module-card__body {

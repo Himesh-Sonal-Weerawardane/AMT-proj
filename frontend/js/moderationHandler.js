@@ -88,7 +88,7 @@ const updateMetadata = (module) => {
         if (module.year) segments.push(`Year ${module.year}`);
         if (module.semester) segments.push(`Semester ${module.semester}`);
         if (module.moderation_number) segments.push(`Moderation ${module.moderation_number}`);
-        const deadline = formatDate(module.deadline_date);
+        const deadline = formatDate(module.due_date);
         if (deadline) segments.push(`Deadline: ${deadline}`);
         subtitle.textContent = segments.join(" • ") || "";
     }

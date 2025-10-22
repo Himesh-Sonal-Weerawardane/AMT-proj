@@ -76,7 +76,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("module-title").textContent = data.name || "Untitled Module";
         document.getElementById("module-description").textContent = data.description || "No description was provided for this module.";
 
-        const deadline = formatDate(data.deadline_date);
+        const deadline = formatDate(data.due_date);
         const uploaded = formatDate(data.upload_date);
         document.getElementById("module-deadline").textContent = deadline ? `Deadline: ${deadline}` : "";
         document.getElementById("module-uploaded").textContent = uploaded ? `Uploaded: ${uploaded}` : "";
