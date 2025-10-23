@@ -97,6 +97,130 @@ const createEmptyMessage = (message, className = "statistics-empty") => {
     return paragraph;
 };
 
+const moderationStatsFields = [
+    { key: "moderation_id", label: "Moderation ID", align: "left" },
+    { key: "max_points", label: "Max Points", align: "right" },
+    { key: "unit_chair_marks", label: "Unit Chair Marks", align: "right" },
+    { key: "marker_mark", label: "Marker Mark", align: "right" },
+    { key: "range_lower", label: "Range Lower", align: "right" },
+    { key: "range_upper", label: "Range Upper", align: "right" },
+    { key: "unit_chair_pct", label: "Unit Chair %", align: "right" },
+    { key: "marker_pct", label: "Marker %", align: "right" },
+    { key: "difference_pct", label: "Difference %", align: "right" },
+    { key: "updated_at", label: "Updated", align: "left" }
+];
+
+const formatModerationStatValue = (key, value) => {
+    if (value === null || value === undefined || value === "") {
+        return "—";
+    }
+
+    if (key === "updated_at") {
+        const formatted = formatDateTime(value);
+        return formatted || String(value);
+    }
+
+    if (key === "difference_pct") {
+        const numeric = parseNumber(value);
+        if (numeric === null) return typeof value === "string" ? value : "—";
+        const sign = numeric > 0 ? "+" : numeric < 0 ? "-" : "";
+        const formatted = Math.abs(numeric).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        return `${sign}${formatted}%`;
+    }
+
+    if (/(_pct)$/.test(key)) {
+        const numeric = parseNumber(value);
+        if (numeric === null) return typeof value === "string" ? value : "—";
+        const formatted = numeric.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        return `${formatted}%`;
+    }
+
+    if (typeof value === "number") {
+        return formatNumber(value);
+    }
+
+    const numeric = parseNumber(value);
+    if (numeric !== null) {
+        return formatNumber(numeric);
+    }
+
+    if (typeof value === "string") {
+        return value;
+    }
+
+    return String(value);
+};
+
+const renderModerationStatsTable = (statsInput) => {
+    const card = document.getElementById("moderation-stats-card");
+    const container = document.getElementById("moderation-stats-table-container");
+    const placeholder = document.querySelector("#module-statistics .statistics-placeholder");
+
+    if (!card || !container) return;
+
+    container.textContent = "";
+
+    const rowsSource = Array.isArray(statsInput)
+        ? statsInput
+        : statsInput && typeof statsInput === "object"
+            ? [statsInput]
+            : [];
+
+    const rows = rowsSource.filter((row) => row && typeof row === "object");
+
+    if (rows.length === 0) {
+        card.hidden = true;
+        if (placeholder) {
+            placeholder.hidden = false;
+        }
+        return;
+    }
+
+    const table = document.createElement("table");
+    table.className = "statistics-table moderation-stats-table";
+
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    moderationStatsFields.forEach((field) => {
+        const th = document.createElement("th");
+        th.textContent = field.label;
+        th.scope = "col";
+        if (field.align === "right") {
+            th.classList.add("statistics-table__cell--number");
+        }
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        moderationStatsFields.forEach((field) => {
+            const td = document.createElement("td");
+            if (field.align === "right") {
+                td.classList.add("statistics-table__cell--number");
+            }
+            td.textContent = formatModerationStatValue(field.key, row[field.key]);
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+
+    container.appendChild(table);
+    card.hidden = false;
+    if (placeholder) {
+        placeholder.hidden = true;
+    }
+};
+
 const guessAlignment = (key) => {
     if (!key) return "left";
     return /(grade|score|mark|average|difference)/i.test(key) ? "right" : "left";
@@ -595,6 +719,7 @@ const renderStatistics = (payload, moduleData) => {
         overallRows: payload?.overall?.rows?.length || 0,
         progressEntries: payload?.progress?.entries?.length || 0
     });
+    renderModerationStatsTable(payload?.raw_stats);
     const statsHeading = document.getElementById("statistics-heading");
     if (statsHeading) {
         const moduleName = moduleData?.name || "Moderation";
@@ -605,8 +730,12 @@ const renderStatistics = (payload, moduleData) => {
     if (descriptionEl) {
         if (payload?.meta?.description) {
             descriptionEl.textContent = payload.meta.description;
+            descriptionEl.hidden = false;
         } else if (payload?.meta?.is_fallback) {
             descriptionEl.textContent = "Statistics will appear once marking begins.";
+            descriptionEl.hidden = false;
+        } else {
+            descriptionEl.hidden = true;
         }
     }
 
