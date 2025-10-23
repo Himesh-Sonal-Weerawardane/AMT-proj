@@ -98,7 +98,7 @@ export default function authRoutes(supabase) {
       // Get role from database
       const { data: userData, error: userError } = await supabase
         .from("users")
-        .select("first_name, last_name, is_admin")
+        .select("user_id, first_name, last_name, is_admin")
         .eq("auth_id", user.id)
         .single();
 
@@ -106,6 +106,7 @@ export default function authRoutes(supabase) {
 
       // Return info
       res.json({
+          user_id: userData.user_id,
         email: user.email,
         first_name: userData.first_name,
         last_name: userData.last_name,
