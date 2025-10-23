@@ -34,11 +34,283 @@ export default function uploadRoutes(supabase) {
     }
 
     const defaultStatisticsColumns = [
-        { key: "student", label: "Student", align: "left" },
-        { key: "student_grade", label: "Student Grade", align: "right" },
-        { key: "marker_average", label: "Marker Average", align: "right" },
-        { key: "difference", label: "Difference", align: "right" }
+        { key: "student", label: "Marker", align: "left" },
+        { key: "student_grade", label: "Marker Score", align: "right" },
+        { key: "marker_average", label: "Average Score", align: "right" },
+        { key: "difference", label: "Δ vs average", align: "right" }
     ]
+
+    const parseScoreValue = (value) => {
+        const numeric = normaliseNumber(value)
+        if (numeric !== null) return numeric
+
+        if (typeof value === "string") {
+            const trimmed = value.trim()
+            if (trimmed === "") return null
+
+            const cleaned = trimmed.replace(/[^0-9+\-.]/g, "")
+            if (cleaned === "" || cleaned === "+" || cleaned === "-" || cleaned === ".") {
+                return null
+            }
+
+            const fallbackNumber = Number(cleaned)
+            if (Number.isFinite(fallbackNumber)) return fallbackNumber
+        }
+
+        return null
+    }
+
+    const extractScoreFromCollection = (collection) => {
+        if (!collection) return null
+
+        let foundNumeric = false
+
+        const addValues = (acc, raw) => {
+            if (raw === null || raw === undefined) return acc
+
+            if (typeof raw === "number") {
+                if (Number.isFinite(raw)) {
+                    foundNumeric = true
+                    return acc + raw
+                }
+                return acc
+            }
+
+            if (typeof raw === "string") {
+                const numeric = parseScoreValue(raw)
+                if (numeric !== null) {
+                    foundNumeric = true
+                    return acc + numeric
+                }
+                return acc
+            }
+
+            if (typeof raw === "object") {
+                if (Array.isArray(raw)) {
+                    return raw.reduce(addValues, acc)
+                }
+
+                return Object.values(raw).reduce(addValues, acc)
+            }
+
+            return acc
+        }
+
+        const total = addValues(0, collection)
+        return foundNumeric ? total : null
+    }
+
+    const parseMarkScore = (mark) => {
+        if (!mark || typeof mark !== "object") return null
+
+        const fromTotal = parseScoreValue(mark.total_score ?? mark.totalScore)
+        if (fromTotal !== null) return fromTotal
+
+        const fromScores = extractScoreFromCollection(mark.scores ?? mark.score ?? null)
+        if (fromScores !== null && Number.isFinite(fromScores)) return fromScores
+
+        return null
+    }
+
+    const extractMarkerName = (marker, fallbackId) => {
+        if (marker && typeof marker === "object") {
+            const parts = [marker.first_name, marker.last_name]
+                .map((part) => (typeof part === "string" ? part.trim() : ""))
+                .filter(Boolean)
+
+            if (parts.length > 0) return parts.join(" ")
+
+            if (typeof marker.email === "string" && marker.email.trim() !== "") {
+                return marker.email.trim()
+            }
+        }
+
+        if (fallbackId !== null && fallbackId !== undefined) {
+            return `Marker ${fallbackId}`
+        }
+
+        return "Unknown marker"
+    }
+
+    const summariseComments = (input) => {
+        if (!input) return ""
+
+        if (typeof input === "string") {
+            return input.trim()
+        }
+
+        const collectStrings = (value) => {
+            if (!value) return []
+
+            if (typeof value === "string") {
+                const trimmed = value.trim()
+                return trimmed ? [trimmed] : []
+            }
+
+            if (Array.isArray(value)) {
+                return value.flatMap(collectStrings)
+            }
+
+            if (typeof value === "object") {
+                return Object.values(value).flatMap(collectStrings)
+            }
+
+            return []
+        }
+
+        const strings = collectStrings(input)
+        if (strings.length === 0) return ""
+
+        return strings.join(" • ")
+    }
+
+    const buildLiveStatisticsFromMarks = async (moderationId, moduleMeta) => {
+        try {
+            const { data: marks, error } = await supabase
+                .from("marks")
+                .select("mark_id, moderation_id, marker_id, submitted_at, total_score, scores, comments, marker:users!marks_marker_id_fkey(user_id, first_name, last_name, email)")
+                .eq("moderation_id", moderationId)
+
+            if (error) {
+                console.warn("[ModerationStatistics] Failed to fetch marks for moderation", moderationId, error)
+                return null
+            }
+
+            if (!marks || marks.length === 0) {
+                return null
+            }
+
+            const fallback = buildFallbackStatistics(moduleMeta)
+            const nowIso = new Date().toISOString()
+
+            const mapped = marks.map((mark) => {
+                const marker = mark.marker || {}
+                const score = parseMarkScore(mark)
+                const markerId = marker.user_id ?? mark.marker_id ?? null
+                const name = extractMarkerName(marker, mark.marker_id)
+
+                return {
+                    raw: mark,
+                    score,
+                    markerId,
+                    name,
+                    comments: summariseComments(mark.comments)
+                }
+            })
+
+            const numericScores = mapped
+                .map(({ score }) => (Number.isFinite(score) ? score : null))
+                .filter((value) => value !== null)
+
+            const averageScore = numericScores.length > 0
+                ? numericScores.reduce((acc, value) => acc + value, 0) / numericScores.length
+                : null
+
+            const overallRows = mapped.map(({ raw, score, markerId, name }) => ({
+                student: {
+                    name,
+                    id: markerId !== null && markerId !== undefined ? String(markerId) : undefined
+                },
+                student_grade: Number.isFinite(score) ? score : null,
+                marker_average: Number.isFinite(averageScore) ? averageScore : null,
+                difference: Number.isFinite(score) && Number.isFinite(averageScore)
+                    ? score - averageScore
+                    : null,
+                marker_id: raw.marker_id
+            }))
+
+            const progressEntries = mapped.map(({ raw, name, markerId, comments, score }) => {
+                const status = raw.submitted_at
+                    ? "completed"
+                    : Number.isFinite(score)
+                        ? "in_progress"
+                        : "pending"
+
+                return {
+                    name,
+                    identifier: markerId !== null && markerId !== undefined ? String(markerId) : null,
+                    status,
+                    updated_at: raw.submitted_at || null,
+                    notes: comments,
+                    marker_id: raw.marker_id
+                }
+            })
+
+            let latestActivityIso = null
+            for (const entry of progressEntries) {
+                if (!entry?.updated_at) continue
+                const timestamp = Date.parse(entry.updated_at)
+                if (Number.isFinite(timestamp)) {
+                    if (!latestActivityIso || timestamp > Date.parse(latestActivityIso)) {
+                        latestActivityIso = new Date(timestamp).toISOString()
+                    }
+                }
+            }
+
+            const updatedTimestamp = latestActivityIso || nowIso
+
+            const markedCount = progressEntries.filter((entry) => entry.status === "completed").length
+            const totalCount = progressEntries.length
+            const unmarkedCount = Math.max(totalCount - markedCount, 0)
+
+            const result = {
+                meta: {
+                    ...fallback.meta,
+                    updated_at: updatedTimestamp,
+                    is_fallback: false,
+                    source: "live",
+                    marker_count: totalCount
+                },
+                overall: {
+                    ...fallback.overall,
+                    title: fallback.overall.title,
+                    subtitle: fallback.overall.subtitle || "Comparison between marker scores.",
+                    updated_at: updatedTimestamp,
+                    columns: fallback.overall.columns.length > 0
+                        ? fallback.overall.columns
+                        : [...defaultStatisticsColumns],
+                    rows: overallRows,
+                    empty_message: overallRows.length > 0
+                        ? fallback.overall.empty_message
+                        : fallback.overall.empty_message
+                },
+                progress: {
+                    ...fallback.progress,
+                    title: fallback.progress.title,
+                    subtitle: fallback.progress.subtitle || "Marker activity for this moderation.",
+                    updated_at: updatedTimestamp,
+                    totals: {
+                        marked: markedCount,
+                        unmarked: unmarkedCount,
+                        total: totalCount
+                    },
+                    entries: progressEntries,
+                    empty_message: progressEntries.length > 0
+                        ? fallback.progress.empty_message
+                        : fallback.progress.empty_message
+                }
+            }
+
+            try {
+                await supabase
+                    .from("moderation_statistics")
+                    .upsert({
+                        moderation_id: moderationId,
+                        meta: result.meta,
+                        overall: result.overall,
+                        progress: result.progress,
+                        updated_at: updatedTimestamp
+                    }, { onConflict: "moderation_id" })
+            } catch (persistError) {
+                console.warn("[ModerationStatistics] Failed to persist live statistics", persistError)
+            }
+
+            return result
+        } catch (err) {
+            console.warn("[ModerationStatistics] Unexpected error building live statistics", err)
+            return null
+        }
+    }
 
     const demoModerations = [
         {
@@ -468,15 +740,30 @@ export default function uploadRoutes(supabase) {
                 .eq("moderation_id", id)
                 .maybeSingle()
 
-            if (error) {
-                console.warn("[ModerationStatistics] Failed to fetch statistics", error)
+            const ensureLiveStatistics = async () => {
+                const liveStatistics = await buildLiveStatisticsFromMarks(id, moduleMeta)
+                if (liveStatistics) {
+                    return res.json(liveStatistics)
+                }
+
                 const merged = mergeWithDemoStatistics(fallback, id, moduleMeta)
                 return res.json(merged || fallback)
             }
 
+            if (error) {
+                console.warn("[ModerationStatistics] Failed to fetch statistics", error)
+                return await ensureLiveStatistics()
+            }
+
             if (!statsRow) {
-                const merged = mergeWithDemoStatistics(fallback, id, moduleMeta)
-                return res.json(merged || fallback)
+                return await ensureLiveStatistics()
+            }
+
+            const hasOverallData = Array.isArray(statsRow.overall?.rows) && statsRow.overall.rows.length > 0
+            const hasProgressData = Array.isArray(statsRow.progress?.entries) && statsRow.progress.entries.length > 0
+
+            if (!hasOverallData && !hasProgressData) {
+                return await ensureLiveStatistics()
             }
 
             const response = {
