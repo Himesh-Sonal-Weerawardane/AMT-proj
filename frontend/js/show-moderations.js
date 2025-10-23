@@ -37,6 +37,13 @@ const compareSemesters = (a, b) => {
     return String(a).localeCompare(String(b));
 };
 
+const compareAssignments = (a, b) => {
+    const numA = toNumber(a);
+    const numB = toNumber(b);
+    if (!Number.isNaN(numA) && !Number.isNaN(numB)) return numA - numB;
+    return String(a).localeCompare(String(b));
+};
+
 const compareModerations = (a, b) => {
     const numA = toNumber(a.moderation_number);
     const numB = toNumber(b.moderation_number);
@@ -215,8 +222,10 @@ const renderModerations = (groupedData, role, container) => {
             const semesterPanel = document.createElement("div");
             semesterPanel.className = "panel";
 
-            const row = document.createElement("div");
-            row.className = "row";
+            for (const assignmentNum in grouped[year][semester]) {
+                const assignentButton = document.createElement("button");
+                assignentButton.className = "accordion2";
+                assignentButton.textContent = `Assignment ${assignmentNum}`;
 
             modules.forEach((module) => {
                 row.appendChild(createModuleColumn(module, role));

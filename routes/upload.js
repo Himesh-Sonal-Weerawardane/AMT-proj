@@ -1,13 +1,15 @@
-import express from "express"
-import multer from "multer"
-import fs from "fs/promises"
-import mammoth from "mammoth" // .docx -> text extraction
+import express from "express";
+import multer from "multer";
+import fs from "fs";
+import parseDOCX from './parseDoc&Docx.js';
+import parsePDF from './parsePDF.js';
+import parseXLSX from './parseXlsx.js';
+import path from "path"; // Used for file type filtering
 
-// Multer temp storage
-const upload = multer({ dest: "uploads/" })
+const upload = multer({ dest: "uploads/" }); // temp folder
 
 export default function uploadRoutes(supabase) {
-    const router = express.Router()
+    const router = express.Router();
 
     // ---------- Helpers ----------
     const normaliseNumber = (value) => {
@@ -51,6 +53,29 @@ export default function uploadRoutes(supabase) {
         ]),
         async (req, res) => {
             console.log("[UploadModeration] Incoming request received")
+          
+            // Not sure if the following is needed
+//             // Get token from cookie
+//             const token = req.cookies?.supabase_session;
+//             if (!token) {
+//                 return res.json({ error: "Not logged in" });
+//             }
+
+//             // Get user from Supabase
+//             const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+//             if (authError || !user) {
+//                 return res.json({ error: "Invalid session" });
+//             }
+
+//             // Get user_id from database
+//             const { data: userData, error: userError } = await supabase
+//                 .from("users")
+//                 .select("user_id")
+//                 .eq("auth_id", user.id)
+//                 .single();
+//             if (userError || !userData) {
+//                 return res.json({ error: "Access denied" });
+//             }
 
             const { authorization, ...otherHeaders } = req.headers
             console.log("[UploadModeration] Request headers:", {
@@ -84,27 +109,95 @@ export default function uploadRoutes(supabase) {
                     }
                     : "No rubric file provided"
             )
+          
+            // 1) Read form fields
+            const {
+                name,
+                year,
+                semester,
+                assignment_number,
+                moderation_number,
+                description,
+                due_date,
+                is_rubric_uploaded,
+                rubric_table
+            } = req.body
+            
+            // Uploaded Rubric or using the Rubric Table
+            const isRubricUploaded = is_rubric_uploaded === "true";  
 
             if (!assignmentFile) return res.status(400).json({ error: "Assignment file required" })
-            if (!rubricFile) return res.status(400).json({ error: "Rubric file required" })
+          
+            let rubricFile;
+            if (isRubricUploaded) {
+                if (!rubricFile) return res.status(400).json({ error: "Rubric file required" })
+            }
+          
+            // Check if this module already exists
+            const { data: moderationData, error: moderationError } = await supabase
+                .from("moderations")
+                .select("id")
+                .eq("year", year)
+                .eq("semester", semester)
+                .eq("assignment_number", assignment_number)
+                .eq("moderation_number", moderation_number)
 
-            let assignmentUrl = null
+            if (moderationError) {
+                return res.json({ error: "Error trying to access the database" });
+            }
+
+            if (moderationData.length > 0) {
+                return res.json({ error: "This module already exists" })
+            }
+          
+            // 1) Rubric file parsing here.
+            let rubricJSON = {};
+            if (!isRubricUploaded) {
+                console.log("Manual rubric entry begins...");
+                rubricJSON = JSON.parse(rubric_table);
+                console.log("Manual rubric entry completed!");
+            } else if (rubricFile) {
+                console.log("Automated rubric parsing begins...");
+                // Read rubric file and extract raw text
+                console.log("[UploadModeration] Reading rubric file from temp storage");
+                const rubricBuffer = await fs.readFile(rubricFile.path);
+              
+                // File type: doc/docx, pdf, xlsx
+                const ext = path.extname(rubricFile.originalname).toLowerCase();
+                try {
+                    if (ext === ".doc" || ext === ".docx") {
+                        console.log("[UploadModeration] Converting rubric DOC/DOCX to table format");
+                        const { title, tables } = await parseDOCX({ file: rubricFile.path });
+                        console.log("[UploadModeration] Converting rubric table format to JSON");
+                        rubricJSON = transformTableToRubric(tables, title, rubricFile);
+                        console.log("[UploadModeration] DOC/DOCX parsing completed!");
+                    } else if (ext === ".pdf") {
+                        rubricJSON = parsePDF(rubricFile.path);
+                    } else if (ext === ".xlsx") {
+                        rubricJSON = await parseXLSX(rubricFile.path);
+                    } else {
+                        return res.json({ error: "Unsupported rubric file type" });
+                    }
+
+                    if (!rubricJSON) return res.json({ error: "Could not parse rubric" });
+
+                } catch (err) {
+                    console.error(err);
+                    return res.json({ error: "Rubric parsing failed" });
+                }
+                console.log("Automated rubric parsing completed!");
+            } else {
+                return res.json({ error: "Rubric required (file or manual entry)" });
+            }
+
+            if (Object.keys(rubricJSON).length === 0) {
+                return res.json({ error: "Rubric parsing failed" });
+            }
+            
+            let assignmentUrl = `modules/assignments/${assignmentFile.originalname}`;
             let rubricUrl = null
 
             try {
-                // 1) Read rubric file and extract raw text
-                console.log("[UploadModeration] Reading rubric file from temp storage")
-                const rubricBuffer = await fs.readFile(rubricFile.path)
-
-                console.log("[UploadModeration] Converting rubric DOCX to raw text")
-                const { value: rubricText } = await mammoth.extractRawText({ buffer: rubricBuffer })
-
-                const rubricLines = rubricText.split("\n").map(s => s.trim()).filter(Boolean)
-                console.log("[UploadModeration] Extracted rubric line count:", rubricLines.length)
-
-                // Primitive JSON structure; adjust to your parsing needs later
-                const rubricJSON = rubricLines.map((line, i) => ({ id: i + 1, criterion: line }))
-
                 // 2) Upload assignment to Supabase storage
                 console.log("[UploadModeration] Uploading assignment to Supabase storage")
                 const assignmentBuffer = await fs.readFile(assignmentFile.path)
@@ -112,7 +205,7 @@ export default function uploadRoutes(supabase) {
                 {
                     const { data, error } = await supabase.storage
                         .from("comp30022-amt")
-                        .upload(`modules/assignments/${assignmentFile.originalname}`, assignmentBuffer, {
+                        .upload(assignmentUrl, assignmentBuffer, {
                             contentType: assignmentFile.mimetype,
                             upsert: true
                         })
@@ -123,57 +216,49 @@ export default function uploadRoutes(supabase) {
                     }
 
                     console.log("[UploadModeration] Assignment upload response:", data)
-                    assignmentUrl = data.path
                 }
 
                 // 3) Upload rubric to Supabase storage
+                
                 console.log("[UploadModeration] Uploading rubric to Supabase storage")
+                if (isRubricUploaded) {
+                    {
+                        let rubricUrl = `modules/rubrics/${rubricFile.originalname}`;
+                        const { data, error } = await supabase.storage
+                            .from("comp30022-amt")
+                            .upload(rubricUrl, rubricBuffer, {
+                                contentType: rubricFile.mimetype,
+                                upsert: true
+                            })
 
-                {
-                    const { data, error } = await supabase.storage
-                        .from("comp30022-amt")
-                        .upload(`modules/rubrics/${rubricFile.originalname}`, rubricBuffer, {
-                            contentType: rubricFile.mimetype,
-                            upsert: true
-                        })
+                        if (error) {
+                            console.error("[UploadModeration] Rubric upload failed:", error)
+                            throw error
+                        }
 
-                    if (error) {
-                        console.error("[UploadModeration] Rubric upload failed:", error)
-                        throw error
+                        console.log("[UploadModeration] Rubric upload response:", data)
                     }
-
-                    console.log("[UploadModeration] Rubric upload response:", data)
-                    rubricUrl = data.path
                 }
 
                 console.log("[UploadModeration] Assignment URL (storage path):", assignmentUrl)
                 console.log("[UploadModeration] Rubric URL (storage path):", rubricUrl)
 
-                // 4) Read form fields (accept both due_date and legacy deadline_date, but STORE as due_date)
-                const {
-                    year,
-                    semester,
-                    moderation_number,
-                    name,
-                    description
-                } = req.body
-
-                const rawDueDate = (req.body?.due_date ?? req.body?.deadline_date) ?? null
-                const normalizedDueDate = normaliseDate(rawDueDate)
+                const normalizedDueDate = normaliseDate(due_date);
 
                 console.log("[UploadModeration] Preparing database insert with:", {
+                    name,
                     year,
                     semester,
+                    assignment_number,
                     moderation_number,
-                    name,
-                    due_date: normalizedDueDate,
                     description,
+                    due_date: normalizedDueDate,
+                    rubric_json: rubricJSON,
+                    created_at: new Date().toISOString(),
                     assignmentUrl,
                     rubricUrl,
-                    rubricCount: rubricJSON.length
-                })
-
-                // 5) Insert into 'moderations' (ONLY due_date; no deadline_date; no upload_date)
+                });
+                    
                 console.log("[UploadModeration] Executing Supabase insert for moderations")
 
                 const { data: inserted, error: insertError } = await supabase
@@ -182,11 +267,12 @@ export default function uploadRoutes(supabase) {
                         name: normaliseText(name),
                         year: normaliseNumber(year),
                         semester: normaliseNumber(semester),
+                        assignment_number: normaliseNumber(assignment_number),
                         moderation_number: normaliseNumber(moderation_number),
                         description: normaliseText(description),
                         due_date: normalizedDueDate,
                         hidden_from_markers: false,
-                        rubric_json: rubricJSON.length ? rubricJSON : null,
+                        rubric_json: rubricJSON,
                         assignment_url: assignmentUrl,
                         rubric_url: rubricUrl
                     }])
@@ -385,4 +471,82 @@ export default function uploadRoutes(supabase) {
     })
 
     return router
+}
+
+
+// Transform the rubric doc/docx parsed file into a JSON file
+function transformTableToRubric(tableData, rubricTitle, rubricFile) {
+    const rubricJSON = {
+        rubric: {
+            rubricTitle: rubricTitle,
+            pdfFile: rubricFile.originalname
+        },
+        criteria: []
+    }
+
+    const gradesOrder = []
+    // Loop through grade columns (columns 1 to 5)
+    // Loop through grade columns (columns 1 to 5)
+    for (let i = 1; i <= 5; i++) {
+        const gradeName = tableData[0][0][i]?.data?.trim();
+        if (gradeName) {
+            gradesOrder.push(gradeName);
+        }
+    }
+
+    // Loop over rows (skip row 0 - this is the header)
+    for (let i = 1; i < Object.keys(tableData[0]).length; i++) {
+        const row = tableData[0][i]; // row is an array of cells
+        const criterionCell = row[0]?.data.trim(); // first column
+        const maxPointsCell = row[6]?.data.trim(); // last column
+
+        const criterionObj = {
+            criterion: criterionCell,
+            // Extract only digits and decimal points from the string.
+            // Convert the cleaned string to a number.
+            // Default to 0 if parsing fails.
+            maxPoints: Number(maxPointsCell.replace(/[^0-9.]/g, "")) || 0,
+            grades: []
+        };
+
+        // Loop through grade columns (columns 1 to 5)
+        for (let colIndex = 1; colIndex <= 5; colIndex++) {
+            // Remove leading/trailing whitespace.
+            // Default to empty string if any values are undefined or null.
+            const cellData = row[colIndex]?.data?.trim() || "";
+            // Split the string into an array or lines.
+            // Remove leading/trailing whitespace.
+            // Remove any empty lines.
+            const lines = cellData.split("\n").map(l => l.trim()).filter(l => l);
+
+            // Separate points range from description if included.
+            let pointsRange = "";
+
+            // Remove the first line - max points in description.
+            lines.shift(); 
+
+            const lastLine = lines[lines.length - 1] || "";
+            // \(...\) Match parentheses.
+            // ([^)]+) Match everything inside parentheses that are not parentheses
+            const pointsMatch = lastLine.match(/\(([^)]+)\)/);
+            if (pointsMatch) {
+                pointsRange = pointsMatch[0];
+                lines.pop(); // remove last line - points range from description
+            }
+
+            // NOTE: CHECK THIS
+            // Check this, grad is not being input
+            const gradeObj = {
+                grade: gradesOrder[colIndex - 1],
+                pointsRange,
+                description: lines
+            };
+
+            criterionObj.grades.push(gradeObj);
+        }
+
+        rubricJSON.criteria.push(criterionObj);
+    }
+
+    return rubricJSON;
 }
