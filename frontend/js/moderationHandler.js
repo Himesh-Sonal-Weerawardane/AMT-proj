@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 await renderStatistics(moderationId, currentUser.user_id);
-                renderAdminFeedback(rubricData.admin_feedback);
+                renderAdminFeedback(moderationId);
             } else {
                 renderUnmarkedModeration(rubricData.rubric_json);
                 calculateTotalScore(rubricData.rubric_json);
@@ -451,11 +451,15 @@ async function renderStatistics(moderationId, markerId) {
 
 /* ---------------------------------Render Admin Feedback------------------------------------*/
 
-function renderAdminFeedback(adminFeedback) {
+async function renderAdminFeedback(moderationId) {
+    const res = fetch(`http://localhost:3000/api/feedback/${moderationId}`);
+    if (!res.ok) throw new Error("Failed to fetch feedback");
+    const data = await res.json();
+
     const feedbackContainer = document.getElementById("feedbacks");
     feedbackContainer.innerHTML = "";
 
-    adminFeedback.criteria.forEach((element) => {
+    data.criteria.forEach((element) => {
         const criterionWrapper = document.createElement("div");
         criterionWrapper.classList.add("criterion-wrapper");
 

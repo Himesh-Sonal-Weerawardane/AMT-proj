@@ -80,6 +80,29 @@ export default function moderationRoutes(supabase) {
         res.json(data);
     });
 
+    // get admin's feedback
+    router.get("/feedback/:moderationId", async (req, res) => {
+        const { moderationId } = req.params;
+
+        try {
+            const { data, error } = await supabase
+                .from("moderations")
+                .select("admin_feedback")
+                .eq("id", moderationId)
+                .single();;
+
+                if (error || !data) {
+                    console.error(error);
+                    return res.status(404).json({ error: "Failed to fetch feedback" });
+                }
+
+                res.json(data.admin_feedback);
+        } catch (error) {
+            console.error("Error fetching feedback", error);
+            res.status(500).json({ error: "Failed to fetch feedback" });
+        }
+    })
+
 
     // get admin and marker's marks
     router.get("/stats/:moderationId/:markerId", async (req, res) => {
