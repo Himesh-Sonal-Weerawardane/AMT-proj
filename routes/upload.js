@@ -40,6 +40,225 @@ export default function uploadRoutes(supabase) {
         { key: "difference", label: "Δ vs average", align: "right" }
     ]
 
+    const adaptModerationStatsRow = (statsRow) => {
+        if (!statsRow || typeof statsRow !== "object") return null
+
+        const normalisedMeta = statsRow.meta && typeof statsRow.meta === "object"
+            ? { ...statsRow.meta }
+            : {}
+
+        const timestamp = statsRow.updated_at
+            || statsRow.last_updated_at
+            || statsRow.calculated_at
+            || statsRow.generated_at
+            || null
+
+        if (!normalisedMeta.updated_at && timestamp) {
+            normalisedMeta.updated_at = timestamp
+        }
+
+        const legacyOverall = statsRow.overall || statsRow.summary || null
+        const legacyProgress = statsRow.progress || statsRow.marker_progress || null
+
+        if (legacyOverall || legacyProgress) {
+            return {
+                meta: normalisedMeta,
+                overall: legacyOverall,
+                progress: legacyProgress,
+                updated_at: normalisedMeta.updated_at || timestamp
+            }
+        }
+
+        const maxPoints = normaliseNumber(
+            statsRow.max_points
+            ?? statsRow.maxPoints
+            ?? statsRow.max_mark
+            ?? statsRow.maximum_points
+        )
+
+        if (maxPoints !== null && normalisedMeta.max_points === undefined) {
+            normalisedMeta.max_points = maxPoints
+        }
+
+        const unitChairMarks = normaliseNumber(
+            statsRow.unit_chair_marks
+            ?? statsRow.unit_chair_mark
+            ?? statsRow.unitChairMarks
+            ?? statsRow.unitChairMark
+        )
+
+        const unitChairAverage = normaliseNumber(
+            statsRow.unit_chair_average
+            ?? statsRow.unitChairAverage
+            ?? statsRow.unit_chair_avg
+        )
+
+        const markerMark = normaliseNumber(
+            statsRow.marker_mark
+            ?? statsRow.markerMark
+            ?? statsRow.marker_score
+            ?? statsRow.markerScore
+        )
+
+        const markerAverage = normaliseNumber(
+            statsRow.marker_average
+            ?? statsRow.markerAverage
+            ?? statsRow.marker_avg
+        )
+
+        const markerName = normaliseText(
+            statsRow.marker_name
+            ?? statsRow.markerName
+            ?? statsRow.primary_marker_name
+        )
+
+        const markerIdentifierRaw = statsRow.marker_identifier
+            ?? statsRow.markerIdentifier
+            ?? statsRow.marker_id
+            ?? null
+
+        const markerIdentifier = markerIdentifierRaw !== null && markerIdentifierRaw !== undefined
+            ? String(markerIdentifierRaw)
+            : null
+
+        const baseAverage = markerAverage ?? unitChairMarks ?? unitChairAverage ?? null
+        const markerDifference = Number.isFinite(markerMark) && Number.isFinite(baseAverage)
+            ? markerMark - baseAverage
+            : null
+
+        const overallRows = []
+        if (markerMark !== null || baseAverage !== null) {
+            overallRows.push({
+                student: {
+                    name: markerName || "Marker",
+                    id: markerIdentifier || undefined
+                },
+                student_grade: markerMark ?? null,
+                marker_average: baseAverage,
+                difference: markerDifference
+            })
+        }
+
+        const markerCount = toPositiveInteger(
+            statsRow.marker_count
+            ?? statsRow.markers_total
+            ?? statsRow.total_markers
+            ?? statsRow.marker_total
+        )
+
+        if (markerCount !== null && normalisedMeta.marker_count === undefined) {
+            normalisedMeta.marker_count = markerCount
+        }
+
+        let marked = toPositiveInteger(
+            statsRow.marked_count
+            ?? statsRow.marked
+            ?? statsRow.completed_count
+            ?? statsRow.marked_submissions
+            ?? statsRow.completed_submissions
+            ?? statsRow.markers_completed
+        )
+
+        let unmarked = toPositiveInteger(
+            statsRow.unmarked_count
+            ?? statsRow.unmarked
+            ?? statsRow.pending_count
+            ?? statsRow.pending_submissions
+            ?? statsRow.markers_remaining
+        )
+
+        let total = toPositiveInteger(
+            statsRow.total_count
+            ?? statsRow.total
+            ?? statsRow.total_submissions
+            ?? statsRow.submission_count
+            ?? statsRow.total_markers
+        )
+
+        if (total === null && marked !== null && unmarked !== null) {
+            total = marked + unmarked
+        }
+
+        if (unmarked === null && total !== null && marked !== null) {
+            unmarked = Math.max(total - marked, 0)
+        } else if (marked === null && total !== null && unmarked !== null) {
+            marked = Math.max(total - unmarked, 0)
+        } else if (total === null && marked !== null && unmarked === null) {
+            total = marked
+        }
+
+        const totals = {}
+        if (marked !== null) totals.marked = marked
+        if (unmarked !== null) totals.unmarked = unmarked
+        if (total !== null) totals.total = total
+
+        const progressSourceEntries = Array.isArray(statsRow.progress_entries)
+            ? statsRow.progress_entries
+            : Array.isArray(statsRow.marker_entries)
+                ? statsRow.marker_entries
+                : null
+
+        let progressEntries = []
+        if (progressSourceEntries) {
+            progressEntries = progressSourceEntries.filter((entry) => entry && typeof entry === "object")
+        } else if (marked !== null || unmarked !== null || total !== null) {
+            const notesParts = []
+            if (marked !== null) notesParts.push(`${marked} marked`)
+            if (unmarked !== null) notesParts.push(`${unmarked} remaining`)
+            if (total !== null) notesParts.push(`${total} total`)
+
+            const status = total !== null
+                ? marked >= total
+                    ? "completed"
+                    : marked > 0
+                        ? "in_progress"
+                        : "pending"
+                : "pending"
+
+            progressEntries.push({
+                name: markerName || "Marking progress",
+                identifier: markerIdentifier,
+                status,
+                updated_at: statsRow.progress_updated_at || timestamp,
+                notes: notesParts.length > 0 ? notesParts.join(" • ") : null
+            })
+        }
+
+        const overall = overallRows.length > 0
+            ? {
+                title: statsRow.overall_title || null,
+                subtitle: statsRow.overall_subtitle || null,
+                columns: [...defaultStatisticsColumns],
+                rows: overallRows,
+                empty_message: statsRow.overall_empty_message || null,
+                updated_at: statsRow.overall_updated_at || timestamp
+            }
+            : null
+
+        const totalsHasValues = Object.values(totals).some((value) => value !== undefined && value !== null)
+        const progress = (progressEntries.length > 0 || totalsHasValues)
+            ? {
+                title: statsRow.progress_title || null,
+                subtitle: statsRow.progress_subtitle || null,
+                totals,
+                entries: progressEntries,
+                empty_message: statsRow.progress_empty_message || null,
+                updated_at: statsRow.progress_updated_at || timestamp
+            }
+            : null
+
+        if (!overall && !progress) {
+            return null
+        }
+
+        return {
+            meta: normalisedMeta,
+            overall,
+            progress,
+            updated_at: normalisedMeta.updated_at || timestamp
+        }
+    }
+
     const parseScoreValue = (value) => {
         const numeric = normaliseNumber(value)
         if (numeric !== null) return numeric
@@ -735,7 +954,7 @@ export default function uploadRoutes(supabase) {
 
         try {
             const { data: statsRow, error } = await supabase
-                .from("moderation_statistics")
+                .from("moderation_stats")
                 .select("*")
                 .eq("moderation_id", id)
                 .maybeSingle()
@@ -759,10 +978,21 @@ export default function uploadRoutes(supabase) {
                 return await ensureLiveStatistics()
             }
 
-            const hasOverallData = Array.isArray(statsRow.overall?.rows) && statsRow.overall.rows.length > 0
-            const hasProgressData = Array.isArray(statsRow.progress?.entries) && statsRow.progress.entries.length > 0
+            const adaptedStats = adaptModerationStatsRow(statsRow)
+            if (!adaptedStats) {
+                return await ensureLiveStatistics()
+            }
 
-            if (!hasOverallData && !hasProgressData) {
+            const hasOverallData = Array.isArray(adaptedStats.overall?.rows) && adaptedStats.overall.rows.length > 0
+            const hasProgressEntries = Array.isArray(adaptedStats.progress?.entries) && adaptedStats.progress.entries.length > 0
+            const hasProgressTotals = (() => {
+                if (!adaptedStats.progress || typeof adaptedStats.progress !== "object") return false
+                const totals = adaptedStats.progress.totals
+                if (!totals || typeof totals !== "object") return false
+                return ["marked", "unmarked", "total"].some((key) => normaliseNumber(totals[key]) !== null)
+            })()
+
+            if (!hasOverallData && !hasProgressEntries && !hasProgressTotals) {
                 return await ensureLiveStatistics()
             }
 
@@ -770,29 +1000,29 @@ export default function uploadRoutes(supabase) {
                 meta: { ...fallback.meta, is_fallback: false },
                 overall: {
                     ...fallback.overall,
-                    columns: [...fallback.overall.columns]
+                    columns: [...fallback.overall.columns],
+                    rows: [...fallback.overall.rows]
                 },
                 progress: {
                     ...fallback.progress,
-                    totals: { ...fallback.progress.totals }
+                    totals: { ...fallback.progress.totals },
+                    entries: [...fallback.progress.entries]
                 }
             }
 
-            if (statsRow.meta && typeof statsRow.meta === "object") {
-                response.meta = { ...response.meta, ...statsRow.meta, is_fallback: false }
+            if (adaptedStats.meta && typeof adaptedStats.meta === "object") {
+                response.meta = { ...response.meta, ...adaptedStats.meta, is_fallback: false }
             }
 
-            if (statsRow.updated_at) {
-                response.meta.updated_at = statsRow.updated_at
+            if (adaptedStats.updated_at) {
+                response.meta.updated_at = adaptedStats.updated_at
             }
 
-            const overallSource = statsRow.overall || statsRow.summary || null
+            const overallSource = adaptedStats.overall || null
             if (overallSource && typeof overallSource === "object") {
                 const rows = Array.isArray(overallSource.rows)
                     ? overallSource.rows
-                    : Array.isArray(overallSource.data)
-                        ? overallSource.data
-                        : response.overall.rows
+                    : response.overall.rows
 
                 const columns = Array.isArray(overallSource.columns) && overallSource.columns.length > 0
                     ? overallSource.columns
@@ -808,15 +1038,11 @@ export default function uploadRoutes(supabase) {
                 }
             }
 
-            const progressSource = statsRow.progress || statsRow.marker_progress || null
+            const progressSource = adaptedStats.progress || null
             if (progressSource && typeof progressSource === "object") {
                 const entries = Array.isArray(progressSource.entries)
                     ? progressSource.entries
-                    : Array.isArray(progressSource.markers)
-                        ? progressSource.markers
-                        : Array.isArray(progressSource.rows)
-                            ? progressSource.rows
-                            : response.progress.entries
+                    : response.progress.entries
 
                 const totalsSource = progressSource.totals || {}
                 const marked = toPositiveInteger(progressSource.marked ?? totalsSource.marked ?? totalsSource.completed)
