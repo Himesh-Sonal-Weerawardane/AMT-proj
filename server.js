@@ -16,9 +16,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Supabase client setup
+const supabaseServiceRoleKey =
+  process.env.SUPABASE_SERVICE_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_KEY;
+
 const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY // || process.env.SUPABASE_KEY
+  process.env.SUPABASE_URL,
+  supabaseServiceRoleKey
 );
 
 // Parses JSON bodies automatically
@@ -81,12 +86,15 @@ app.use(express.static(path.join(__dirname, "frontend")));
 // Attach routes and pass supabase instance
 import authRoutes from "./routes/auth.js"
 import uploadRoutes from "./routes/upload.js"
+import moduleInfoRoutes from "./routes/module_info.js"
 import moderationRoutes from "./routes/moderation.js"
-
+import userRoutes from "./routes/users.js"
 import { Session } from 'inspector';
 app.use("/api", authRoutes(supabase))
 app.use("/api", uploadRoutes(supabase))
+app.use("/api", moduleInfoRoutes(supabase))
 app.use("/api", moderationRoutes(supabase))
+app.use("/api", userRoutes(supabase))
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
