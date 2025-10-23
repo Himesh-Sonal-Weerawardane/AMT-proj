@@ -6,6 +6,15 @@
     <title>Module Details</title>
     <link rel="stylesheet" href="../css/navbar.css">
     <link rel="stylesheet" href="../css/module-detail.css">
+    <!-- Hands on Table -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/handsontable/styles/handsontable.min.css"
+    />
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/handsontable/styles/ht-theme-main.min.css"
+    />
 </head>
 <body>
     <div id="navbar-container"></div>
@@ -44,78 +53,18 @@
                 <div class="module-card__body">
                     <ol id="rubric-list" class="rubric-list"></ol>
                     <p id="rubric-empty" class="rubric-empty" hidden>No rubric criteria were parsed for this module.</p>
+
+                    <br>
+                    <div id="rubric-table">
+                        <div id="handsontable-grid"></div>
+                    </div>
                 </div>
             </article>
-        </section>
-
-        <section id="module-statistics" class="module-statistics" hidden>
-            <div id="statistics-status" class="statistics-status" role="status" hidden></div>
-
-            <article id="progress-card" class="module-card" hidden>
-                <header class="module-card__header">
-                    <div class="module-card__header-text">
-                        <h2 id="progress-title" class="module-card__title">Progress</h2>
-                        <p id="progress-subtitle" class="module-card__subtitle" hidden></p>
-                    </div>
-                    <p id="progress-updated" class="module-card__meta" hidden></p>
-                </header>
-                <div class="module-card__body">
-                    <div class="progress-summary">
-                        <div id="progress-ring" class="progress-ring" role="img" aria-label="Marked submissions">
-                            <span id="progress-ring-value" class="progress-ring__value">0</span>
-                        </div>
-                        <dl class="progress-breakdown" aria-label="Submission counts">
-                            <div class="progress-breakdown__item">
-                                <dt>Marked</dt>
-                                <dd id="progress-marked">0</dd>
-                            </div>
-                            <div class="progress-breakdown__item">
-                                <dt>Unmarked</dt>
-                                <dd id="progress-unmarked">0</dd>
-                            </div>
-                            <div class="progress-breakdown__item">
-                                <dt>Total</dt>
-                                <dd id="progress-total">0</dd>
-                            </div>
-                        </dl>
-                    </div>
-                    <ul id="progress-list" class="progress-list" aria-label="Marker progress"></ul>
-                </div>
-            </article>
-
-            <article id="overall-stats-card" class="module-card" hidden>
-                <header class="module-card__header">
-                    <div class="module-card__header-text">
-                        <h2 id="overall-title" class="module-card__title">Overall statistics</h2>
-                        <p id="overall-subtitle" class="module-card__subtitle" hidden></p>
-                    </div>
-                    <p id="overall-updated" class="module-card__meta" hidden></p>
-                </header>
-                <div class="module-card__body">
-                    <div id="overall-table-wrapper" class="statistics-table-container"></div>
-                </div>
-            </article>
-
-            <article id="moderation-stats-card" class="module-card" hidden>
-                <header class="module-card__header">
-                    <div class="module-card__header-text">
-                        <h2 id="statistics-heading" class="module-card__title">Moderation statistics</h2>
-                        <p id="statistics-description" class="module-card__subtitle" hidden></p>
-                    </div>
-                    <p id="statistics-updated" class="module-card__meta" hidden></p>
-                </header>
-                <div class="module-card__body">
-                    <div id="moderation-stats-table-container" class="moderation-stats-table-container"></div>
-                </div>
-            </article>
-
-            <p class="statistics-placeholder">
-                Moderation statistics are currently unavailable.
-            </p>
         </section>
     </main>
-
-    <script src="../js/navbar.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <script src="../js/admin/module-detail.js"></script>
+    <script src="../js/navbar.js"></script>
 </body>
 </html>
