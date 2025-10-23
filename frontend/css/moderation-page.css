@@ -156,6 +156,18 @@ html, body {
     padding: 10px;
 }
 
+.statistics-placeholder {
+    margin: 20px;
+    padding: 18px 24px;
+    border-radius: 10px;
+    border: 1px dashed #d1d5db;
+    background-color: #f9fafb;
+    color: #4b5563;
+    font-size: 15px;
+    line-height: 1.6;
+    text-align: center;
+}
+
 
 .tab-links {
     font-size: 15px;
