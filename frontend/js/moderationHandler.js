@@ -50,11 +50,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const marksRes = await fetch(`http://localhost:3000/api/marks/${moderationId}/${currentUser.user_id}`)
+        const statsTab = document.getElementById("tab-stats");
+        const feedbackTab = document.getElementById("tab-feedback");
+        const statsTabContent = document.getElementById("Statistics");
+        const feedbackTabContent = document.getElementById("Feedback");
+
         if (marksRes.ok) {
             const marksData = await marksRes.json();
 
-
             if (marksData && marksData.scores) {
+
+                setTimeout(() => {
+                    statsTab.classList.remove("hidden");
+                    feedbackTab.classList.remove("hidden");
+                    statsTabContent.classList.remove("hidden");
+                    feedbackTabContent.classList.remove("hidden");
+                }, 50);
+
+
                 renderMarkedModeration({
                     scores: marksData.scores,
                     comments: marksData.comments,
@@ -63,16 +76,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
 
                 await renderStatistics(moderationId, currentUser.user_id);
-                renderAdminFeedback(moderationId);
+                await renderAdminFeedback(moderationId);
+
             } else {
+                statsTab.classList.add("hidden");
+                feedbackTab.classList.add("hidden");
+                statsTabContent.classList.add("hidden");
+                feedbackTabContent.classList.add("hidden");
+
                 renderUnmarkedModeration(rubricData.rubric_json);
                 calculateTotalScore(rubricData.rubric_json);
-                alertSubmission();
+                await alertSubmission();
             }
         } else {
+            statsTab.classList.add("hidden");
+            feedbackTab.classList.add("hidden");
+            statsTabContent.classList.add("hidden");
+            feedbackTabContent.classList.add("hidden");
+
             renderUnmarkedModeration(rubricData.rubric_json);
             calculateTotalScore(rubricData.rubric_json);
-            alertSubmission();
+            await alertSubmission();
         }
     } catch (error) {
         console.log("Error loading moderation data.", error);
@@ -579,6 +603,12 @@ async function alertSubmission() {
             };
 
             renderMarkedModeration(resultData);
+
+            document.getElementById("tab-stats").classList.remove("hidden");
+            document.getElementById("tab-feedback").classList.remove("hidden");
+            document.getElementById("Statistics").classList.remove("hidden");
+            document.getElementById("Feedback").classList.remove("hidden");
+
 
             await renderStatistics(moderationId, currentUser.user_id);
             await renderAdminFeedback(moderationId);

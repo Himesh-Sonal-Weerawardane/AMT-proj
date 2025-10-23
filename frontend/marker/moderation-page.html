@@ -42,8 +42,8 @@
 
             <button class="tab-links" onclick="openTabContent(event, 'Marking')" id="defaultOpen">Marking</button>
             <button class="tab-links" onclick="openTabContent(event, 'Description')">Description</button>
-            <button class="tab-links" onclick="openTabContent(event, 'Statistics')">Score Analysis</button>
-            <button class="tab-links" onclick="openTabContent(event, 'Feedback')">Feedback</button>
+            <button class="tab-links hidden" id="tab-stats" onclick="openTabContent(event, 'Statistics')">Score Analysis</button>
+            <button class="tab-links hidden" id="tab-feedback" onclick="openTabContent(event, 'Feedback')">Feedback</button>
 
         </div>
 
@@ -64,13 +64,13 @@
         </div>
 
 
-        <div id="Statistics" class="tab-content">
+        <div id="Statistics" class="tab-content hidden">
             <h3 style="margin: 10px 0 20px 10px; font-size: 20px">Score Analysis</h3>
 
             <div id="stats"></div>
         </div>
 
-        <div id="Feedback" class="tab-content">
+        <div id="Feedback" class="tab-content hidden">
             <h3 style="margin: 10px 0 20px 10px; font-size: 20px">Feedback</h3>
 
             <div id="feedbacks"></div>
