@@ -11,13 +11,13 @@ export default function userRoutes(supabase) {
             console.log("attempt", req.body)
             const {first_name, last_name, email, role } = req.body
 
-            const password = Math.random().toString(36).slice(-8)
+            //const password = Math.random().toString(36).slice(-8)
 
-            const {data: authData, error: authError} = await supabase.auth.admin.createUser(
-                {
+            const {data: authData, error: authError} = await supabase.auth.admin.inviteUserByEmail(email)
+                /*{
                     email,
                     password
-                })
+                })*/
 
             if (authError) {
                 console.error("auth error", authError)
@@ -37,13 +37,13 @@ export default function userRoutes(supabase) {
                     auth_id,
                     is_deleted: false, 
                     current_marker: true
-                }], { returning: 'representation' })
+                }], { returning: "representation" })
             if (error) {
                 console.error("be error", error)
                 return res.status(400).json({ error: error.message })  // User has wrong email/password
             }
-            console.log("added",data[0])
-            res.json({ success: true, userData: data[0]})
+            console.log("added user")
+            res.json({ success: true})
 
         } catch (err) {
             console.error("Network or server error:", err);
