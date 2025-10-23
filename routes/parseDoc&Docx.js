@@ -59,6 +59,9 @@ function parseTables(xmlJsonData) {
                   ? (Array.isArray(wpItem["w:r"]) ? wpItem["w:r"] : [wpItem["w:r"]])
                   : [];
 
+                // console.log(runs);
+                // console.log("===============================");
+
                 runs.forEach(run => {
                   // Handle text inside <w:t>
                   if (run["w:t"]) {
@@ -66,6 +69,8 @@ function parseTables(xmlJsonData) {
                       paragraphText += run["w:t"];
                     } else if (run["w:t"]["_text"]) {
                       paragraphText += run["w:t"]["_text"];
+                    } else if (typeof run["w:t"]["_"] === "string") {
+                      paragraphText += run["w:t"]["_"];
                     } else if (typeof run["w:t"]["#text"] === "string") {
                       paragraphText += run["w:t"]["#text"];
                     }
