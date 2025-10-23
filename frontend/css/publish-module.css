@@ -196,9 +196,7 @@ body {
 }
 
 /* ensure preview sits above the input */
-.file-upload-card__preview,
-.file-upload-card__document,
-.file-upload-card__preview * {
+.file-upload-card__preview {
   z-index: 2;
   position: relative;
 }
