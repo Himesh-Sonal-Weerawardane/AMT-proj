@@ -114,28 +114,44 @@
           <span class="upload-section__icon" aria-hidden="true">♡</span>
         </div>
         <div class="upload-section__content">
-          <article class="preview-card" aria-label="Assignment preview">
-            <header class="preview-card__header">
-              <h3 id="preview-assignment-title" class="preview-card__title">Preview:</h3>
-            </header>
-            <p id="assignment-preview-unavailable-text">Preview Unavailable</p>
-            <object
-                    class="preview-card__document"
-                    id="preview-assignment-document"
-                    type="application/pdf"
-            >
-            </object>
-          </article>
-          <label class="file-dropzone" for="assignment-upload">
+          <label class="file-upload-card" for="assignment-upload" data-upload-card>
             <input
-                    class="file-dropzone__input"
+                    class="file-upload-card__input"
                     type="file"
                     id="assignment-upload"
                     name="assignment-upload"
                     accept=".pdf,.doc,.docx"
-                    required
+                    data-upload-input
             />
-            <span class="file-dropzone__text">Upload here</span>
+            <div class="file-upload-card__placeholder" data-placeholder>
+              <span class="file-upload-card__icon" aria-hidden="true">⬆</span>
+              <span class="file-upload-card__text">Upload here</span>
+              <span class="file-upload-card__hint">PDF files will display a preview once selected.</span>
+            </div>
+            <div class="file-upload-card__preview" data-preview hidden>
+              <div class="file-upload-card__details">
+                <h3 class="file-upload-card__title">Preview</h3>
+                <p class="file-upload-card__filename" data-file-name></p>
+              </div>
+              <object
+                      class="file-upload-card__document"
+                      data-preview-object
+                      type="application/pdf"
+                      hidden
+              >
+                <p class="file-upload-card__fallback-message">
+                  Preview unavailable. Your file will still be uploaded.
+                </p>
+              </object>
+              <p
+                      class="file-upload-card__fallback-message"
+                      data-fallback
+                      data-default-message="Preview unavailable for this file type. Your file will still be uploaded."
+                      hidden
+              >
+                Preview unavailable for this file type. Your file will still be uploaded.
+              </p>
+            </div>
           </label>
         </div>
       </section>
@@ -145,7 +161,7 @@
           <h2 class="upload-section__title">Upload Rubric</h2>
           <span class="upload-section__icon" aria-hidden="true">♡</span>
         </div>
-
+        
         <div class="rubric-mode-toggle">
           <label for="rubric-mode">Rubric Input Method:</label>
           <select id="rubric-mode">
@@ -153,31 +169,47 @@
             <option value="manual">Manual (Enter Table)</option>
           </select>
         </div>
-
+        
         <!-- Automatic Rubric Section (Automatic Upload) -->
         <div class="upload-section__content" id="automatic-rubric">
-          <article class="preview-card" aria-label="Rubric preview">
-            <header class="preview-card__header">
-              <h3 id="preview-rubric-title" class="preview-card__title">Preview:</h3>
-            </header>
-            <p id="rubric-preview-unavailable-text">Preview Unavailable</p>
-            <object
-                    class="preview-card__document"
-                    id="preview-rubric-document"
-                    type="application/pdf"
-            >
-            </object>
-          </article>
-
-          <label class="file-dropzone" for="rubric-upload">
+          <label class="file-upload-card" for="rubric-upload" data-upload-card>
             <input
-                    class="file-dropzone__input"
+                    class="file-upload-card__input"
                     type="file"
                     id="rubric-upload"
                     name="rubric-upload"
                     accept=".pdf,.doc,.docx"
+                    data-upload-input
             />
-            <span class="file-dropzone__text">Upload here</span>
+            <div class="file-upload-card__placeholder" data-placeholder>
+              <span class="file-upload-card__icon" aria-hidden="true">⬆</span>
+              <span class="file-upload-card__text">Upload here</span>
+              <span class="file-upload-card__hint">PDF files will display a preview once selected.</span>
+            </div>
+            <div class="file-upload-card__preview" data-preview hidden>
+              <div class="file-upload-card__details">
+                <h3 class="file-upload-card__title">Preview</h3>
+                <p class="file-upload-card__filename" data-file-name></p>
+              </div>
+              <object
+                      class="file-upload-card__document"
+                      data-preview-object
+                      type="application/pdf"
+                      hidden
+              >
+                <p class="file-upload-card__fallback-message">
+                  Preview unavailable. Your file will still be uploaded.
+                </p>
+              </object>
+              <p
+                      class="file-upload-card__fallback-message"
+                      data-fallback
+                      data-default-message="Preview unavailable for this file type. Your file will still be uploaded."
+                      hidden
+              >
+                Preview unavailable for this file type. Your file will still be uploaded.
+              </p>
+            </div>
           </label>
         </div>
 
