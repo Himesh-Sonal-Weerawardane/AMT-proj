@@ -8,6 +8,33 @@ let rubricData;
 let currentUser = null;
 let moderationId = null;
 
+
+/* -----------------------------------Fetch User Info--------------------------------------- */
+async function getUserInfo() {
+
+    try {
+        const user = await fetch(`http://localhost:3000/api/user_info`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+
+        if (!user.ok) throw new Error("Failed to fetch user data");
+        currentUser = await user.json();
+        console.log(currentUser);
+    } catch (error) {
+        console.error("error fetching user info", error);
+    }
+
+}
+
+/* ----------------------------------Get Moderation ID----------------------------------------*/
+
+function getModerationID() {
+    const urlParams = new URLSearchParams(window.location.search);
+    moderationId = urlParams.get("id") || 1;
+}
+
+
 /* ------------------------------LOADING MAIN MODERATION PAGE---------------------------------- */
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -15,79 +42,147 @@ document.addEventListener('DOMContentLoaded', async () => {
         await getUserInfo();
         getModerationID();
 
-        console.log("User ID:", currentUser.user_id);
-
-        const moderationRes = await fetch(`http://localhost:3000/api/moderations/${moderationId}`)
-        const moderationData = await moderationRes.json();
-
-        console.log("Moderation Data:", moderationData);
-        rubricData = moderationData;
-
-        document.getElementById("moderation-title").textContent = rubricData.name;
-        document.getElementById("moderation-doc").src = rubricData.assignment_url;
-        document.getElementById("moderation-subtitle").textContent =
-            `${currentUser.first_name} ${currentUser.last_name}'s Moderation Attempt`;
-
-        document.getElementById("moderation-description").textContent = rubricData.description || "No description";
-        const dueDate = document.getElementById("due-date");
-
-        if (dueDate) {
-            if (rubricData.due_date) {
-                const date = new Date(rubricData.due_date);
-                const formattedDate = date.toLocaleDateString("en-AU", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true
-                });
-                dueDate.textContent = `Due: ${formattedDate}`;
-            } else {
-                dueDate.textContent = "No due date";
-            }
+        if (currentUser.role === "Admin") {
+            console.log("🟦 Admin detected — loading admin moderation page");
+            await loadAdminModeration();
+        } else {
+            await loadMarkerModeration();
         }
+    } catch (e) {
+        console.error("Error loading mod data", e);
+    }
+})
 
-        const marksRes = await fetch(`http://localhost:3000/api/marks/${moderationId}/${currentUser.user_id}`)
-        const statsTab = document.getElementById("tab-stats");
-        const feedbackTab = document.getElementById("tab-feedback");
-        const statsTabContent = document.getElementById("Statistics");
-        const feedbackTabContent = document.getElementById("Feedback");
+/* ---------------------------------Load Admin's Moderation-----------------------------------*/
 
-        if (marksRes.ok) {
-            const marksData = await marksRes.json();
+async function loadAdminModeration() {
+    const moderationRes = await fetch(`http://localhost:3000/api/moderations/${moderationId}`)
+    const moderationData = await moderationRes.json();
 
-            if (marksData && marksData.scores) {
+    rubricData = moderationData;
 
-                setTimeout(() => {
-                    statsTab.classList.remove("hidden");
-                    feedbackTab.classList.remove("hidden");
-                    statsTabContent.classList.remove("hidden");
-                    feedbackTabContent.classList.remove("hidden");
-                }, 50);
+    document.getElementById("moderation-title").textContent = rubricData.name;
+    document.getElementById("moderation-doc").src = rubricData.assignment_url;
+    document.getElementById("moderation-subtitle").textContent =
+        `${currentUser.first_name} ${currentUser.last_name}'s Moderation`;
+
+    const tabs = document.querySelectorAll(".tab-links");
+    tabs.forEach(tab => {
+        const text = tab.textContent.trim();
+        if (text !== "Marking" && text !== "Description") {
+            tab.style.display = "none";
+        }
+    });
+
+    document.getElementById("Statistics").style.display = "none";
+    document.getElementById("Feedback").style.display = "none";
+
+    const submitButton = document.getElementById("moderation-submit");
+    if (submitButton) submitButton.style.display = "none";
+
+    if (rubricData.admin_feedback?.criteria) {
+        renderMarkedModeration({
+            scores: rubricData.admin_feedback.criteria.map((c, i) => ({
+                criterionID: i,
+                score: c.admin_score,
+                comment: c.feedback,
+            })),
+            total_score: rubricData.admin_feedback.criteria
+                    .map(c => parseFloat(c.admin_score.split("/")[0]))
+                    .reduce((a, b) => a + b, 0) + " / " +
+                rubricData.admin_feedback.criteria
+                    .map(c => parseFloat(c.admin_score.split("/")[1]))
+                    .reduce((a, b) => a + b, 0)
+        });
+    }
+
+    document.getElementById("moderation-description").textContent = rubricData.description;
+    const dueDate = document.getElementById("due-date");
+
+    if (dueDate) {
+        if (rubricData.due_date) {
+            const date = new Date(rubricData.due_date);
+            const formattedDate = date.toLocaleDateString("en-AU", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true
+            });
+            dueDate.textContent = `Due: ${formattedDate}`;
+        } else {
+            dueDate.textContent = "No due date";
+        }
+    }
+
+}
+
+/* ---------------------------------Load Marker's Moderation-----------------------------------*/
+
+async function loadMarkerModeration() {
+    const moderationRes = await fetch(`http://localhost:3000/api/moderations/${moderationId}`)
+    const moderationData = await moderationRes.json();
+
+    console.log("Moderation Data:", moderationData);
+    rubricData = moderationData;
+
+    document.getElementById("moderation-title").textContent = rubricData.name;
+    document.getElementById("moderation-doc").src = rubricData.assignment_url;
+    document.getElementById("moderation-subtitle").textContent =
+        `${currentUser.first_name} ${currentUser.last_name}'s Moderation Attempt`;
+
+    document.getElementById("moderation-description").textContent = rubricData.description || "No description";
+    const dueDate = document.getElementById("due-date");
+
+    if (dueDate) {
+        if (rubricData.due_date) {
+            const date = new Date(rubricData.due_date);
+            const formattedDate = date.toLocaleDateString("en-AU", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true
+            });
+            dueDate.textContent = `Due: ${formattedDate}`;
+        } else {
+            dueDate.textContent = "No due date";
+        }
+    }
+
+    const marksRes = await fetch(`http://localhost:3000/api/marks/${moderationId}/${currentUser.user_id}`)
+    const statsTab = document.getElementById("tab-stats");
+    const feedbackTab = document.getElementById("tab-feedback");
+    const statsTabContent = document.getElementById("Statistics");
+    const feedbackTabContent = document.getElementById("Feedback");
+
+    if (marksRes.ok) {
+        const marksData = await marksRes.json();
+
+        if (marksData && marksData.scores) {
+
+            setTimeout(() => {
+                statsTab.classList.remove("hidden");
+                feedbackTab.classList.remove("hidden");
+                statsTabContent.classList.remove("hidden");
+                feedbackTabContent.classList.remove("hidden");
+            }, 50);
 
 
-                renderMarkedModeration({
-                    scores: marksData.scores,
-                    comments: marksData.comments,
-                    total_score: marksData.total_score,
-                    submitted_at: marksData.submitted_at
-                });
+            renderMarkedModeration({
+                scores: marksData.scores,
+                comments: marksData.comments,
+                total_score: marksData.total_score,
+                submitted_at: marksData.submitted_at
+            });
 
-                await renderStatistics(moderationId, currentUser.user_id);
-                await renderAdminFeedback(moderationId);
+            await renderStatistics(moderationId, currentUser.user_id);
+            await renderAdminFeedback(moderationId);
 
-            } else {
-                statsTab.classList.add("hidden");
-                feedbackTab.classList.add("hidden");
-                statsTabContent.classList.add("hidden");
-                feedbackTabContent.classList.add("hidden");
-
-                renderUnmarkedModeration(rubricData.rubric_json);
-                calculateTotalScore(rubricData.rubric_json);
-                await alertSubmission();
-            }
         } else {
             statsTab.classList.add("hidden");
             feedbackTab.classList.add("hidden");
@@ -98,30 +193,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             calculateTotalScore(rubricData.rubric_json);
             await alertSubmission();
         }
-    } catch (error) {
-        console.log("Error loading moderation data.", error);
+    } else {
+        statsTab.classList.add("hidden");
+        feedbackTab.classList.add("hidden");
+        statsTabContent.classList.add("hidden");
+        feedbackTabContent.classList.add("hidden");
+
+        renderUnmarkedModeration(rubricData.rubric_json);
+        calculateTotalScore(rubricData.rubric_json);
+        await alertSubmission();
     }
-})
-
-/* -----------------------------------Fetch User Info--------------------------------------- */
-async function getUserInfo() {
-
-    const user = await fetch(`http://localhost:3000/api/user_info`, {
-        method: 'POST',
-        credentials: 'include',
-    });
-
-    if (!user.ok) throw new Error("Failed to fetch user data");
-    currentUser = await user.json();
-
 }
 
-/* ----------------------------------Get Moderation ID----------------------------------------*/
 
-function getModerationID() {
-    const urlParams = new URLSearchParams(window.location.search);
-    moderationId = urlParams.get("id") || 1;
-}
+
+
+
 
 /* ---------------------------Render the Unmarked Moderation--------------------------------- */
 
@@ -257,13 +344,15 @@ function renderMarkedModeration(results) {
         : results?.scores?.map((s, i) => ({
         criterionID: s?.criterionID ?? i,
         score: s?.score ?? "0 / 0",
-        comment: results.comments?.[i]?.comment ?? "",
+        comment: s?.comment || s?.feedback || results.comments?.[i]?.comment || "",
     })) || [];
 
     if (!resultStorage.length) {
         console.warn("No result data to render");
         return;
     }
+
+    console.log("🧩 resultStorage", resultStorage);
 
     resultStorage.forEach((element) => {
         if (!element || !rubricData?.rubric_json?.criteria[element.criterionID]) {

@@ -10,7 +10,7 @@ export default function moderationRoutes(supabase) {
 
         const { data, error } = await supabase
             .from("moderations")
-            .select("*")
+            .select("*, rubric_json, admin_feedback")
             .eq("id", id)
             .single();
 
