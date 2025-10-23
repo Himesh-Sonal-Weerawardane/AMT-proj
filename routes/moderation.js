@@ -1,5 +1,3 @@
-
-
 import express from 'express';
 const router = express.Router();
 
@@ -91,17 +89,21 @@ export default function moderationRoutes(supabase) {
                 .eq("id", moderationId)
                 .single();;
 
-                if (error || !data) {
-                    console.error(error);
-                    return res.status(404).json({ error: "Failed to fetch feedback" });
-                }
+            if (error) {
+                console.error(error);
+                return res.status(404).json({ error: "Failed to fetch feedback" });
+            }
 
-                res.json(data.admin_feedback);
+            if (!data?.admin_feedback) {
+                return res.status(404).json({ error: "no feedback found" });
+            }
+
+            res.status(200).json(data.admin_feedback);
         } catch (error) {
             console.error("Error fetching feedback", error);
             res.status(500).json({ error: "Failed to fetch feedback" });
         }
-    })
+    });
 
 
     // get admin and marker's marks
@@ -177,6 +179,3 @@ export default function moderationRoutes(supabase) {
     return router;
 
 }
-
-
-

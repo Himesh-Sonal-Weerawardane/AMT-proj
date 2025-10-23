@@ -389,8 +389,8 @@ async function renderStatistics(moderationId, markerId) {
             <th>Range 5% Lower</th>
             <th>Range 5% Upper</th>
             <th>Unit Chair Marks (%)</th>
-            <th style="background-color:lightgrey;">Your Mark</th>
-            <th style="background-color:lightgrey;">Your Mark (%)</th>
+            <th style="background-color:lightgrey;">Your Marks</th>
+            <th style="background-color:lightgrey;">Your Marks (%)</th>
             <th>Difference (%)</th>`;
         statsTable.appendChild(rowHeader);
 
@@ -452,36 +452,41 @@ async function renderStatistics(moderationId, markerId) {
 /* ---------------------------------Render Admin Feedback------------------------------------*/
 
 async function renderAdminFeedback(moderationId) {
-    const res = fetch(`http://localhost:3000/api/feedback/${moderationId}`);
-    if (!res.ok) throw new Error("Failed to fetch feedback");
-    const data = await res.json();
+    try {
+        const res = await fetch(`http://localhost:3000/api/feedback/${moderationId}`);
+        if (!res.ok) throw new Error("Failed to fetch feedback");
 
-    const feedbackContainer = document.getElementById("feedbacks");
-    feedbackContainer.innerHTML = "";
+        const data = await res.json();
 
-    data.criteria.forEach((element) => {
-        const criterionWrapper = document.createElement("div");
-        criterionWrapper.classList.add("criterion-wrapper");
+        const feedbackContainer = document.getElementById("feedbacks");
+        feedbackContainer.innerHTML = "";
 
-        const feedbackHead = document.createElement("div");
-        feedbackHead.classList.add("feedback-head");
+        data.criteria.forEach((element) => {
+            const criterionWrapper = document.createElement("div");
+            criterionWrapper.classList.add("criterion-wrapper");
 
-        const criterion = document.createElement("h4");
-        criterion.classList.add("feedback-title");
-        criterion.textContent = element.criterion;
+            const feedbackHead = document.createElement("div");
+            feedbackHead.classList.add("feedback-head");
 
-        feedbackHead.appendChild(criterion);
-        criterionWrapper.appendChild(feedbackHead);
+            const criterion = document.createElement("h4");
+            criterion.classList.add("feedback-title");
+            criterion.textContent = element.criterion;
 
-        const feedbackText = document.createElement("p");
-        feedbackText.classList.add("feedback-comment");
-        feedbackText.contentEditable = "false";
-        feedbackText.textContent = element.feedback || "No feedback";
-        criterionWrapper.appendChild(feedbackText);
+            feedbackHead.appendChild(criterion);
+            criterionWrapper.appendChild(feedbackHead);
+
+            const feedbackText = document.createElement("p");
+            feedbackText.classList.add("feedback-comment");
+            feedbackText.contentEditable = "false";
+            feedbackText.textContent = element.feedback || "No feedback";
+            criterionWrapper.appendChild(feedbackText);
 
 
-        feedbackContainer.appendChild(criterionWrapper);
-    })
+            feedbackContainer.appendChild(criterionWrapper);
+        })
+    } catch (error) {
+        console.error("Error fetching feedback", error);
+    }
 }
 
 /* -----------Highlight the grade group of each criterion based on user input--------------- */
@@ -574,6 +579,9 @@ async function alertSubmission() {
             };
 
             renderMarkedModeration(resultData);
+
+            await renderStatistics(moderationId, currentUser.user_id);
+            await renderAdminFeedback(moderationId);
         } catch (err) {
             console.error("Error saving marks.", err);
             alert("Error saving marks.");
@@ -619,5 +627,3 @@ function calculateTotalScore(data) {
 
     totalScore.textContent = `_ / ${maxScore}`;
 }
-
-
