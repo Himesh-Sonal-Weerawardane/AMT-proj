@@ -61,7 +61,7 @@ async function loadAdminModeration() {
     rubricData = moderationData;
 
     document.getElementById("moderation-title").textContent = rubricData.name;
-    document.getElementById("moderation-doc").src = rubricData.assignment_url;
+    document.getElementById("moderation-doc").src = rubricData.assignment_public_url;
     document.getElementById("moderation-subtitle").textContent =
         `${currentUser.first_name} ${currentUser.last_name}'s Moderation`;
 
@@ -128,7 +128,7 @@ async function loadMarkerModeration() {
     rubricData = moderationData;
 
     document.getElementById("moderation-title").textContent = rubricData.name;
-    document.getElementById("moderation-doc").src = rubricData.assignment_url;
+    document.getElementById("moderation-doc").src = rubricData.assignment_public_url;
     document.getElementById("moderation-subtitle").textContent =
         `${currentUser.first_name} ${currentUser.last_name}'s Moderation Attempt`;
 

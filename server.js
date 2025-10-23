@@ -89,7 +89,6 @@ import uploadRoutes from "./routes/upload.js"
 import moduleInfoRoutes from "./routes/module_info.js"
 import moderationRoutes from "./routes/moderation.js"
 import userRoutes from "./routes/users.js"
-import { Session } from 'inspector';
 app.use("/api", authRoutes(supabase))
 app.use("/api", uploadRoutes(supabase))
 app.use("/api", moduleInfoRoutes(supabase))
