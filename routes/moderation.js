@@ -34,30 +34,91 @@ export default function moderationRoutes(supabase) {
 
     // saving marker's marks
     router.post("/marks", async (req, res) => {
-        const { moderation_id, marker_id, scores, comments, total_score, submitted_at } = req.body;
 
-        console.log("Incoming POST /marks:", req.body);
+        try {
+            const { moderation_id, marker_id, scores, comments, total_score, submitted_at } = req.body;
+
+            console.log("Incoming POST /marks:", req.body);
 
 
-        const { data, error } = await supabase
-            .from("marks")
-            .insert([{ moderation_id, marker_id, scores, comments, total_score, submitted_at }])
-            .select()
-            .single();
+            const { data: markData, error: markError } = await supabase
+                .from("marks")
+                .insert([{ moderation_id, marker_id, scores, comments, total_score, submitted_at }])
+                .select()
+                .single();
 
-        if (error) {
+            if (markError) throw markError;
+
+            const { data: moderationData, error: moderationError } = await supabase
+                .from("moderations")
+                .select("admin_feedback, rubric_json")
+                .eq("id", moderation_id)
+                .single();
+
+            if (moderationError) throw moderationError;
+
+            const adminCriteria = moderationData.admin_feedback?.criteria || [];
+            const rubricCriteria = moderationData.rubric_json?.criteria || [];
+            const markerScores = markData.scores || [];
+
+            const criteriaStats = adminCriteria.map((criterion, index) => {
+                const [adminScore, adminOutOf] = criterion.admin_score
+                    .split(" / ")
+                    .map(parseFloat);
+
+                const markerScoreStr = markerScores[index]?.score || "0 / 0";
+                const [markerScore, markerOutOf] = markerScoreStr
+                    .split(" / ")
+                    .map(parseFloat);
+
+                const maxPoints = rubricCriteria[index]?.maxPoints || adminOutOf || markerOutOf || 0;
+                const adminPercent = ((adminScore / maxPoints) * 100).toFixed(2);
+                const markerPercent = ((markerScore / maxPoints) * 100).toFixed(2);
+                const diffPercent = (adminPercent - markerPercent).toFixed(2);
+
+                return {
+                    moderation_id,
+                    marker_id,
+                    criterion: criterion.criterion,
+                    max_points: maxPoints,
+                    unit_chair_marks: adminScore,
+                    range_lower: (adminScore - maxPoints * 0.05).toFixed(2),
+                    range_upper: (adminScore + maxPoints * 0.05).toFixed(2),
+                    marker_mark: markerScore,
+                    unit_chair_pct: adminPercent,
+                    marker_pct: markerPercent,
+                    difference_pct: diffPercent,
+                };
+            });
+
+
+            await supabase
+                .from("moderation_stats")
+                .delete()
+                .eq("moderation_id", moderation_id)
+                .eq("marker_id", marker_id);
+
+            const { error: statsError } = await supabase.from("moderation_stats").insert(criteriaStats);
+            if (statsError) throw statsError;
+
+            res.status(200).json({
+                message: "Marks and stats saved successfully",
+                data: {
+                    scores,
+                    comments,
+                    total_score,
+                    submitted_at,
+                },
+            });
+
+        } catch (error) {
             console.error(error);
-            return res.status(404).json({ error: "Failed to save marks" });
+            res.status(500).json({ error: "Failed to save stats" } );
         }
 
-        return res.status(200).json({
-            message: "Marks saved successfully",
-            data: data
-        })
-
-
-
     });
+
+
 
     // get marker's mark
     router.get("/marks/:moderationId/:markerId", async (req, res) => {
@@ -87,7 +148,7 @@ export default function moderationRoutes(supabase) {
                 .from("moderations")
                 .select("admin_feedback")
                 .eq("id", moderationId)
-                .single();;
+                .single();
 
             if (error) {
                 console.error(error);

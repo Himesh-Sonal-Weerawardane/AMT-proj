@@ -13,7 +13,7 @@ let moderationId = null;
 async function getUserInfo() {
 
     try {
-        const user = await fetch(`http://localhost:3000/api/user_info`, {
+        const user = await fetch(`/api/user_info`, {
             method: 'POST',
             credentials: 'include',
         });
@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         getModerationID();
 
         if (currentUser.role === "Admin") {
-            console.log("🟦 Admin detected — loading admin moderation page");
             await loadAdminModeration();
         } else {
             await loadMarkerModeration();
@@ -56,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 /* ---------------------------------Load Admin's Moderation-----------------------------------*/
 
 async function loadAdminModeration() {
-    const moderationRes = await fetch(`http://localhost:3000/api/moderations/${moderationId}`)
+    const moderationRes = await fetch(`/api/moderations/${moderationId}`)
     const moderationData = await moderationRes.json();
 
     rubricData = moderationData;
@@ -122,7 +121,7 @@ async function loadAdminModeration() {
 /* ---------------------------------Load Marker's Moderation-----------------------------------*/
 
 async function loadMarkerModeration() {
-    const moderationRes = await fetch(`http://localhost:3000/api/moderations/${moderationId}`)
+    const moderationRes = await fetch(`/api/moderations/${moderationId}`)
     const moderationData = await moderationRes.json();
 
     console.log("Moderation Data:", moderationData);
@@ -154,7 +153,7 @@ async function loadMarkerModeration() {
         }
     }
 
-    const marksRes = await fetch(`http://localhost:3000/api/marks/${moderationId}/${currentUser.user_id}`)
+    const marksRes = await fetch(`/api/marks/${moderationId}/${currentUser.user_id}`)
     const statsTab = document.getElementById("tab-stats");
     const feedbackTab = document.getElementById("tab-feedback");
     const statsTabContent = document.getElementById("Statistics");
@@ -352,7 +351,6 @@ function renderMarkedModeration(results) {
         return;
     }
 
-    console.log("🧩 resultStorage", resultStorage);
 
     resultStorage.forEach((element) => {
         if (!element || !rubricData?.rubric_json?.criteria[element.criterionID]) {
@@ -484,7 +482,7 @@ function renderMarkedModeration(results) {
 
 async function renderStatistics(moderationId, markerId) {
     try {
-        const res = await fetch(`http://localhost:3000/api/stats/${moderationId}/${markerId}`);
+        const res = await fetch(`/api/stats/${moderationId}/${markerId}`);
         if (!res.ok) throw new Error("Failed to load stats");
         const data = await res.json();
 
@@ -566,7 +564,7 @@ async function renderStatistics(moderationId, markerId) {
 
 async function renderAdminFeedback(moderationId) {
     try {
-        const res = await fetch(`http://localhost:3000/api/feedback/${moderationId}`);
+        const res = await fetch(`/api/feedback/${moderationId}`);
         if (!res.ok) throw new Error("Failed to fetch feedback");
 
         const data = await res.json();
@@ -658,7 +656,7 @@ async function alertSubmission() {
         try {
             const totalScore = document.getElementById("total-score").textContent.trim();
 
-            const res = await fetch(`http://localhost:3000/api/marks`, {
+            const res = await fetch(`/api/marks`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
@@ -672,9 +670,7 @@ async function alertSubmission() {
             });
 
             const result = await res.json();
-
             if (!res.ok || !result?.data) throw new Error("Could not find moderation results.");
-
             alert("Moderation submitted successfully!");
 
             const safeScores = Array.isArray(result.data.scores) ? result.data.scores : [];
@@ -691,7 +687,12 @@ async function alertSubmission() {
                 total_score: result.data?.total_score ?? "0 / 0"
             };
 
-            renderMarkedModeration(resultData);
+            renderMarkedModeration({
+                scores: result.data.scores,
+                comments: result.data.comments,
+                total_score: result.data.total_score,
+                submitted_at: result.data.submitted_at,
+            });
 
             document.getElementById("tab-stats").classList.remove("hidden");
             document.getElementById("tab-feedback").classList.remove("hidden");
