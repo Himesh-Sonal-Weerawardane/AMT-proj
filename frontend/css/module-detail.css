@@ -81,6 +81,18 @@ body {
     gap: 1.5rem;
 }
 
+.statistics-placeholder {
+    margin: 0;
+    padding: 1.5rem 1.75rem;
+    border-radius: 0.75rem;
+    border: 1px dashed var(--module-border);
+    background: var(--module-card-bg);
+    color: var(--module-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    text-align: center;
+}
+
 .statistics-status {
     padding: 0.75rem 1rem;
     border: 1px solid #d4d4d4;
