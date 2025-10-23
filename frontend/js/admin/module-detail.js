@@ -283,6 +283,7 @@ const extractStudentInfo = (row) => {
 
 const normaliseOverall = (overallInput = {}, moduleData = {}) => {
     const overall = typeof overallInput === "object" && overallInput !== null ? overallInput : {};
+    const hasSource = Object.keys(overall).length > 0;
     const columns = normaliseColumns(overall.columns);
 
     const rowsSource = Array.isArray(overall.rows)
@@ -335,7 +336,8 @@ const normaliseOverall = (overallInput = {}, moduleData = {}) => {
         updatedAt: overall.updated_at || overall.updatedAt || null,
         columns,
         rows,
-        emptyMessage: overall.empty_message || overall.emptyMessage || "No statistics are available yet."
+        emptyMessage: overall.empty_message || overall.emptyMessage || "No statistics are available yet.",
+        hasSource
     };
 };
 
@@ -371,6 +373,7 @@ const describeStatus = (status, label) => {
 
 const normaliseProgress = (progressInput = {}) => {
     const progress = typeof progressInput === "object" && progressInput !== null ? progressInput : {};
+    const hasSource = Object.keys(progress).length > 0;
     const entriesSource = Array.isArray(progress.entries)
         ? progress.entries
         : Array.isArray(progress.markers)
@@ -482,7 +485,8 @@ const normaliseProgress = (progressInput = {}) => {
             total: Number.isFinite(total) ? Math.max(total, 0) : Math.max((marked ?? 0) + (unmarked ?? 0), 0)
         },
         entries,
-        emptyMessage: progress.empty_message || progress.emptyMessage || "No progress has been recorded yet."
+        emptyMessage: progress.empty_message || progress.emptyMessage || "No progress has been recorded yet.",
+        hasSource
     };
 };
 
@@ -506,6 +510,7 @@ const renderOverallStatistics = (overall) => {
         rowCount: overall?.rows?.length || 0,
         columnCount: overall?.columns?.length || 0
     });
+    const card = document.getElementById("overall-stats-card");
     const titleEl = document.getElementById("overall-title");
     if (titleEl) {
         titleEl.textContent = overall.title;
@@ -534,6 +539,15 @@ const renderOverallStatistics = (overall) => {
 
     const tableWrapper = document.getElementById("overall-table-wrapper");
     if (!tableWrapper) return;
+
+    const shouldShowCard = overall.hasSource || overall.rows.length > 0;
+    if (card) {
+        card.hidden = !shouldShowCard;
+    }
+    if (!shouldShowCard) {
+        tableWrapper.textContent = "";
+        return;
+    }
 
     tableWrapper.textContent = "";
 
@@ -608,6 +622,7 @@ const renderProgressStatistics = (progress) => {
         entryCount: progress?.entries?.length || 0,
         totals: progress?.totals
     });
+    const card = document.getElementById("progress-card");
     const titleEl = document.getElementById("progress-title");
     if (titleEl) {
         titleEl.textContent = progress.title;
@@ -632,6 +647,18 @@ const renderProgressStatistics = (progress) => {
         } else {
             updatedEl.hidden = true;
         }
+    }
+
+    const shouldShowCard = progress.hasSource || progress.entries.length > 0 || progress.totals.total > 0;
+    if (card) {
+        card.hidden = !shouldShowCard;
+    }
+    if (!shouldShowCard) {
+        const list = document.getElementById("progress-list");
+        if (list) {
+            list.textContent = "";
+        }
+        return;
     }
 
     const { marked, unmarked, total } = progress.totals;
@@ -761,6 +788,15 @@ const renderStatistics = (payload, moduleData) => {
 
     const progress = normaliseProgress(payload?.progress);
     renderProgressStatistics(progress);
+
+    const placeholder = document.querySelector("#module-statistics .statistics-placeholder");
+    if (placeholder) {
+        const moderationCard = document.getElementById("moderation-stats-card");
+        const overallCard = document.getElementById("overall-stats-card");
+        const progressCard = document.getElementById("progress-card");
+        const shouldHide = [moderationCard, overallCard, progressCard].some((card) => card && !card.hidden);
+        placeholder.hidden = shouldHide ? true : false;
+    }
 };
 
 const loadStatistics = async (moduleId, moduleData, headers) => {
