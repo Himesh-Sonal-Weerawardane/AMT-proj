@@ -11,6 +11,9 @@ export default function userRoutes(supabase) {
             console.log("attempt", req.body)
             const {first_name, last_name, email, role } = req.body
 
+            if (!first_name || !last_name || !email ||!role){
+                return res.status(400).json({error: "Missing Field. All Fields Are Required"})
+            }
             //const password = Math.random().toString(36).slice(-8)
 
             const {data: authData, error: authError} = await supabase.auth.admin.inviteUserByEmail(email)
@@ -61,6 +64,9 @@ export default function userRoutes(supabase) {
             const{data, error} = await supabase
             .from("users")
             .update({
+                email: null,
+                first_name: null,
+                last_name: null,                
                 is_deleted: true,
                 current_marker: false
 

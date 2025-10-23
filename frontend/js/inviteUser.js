@@ -14,7 +14,10 @@ inviteUser.addEventListener('click', async (e) => {
             body: JSON.stringify({first_name, last_name, email, role})
         })
         const data = await res.json()
-
+        if(!res.ok){
+            alert(res.error)
+            return
+        }
         if (!data.success) {
             alert('Invite Unsuccessful      ' + data.error)
         } else {

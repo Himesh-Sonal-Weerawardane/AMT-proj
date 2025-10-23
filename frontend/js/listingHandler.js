@@ -23,7 +23,7 @@ async function listingHandler() {
 
         staffNames.push(fullName);
         const staffCard = document.createElement('div');
-        staffCard.classList.add('staff-card');
+        staffCard.classList.add('staff-card','user-profile');
         staffCard.innerHTML = `
             <div class="staff-row">
                 <img src="../images/front-page/minus-button.png" class="remove-user" alt="Remove">
@@ -49,7 +49,7 @@ window.addEventListener('DOMContentLoaded', async() => {
 
     editButton.addEventListener('click', () => {
         editFunction = !editFunction
-        const deleteImage = document.querySelectorAll('.remove-user')
+        const deleteImage = document.querySelectorAll('.user-profile .remove-user')
         deleteImage.forEach(image => {
             if(editFunction){
                 image.style.display = 'inline'
