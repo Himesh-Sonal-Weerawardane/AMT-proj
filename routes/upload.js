@@ -969,12 +969,18 @@ export default function uploadRoutes(supabase) {
                 const liveStatistics = await buildLiveStatisticsFromMarks(id, moduleMeta)
                 if (liveStatistics) {
                     console.log("[ModerationStatistics] Live statistics generated", { id })
-                    return res.json(liveStatistics)
+                    const payload = { ...liveStatistics }
+                    if (payload.raw_stats === undefined) {
+                        payload.raw_stats = null
+                    }
+                    return res.json(payload)
                 }
 
                 const merged = mergeWithDemoStatistics(fallback, id, moduleMeta)
                 console.log("[ModerationStatistics] Returning merged fallback statistics", { id, merged: Boolean(merged) })
-                return res.json(merged || fallback)
+                const payload = { ...(merged || fallback) }
+                payload.raw_stats = null
+                return res.json(payload)
             }
 
             if (error) {
@@ -1103,12 +1109,15 @@ export default function uploadRoutes(supabase) {
                 rows: response.overall.rows.length,
                 progressEntries: response.progress.entries.length
             })
-            return res.json(response)
+            const payload = { ...response, raw_stats: statsRow }
+            return res.json(payload)
         } catch (err) {
             console.error("[ModerationStatistics] Unexpected error", err)
             const merged = mergeWithDemoStatistics(fallback, id, moduleMeta)
             console.log("[ModerationStatistics] Returning merged fallback after error", { id, merged: Boolean(merged) })
-            return res.json(merged || fallback)
+            const payload = { ...(merged || fallback) }
+            payload.raw_stats = null
+            return res.json(payload)
         }
     })
 
