@@ -377,6 +377,11 @@ const updateProgressRing = (marked, total) => {
 };
 
 const renderOverallStatistics = (overall) => {
+    console.debug("[ModuleDetail] Rendering overall statistics", {
+        title: overall?.title,
+        rowCount: overall?.rows?.length || 0,
+        columnCount: overall?.columns?.length || 0
+    });
     const titleEl = document.getElementById("overall-title");
     if (titleEl) {
         titleEl.textContent = overall.title;
@@ -474,6 +479,11 @@ const renderOverallStatistics = (overall) => {
 };
 
 const renderProgressStatistics = (progress) => {
+    console.debug("[ModuleDetail] Rendering progress statistics", {
+        title: progress?.title,
+        entryCount: progress?.entries?.length || 0,
+        totals: progress?.totals
+    });
     const titleEl = document.getElementById("progress-title");
     if (titleEl) {
         titleEl.textContent = progress.title;
@@ -579,6 +589,12 @@ const renderProgressStatistics = (progress) => {
 };
 
 const renderStatistics = (payload, moduleData) => {
+    console.debug("[ModuleDetail] renderStatistics invoked", {
+        hasPayload: Boolean(payload),
+        moduleId: moduleData?.id,
+        overallRows: payload?.overall?.rows?.length || 0,
+        progressEntries: payload?.progress?.entries?.length || 0
+    });
     const statsHeading = document.getElementById("statistics-heading");
     if (statsHeading) {
         const moduleName = moduleData?.name || "Moderation";
@@ -625,6 +641,12 @@ const loadStatistics = async (moduleId, moduleData, headers) => {
 
     statsSection.hidden = false;
 
+    console.debug("[ModuleDetail] loadStatistics called", {
+        moduleId,
+        hasModuleData: Boolean(moduleData),
+        hasHeaders: Boolean(headers && Object.keys(headers).length > 0)
+    });
+
     if (statusEl) {
         statusEl.textContent = "Loading statistics…";
         statusEl.hidden = false;
@@ -632,19 +654,26 @@ const loadStatistics = async (moduleId, moduleData, headers) => {
     }
 
     try {
+        console.debug("[ModuleDetail] Requesting statistics", { moduleId });
         const res = await fetch(`/api/moderations/${encodeURIComponent(moduleId)}/statistics`, { headers });
+        console.debug("[ModuleDetail] Statistics response", { moduleId, status: res.status, ok: res.ok });
         if (!res.ok) {
             throw new Error(`Failed to fetch statistics: ${res.status}`);
         }
 
         const payload = await res.json();
+        console.debug("[ModuleDetail] Statistics payload received", {
+            moduleId,
+            hasOverall: Boolean(payload?.overall),
+            hasProgress: Boolean(payload?.progress)
+        });
         renderStatistics(payload, moduleData);
 
         if (statusEl) {
             statusEl.hidden = true;
         }
     } catch (err) {
-        console.error("Failed to load moderation statistics", err);
+        console.error("[ModuleDetail] Failed to load moderation statistics", { moduleId, error: err });
         if (statusEl) {
             statusEl.textContent = "We couldn't load the statistics right now. Please try again later.";
             statusEl.hidden = false;
@@ -656,6 +685,8 @@ const loadStatistics = async (moduleId, moduleData, headers) => {
 window.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
     const moduleId = params.get("id");
+
+    console.debug("[ModuleDetail] DOMContentLoaded", { moduleId });
 
     const contentEl = document.getElementById("module-content");
     const rubricList = document.getElementById("rubric-list");
@@ -674,10 +705,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     const headers = {};
     if (typeof token !== "undefined" && token) {
         headers["Authorization"] = "Bearer " + token;
+        console.debug("[ModuleDetail] Using auth header for module request", { hasToken: true });
+    } else {
+        console.debug("[ModuleDetail] No auth header available for module request");
     }
 
     try {
+        console.debug("[ModuleDetail] Requesting module", { moduleId });
         const res = await fetch(`/api/moderations/${encodeURIComponent(moduleId)}`, { headers });
+        console.debug("[ModuleDetail] Module response", { moduleId, status: res.status, ok: res.ok });
         if (!res.ok) {
             const errorText = res.status === 404
                 ? "We couldn't find that module."
@@ -687,6 +723,11 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
 
         const data = await res.json();
+        console.debug("[ModuleDetail] Module payload received", {
+            moduleId,
+            hasAssignment: Boolean(data?.assignment_public_url),
+            hasRubric: Boolean(data?.rubric_public_url)
+        });
 
         const breadcrumbSegments = [];
         if (data.year) breadcrumbSegments.push(`Year ${data.year}`);
@@ -739,7 +780,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         contentEl.hidden = false;
     } catch (err) {
-        console.error("Failed to load module details", err);
+        console.error("[ModuleDetail] Failed to load module details", { moduleId, error: err });
         showStatus("An unexpected error occurred while loading the module.", true);
     }
 });

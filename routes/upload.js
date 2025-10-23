@@ -933,26 +933,31 @@ export default function uploadRoutes(supabase) {
 
     router.get("/moderations/:id/statistics", async (req, res) => {
         const { id } = req.params
+        console.log("[ModerationStatistics] Request received", { id })
 
         let moduleMeta = null
         try {
+            console.log("[ModerationStatistics] Fetching module metadata", { id })
             const { data: moduleData } = await supabase
                 .from("moderations")
                 .select("id, name, moderation_number")
                 .eq("id", id)
                 .maybeSingle()
             moduleMeta = moduleData || null
+            console.log("[ModerationStatistics] Module metadata result", { id, found: Boolean(moduleMeta) })
         } catch (err) {
             console.warn("[ModerationStatistics] Failed to fetch module metadata", err)
         }
 
         if (!moduleMeta) {
+            console.log("[ModerationStatistics] Falling back to demo module metadata", { id })
             moduleMeta = findDemoModule(id) || null
         }
 
         const fallback = buildFallbackStatistics(moduleMeta)
 
         try {
+            console.log("[ModerationStatistics] Fetching cached statistics", { id })
             const { data: statsRow, error } = await supabase
                 .from("moderation_stats")
                 .select("*")
@@ -960,12 +965,15 @@ export default function uploadRoutes(supabase) {
                 .maybeSingle()
 
             const ensureLiveStatistics = async () => {
+                console.log("[ModerationStatistics] Falling back to live statistics", { id })
                 const liveStatistics = await buildLiveStatisticsFromMarks(id, moduleMeta)
                 if (liveStatistics) {
+                    console.log("[ModerationStatistics] Live statistics generated", { id })
                     return res.json(liveStatistics)
                 }
 
                 const merged = mergeWithDemoStatistics(fallback, id, moduleMeta)
+                console.log("[ModerationStatistics] Returning merged fallback statistics", { id, merged: Boolean(merged) })
                 return res.json(merged || fallback)
             }
 
@@ -975,10 +983,12 @@ export default function uploadRoutes(supabase) {
             }
 
             if (!statsRow) {
+                console.log("[ModerationStatistics] No cached statistics row", { id })
                 return await ensureLiveStatistics()
             }
 
             const adaptedStats = adaptModerationStatsRow(statsRow)
+            console.log("[ModerationStatistics] Adapted statistics row", { id, hasAdaptedStats: Boolean(adaptedStats) })
             if (!adaptedStats) {
                 return await ensureLiveStatistics()
             }
@@ -992,7 +1002,15 @@ export default function uploadRoutes(supabase) {
                 return ["marked", "unmarked", "total"].some((key) => normaliseNumber(totals[key]) !== null)
             })()
 
+            console.log("[ModerationStatistics] Data availability flags", {
+                id,
+                hasOverallData,
+                hasProgressEntries,
+                hasProgressTotals
+            })
+
             if (!hasOverallData && !hasProgressEntries && !hasProgressTotals) {
+                console.log("[ModerationStatistics] Cached statistics missing required sections", { id })
                 return await ensureLiveStatistics()
             }
 
@@ -1080,10 +1098,16 @@ export default function uploadRoutes(supabase) {
                 }
             }
 
+            console.log("[ModerationStatistics] Returning cached statistics", {
+                id,
+                rows: response.overall.rows.length,
+                progressEntries: response.progress.entries.length
+            })
             return res.json(response)
         } catch (err) {
             console.error("[ModerationStatistics] Unexpected error", err)
             const merged = mergeWithDemoStatistics(fallback, id, moduleMeta)
+            console.log("[ModerationStatistics] Returning merged fallback after error", { id, merged: Boolean(merged) })
             return res.json(merged || fallback)
         }
     })
@@ -1094,8 +1118,10 @@ export default function uploadRoutes(supabase) {
      */
     router.get("/moderations/:id", async (req, res) => {
         const { id } = req.params
+        console.log("[ModerationDetail] Request received", { id })
 
         try {
+            console.log("[ModerationDetail] Fetching module row", { id })
             const { data, error } = await supabase
                 .from("moderations")
                 .select("*")
@@ -1106,8 +1132,10 @@ export default function uploadRoutes(supabase) {
                 console.error("Failed to fetch module:", error)
                 const demoModule = findDemoModule(id)
                 if (demoModule) {
+                    console.log("[ModerationDetail] Returning demo module", { id })
                     return res.json(mapDemoModule(demoModule))
                 }
+                console.log("[ModerationDetail] Module not found", { id })
                 return res.status(404).json({ error: "Module not found" })
             }
 
@@ -1128,6 +1156,11 @@ export default function uploadRoutes(supabase) {
 
             // Include upload_date explicitly for the frontend display
             const { upload_date, ...rest } = data || {}
+            console.log("[ModerationDetail] Returning module payload", {
+                id,
+                hasAssignment: Boolean(assignmentPublicUrl),
+                hasRubric: Boolean(rubricPublicUrl)
+            })
             return res.json({
                 ...rest,
                 upload_date,
@@ -1139,6 +1172,7 @@ export default function uploadRoutes(supabase) {
             console.error("Failed to fetch module:", err)
             const demoModule = findDemoModule(id)
             if (demoModule) {
+                console.log("[ModerationDetail] Returning demo module after error", { id })
                 return res.json(mapDemoModule(demoModule))
             }
             return res.status(500).json({ error: "Server error" })
