@@ -21,6 +21,14 @@ export default function moderationRoutes(supabase) {
             return res.status(404).json({ error: "Failed to fetch moderation" });
         }
 
+        if (data.assignment_url) {
+            const { data: publicURL } = supabase.storage
+                .from("comp30022-amt")
+                .getPublicUrl(data.assignment_url);
+
+            data.assignment_url = publicURL.publicUrl;
+        }
+
         res.json(data);
 
     });
@@ -70,6 +78,77 @@ export default function moderationRoutes(supabase) {
         }
 
         res.json(data);
+    });
+
+
+    // get admin and marker's marks
+    router.get("/stats/:moderationId/:markerId", async (req, res) => {
+        const { moderationId, markerId } = req.params;
+
+        try {
+            const { data: moderationData, error: moderationError } = await supabase
+                .from("moderations")
+                .select("admin_feedback, rubric_json")
+                .eq("id", moderationId)
+                .single();
+
+
+            const { data: markData, error: markError } = await supabase
+                .from("marks")
+                .select("scores")
+                .eq("moderation_id", moderationId)
+                .eq("marker_id", markerId)
+                .single();
+
+            if (moderationError) {
+                console.error(moderationError);
+                return res.status(404).json({error: "Moderation not found"});
+            }
+
+            if (markError) {
+                console.error(markError);
+                return res.status(404).json({ error: "Marks not found for this marker" });
+            }
+
+            const adminCriteria = moderationData.admin_feedback?.criteria || [];
+            const rubricCriteria = moderationData.rubric_json?.criteria || [];
+            const markerScores = markData.scores || [];
+
+            const criteriaStats = adminCriteria.map((criterion, index) => {
+                const [adminScore, adminOutOf] = criterion.admin_score
+                    .split(" / ")
+                    .map(parseFloat);
+
+                const markerScoreStr = markerScores[index]?.score || "0 / 0";
+                const [markerScore, markerOutOf] = markerScoreStr
+                    .split(" / ")
+                    .map(parseFloat);
+
+                const maxPoints = rubricCriteria[index]?.maxPoints || adminOutOf || markerOutOf || 0;
+
+                const adminPercent = ((adminScore / maxPoints) * 100).toFixed(2);
+                const markerPercent = ((markerScore / maxPoints) * 100).toFixed(2);
+                const diffPercent = (adminPercent - markerPercent).toFixed(2);
+
+                return {
+                    criterion: criterion.criterion,
+                    max_points: maxPoints,
+                    admin_score: adminScore,
+                    admin_percent: adminPercent,
+                    lower: (adminScore - maxPoints * 0.05).toFixed(2),
+                    upper: (adminScore + maxPoints * 0.05).toFixed(2),
+                    marker_score: markerScore,
+                    marker_percent: markerPercent,
+                    diff_percent: diffPercent,
+                };
+            });
+
+            res.json({ criteria: criteriaStats });
+        } catch (error) {
+            console.error(error);
+            res.status(404).json({error: "Failed to calculate stats"});
+        }
+
     });
 
     return router;

@@ -15,14 +15,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         await getUserInfo();
         getModerationID();
 
+        console.log("User ID:", currentUser.user_id);
+
         const moderationRes = await fetch(`http://localhost:3000/api/moderations/${moderationId}`)
         const moderationData = await moderationRes.json();
 
         console.log("Moderation Data:", moderationData);
         rubricData = moderationData;
 
-        document.getElementById("moderation-title").textContent = rubricData.moderation_title;
+        document.getElementById("moderation-title").textContent = rubricData.name;
         document.getElementById("moderation-doc").src = rubricData.assignment_url;
+        document.getElementById("moderation-subtitle").textContent =
+            `${currentUser.first_name} ${currentUser.last_name}'s Moderation Attempt`;
 
         document.getElementById("moderation-description").textContent = rubricData.description || "No description";
         const dueDate = document.getElementById("due-date");
@@ -58,6 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     submitted_at: marksData.submitted_at
                 });
 
+                await renderStatistics(moderationId, currentUser.user_id);
                 renderAdminFeedback(rubricData.admin_feedback);
             } else {
                 renderUnmarkedModeration(rubricData.rubric_json);
@@ -282,7 +287,6 @@ function renderMarkedModeration(results) {
         }
 
         gradeGroups.forEach((g) => {
-            //const range = g.pointsRange.match(/\(([\d.]+)\s*-\s*([\d.]+)/);
             const block = document.createElement("div");
             block.classList.add("score-block");
 
@@ -363,6 +367,88 @@ function renderMarkedModeration(results) {
 
 }
 
+/* -----------------------------------Render Statistics--------------------------------------*/
+
+async function renderStatistics(moderationId, markerId) {
+    try {
+        const res = await fetch(`http://localhost:3000/api/stats/${moderationId}/${markerId}`);
+        if (!res.ok) throw new Error("Failed to load stats");
+        const data = await res.json();
+
+        const stats = document.getElementById("stats");
+        stats.innerHTML = "";
+
+        const statsTable = document.createElement("table");
+        statsTable.classList.add("stats-table");
+
+        const rowHeader = document.createElement("tr");
+        rowHeader.innerHTML = `
+            <th>Criteria</th>
+            <th>Max Points</th>
+            <th>Unit Chair Marks</th>
+            <th>Range 5% Lower</th>
+            <th>Range 5% Upper</th>
+            <th>Unit Chair Marks (%)</th>
+            <th style="background-color:lightgrey;">Your Mark</th>
+            <th style="background-color:lightgrey;">Your Mark (%)</th>
+            <th>Difference (%)</th>`;
+        statsTable.appendChild(rowHeader);
+
+        data.criteria.forEach(criterion => {
+            const diff = parseFloat(criterion.diff_percent);
+
+            const diffColor = Math.abs(diff) <= 5 ? "lightgreen" : "transparent";
+
+            const criterionRow = document.createElement("tr");
+            criterionRow.innerHTML = `
+            <td style="font-weight: bold">${criterion.criterion}</td>
+            <td>${criterion.max_points}</td>
+            <td>${criterion.admin_score}</td>
+            <td>${criterion.lower}</td>
+            <td>${criterion.upper}</td>
+            <td>${criterion.admin_percent}%</td>
+            <td style="background-color:lightgrey;">${criterion.marker_score}</td>
+            <td style="background-color:lightgrey;">${criterion.marker_percent}%</td>
+            <td style="background-color:${diffColor}">${criterion.diff_percent}%</td>`;
+
+            statsTable.appendChild(criterionRow);
+        });
+
+        const totalRow = document.createElement("tr");
+
+        const maxTotal = data.criteria.reduce((sum, b) => sum + Number(b.max_points || 0), 0);
+        const adminTotal = data.criteria.reduce((sum, b) => sum + Number(b.admin_score || 0), 0);
+        const markerTotal = data.criteria.reduce((sum, b) => sum + Number(b.marker_score || 0), 0);
+        const lowerTotal = data.criteria.reduce((sum, b) => sum + Number(b.lower || 0), 0);
+        const upperTotal = data.criteria.reduce((sum, b) => sum + Number(b.upper || 0), 0);
+
+        const adminPercent = ((adminTotal / maxTotal) * 100).toFixed(2);
+        const markerPercent = ((markerTotal / maxTotal) * 100).toFixed(2);
+        const diffPercent = (adminPercent - markerPercent).toFixed(2);
+
+        const cellColor = Math.abs(diffPercent) <= 5 ? "lightgreen" : "transparent";
+
+        totalRow.innerHTML = `
+            <td style="font-weight: bold">Total / Difference</td>
+            <td>${maxTotal}</td>
+            <td>${adminTotal}</td>
+            <td>${lowerTotal}</td>
+            <td>${upperTotal}</td>
+            <td>${adminPercent}%</td>
+            <td style="background-color:lightgrey;">${markerTotal}</td>
+            <td style="background-color:lightgrey;">${markerPercent}%</td>
+            <td style="background-color:${cellColor}">${diffPercent}%</td>`;
+
+        statsTable.appendChild(totalRow);
+
+        stats.appendChild(statsTable);
+
+    } catch (e) {
+        console.error("error rendering stats", e);
+    }
+}
+
+
 /* ---------------------------------Render Admin Feedback------------------------------------*/
 
 function renderAdminFeedback(adminFeedback) {
@@ -380,12 +466,7 @@ function renderAdminFeedback(adminFeedback) {
         criterion.classList.add("feedback-title");
         criterion.textContent = element.criterion;
 
-        const score = document.createElement("span");
-        score.classList.add("feedback-score");
-        score.textContent = `${element.admin_score}`;
-
         feedbackHead.appendChild(criterion);
-        feedbackHead.appendChild(score);
         criterionWrapper.appendChild(feedbackHead);
 
         const feedbackText = document.createElement("p");
@@ -534,25 +615,5 @@ function calculateTotalScore(data) {
 
     totalScore.textContent = `_ / ${maxScore}`;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

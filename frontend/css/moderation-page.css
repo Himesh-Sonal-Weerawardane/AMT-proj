@@ -82,7 +82,7 @@ html, body {
     height: 100%;
     width: 95%;
     border: none;
-    margin: auto 20px;
+    margin: 0 20px 20px 20px;
     display: flex;
 }
 
@@ -374,8 +374,18 @@ html, body {
     margin: 0;
 }
 
-.feedback-score {
-    font-weight: bold;
-    text-align: right;
-    color: red;
+
+/* Statistics content */
+
+.stats-table {
+    border: 1px solid darkgray;
+    margin: 25px;
+    text-align: center;
+    border-spacing: 0;
+}
+
+
+.stats-table td, .stats-table th {
+    border: 1px solid darkgray;
+    padding: 15px;
 }
