@@ -128,7 +128,6 @@ export default function uploadRoutes(supabase) {
 
             if (!assignmentFile) return res.status(400).json({ error: "Assignment file required" })
           
-            let rubricFile;
             if (isRubricUploaded) {
                 if (!rubricFile) return res.status(400).json({ error: "Rubric file required" })
             }
@@ -158,10 +157,6 @@ export default function uploadRoutes(supabase) {
                 console.log("Manual rubric entry completed!");
             } else if (rubricFile) {
                 console.log("Automated rubric parsing begins...");
-                // Read rubric file and extract raw text
-                console.log("[UploadModeration] Reading rubric file from temp storage");
-                const rubricBuffer = await fs.readFile(rubricFile.path);
-              
                 // File type: doc/docx, pdf, xlsx
                 const ext = path.extname(rubricFile.originalname).toLowerCase();
                 try {
@@ -200,7 +195,7 @@ export default function uploadRoutes(supabase) {
             try {
                 // 2) Upload assignment to Supabase storage
                 console.log("[UploadModeration] Uploading assignment to Supabase storage")
-                const assignmentBuffer = await fs.readFile(assignmentFile.path)
+                const assignmentBuffer = await fs.readFileSync(assignmentFile.path)
 
                 {
                     const { data, error } = await supabase.storage
@@ -221,9 +216,11 @@ export default function uploadRoutes(supabase) {
                 // 3) Upload rubric to Supabase storage
                 
                 console.log("[UploadModeration] Uploading rubric to Supabase storage")
+                const rubricBuffer = await fs.readFileSync(rubricFile.path);
+
                 if (isRubricUploaded) {
                     {
-                        let rubricUrl = `modules/rubrics/${rubricFile.originalname}`;
+                        rubricUrl = `modules/rubrics/${rubricFile.originalname}`;
                         const { data, error } = await supabase.storage
                             .from("comp30022-amt")
                             .upload(rubricUrl, rubricBuffer, {

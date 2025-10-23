@@ -6,6 +6,15 @@
     <title>Module Details</title>
     <link rel="stylesheet" href="../css/navbar.css">
     <link rel="stylesheet" href="../css/module-detail.css">
+    <!-- Hands on Table -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/handsontable/styles/handsontable.min.css"
+    />
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/handsontable/styles/ht-theme-main.min.css"
+    />
 </head>
 <body>
     <div id="navbar-container"></div>
@@ -44,12 +53,18 @@
                 <div class="module-card__body">
                     <ol id="rubric-list" class="rubric-list"></ol>
                     <p id="rubric-empty" class="rubric-empty" hidden>No rubric criteria were parsed for this module.</p>
+
+                    <br>
+                    <div id="rubric-table">
+                        <div id="handsontable-grid"></div>
+                    </div>
                 </div>
             </article>
         </section>
     </main>
 
     <script src="../js/navbar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <script src="../js/admin/module-detail.js"></script>
 </body>
 </html>
