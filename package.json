@@ -20,12 +20,17 @@
   },
   "homepage": "https://github.com/WilliamAlexTW/AMT#readme",
   "dependencies": {
-    "@supabase/supabase-js": "^2.75.0",
+    "@supabase/supabase-js": "^2.75.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "docx-tables": "^0.3.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "handsontable": "^16.1.1",
+    "libreoffice-convert": "^1.7.0",
     "mammoth": "^1.11.0",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.4.5",
+    "xlsx": "^0.18.5"
   }
 }

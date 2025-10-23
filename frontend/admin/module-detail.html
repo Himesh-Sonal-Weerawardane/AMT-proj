@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Module Details</title>
+    <link rel="stylesheet" href="../css/navbar.css">
+    <link rel="stylesheet" href="../css/module-detail.css">
+    <!-- Hands on Table -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/handsontable/styles/handsontable.min.css"
+    />
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/handsontable/styles/ht-theme-main.min.css"
+    />
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <main class="module-page">
+        <section class="module-header">
+            <p id="module-breadcrumb" class="module-breadcrumb"></p>
+            <h1 id="module-title" class="module-title">Loading module…</h1>
+            <div class="module-meta">
+                <span id="module-deadline" class="module-meta__item"></span>
+                <span id="module-uploaded" class="module-meta__item"></span>
+            </div>
+            <p id="module-description" class="module-description"></p>
+        </section>
+
+        <section id="status-message" class="status-message" role="alert" hidden></section>
+
+        <section class="module-content" id="module-content" hidden>
+            <article class="module-card">
+                <header class="module-card__header">
+                    <h2 class="module-card__title">Assignment PDF</h2>
+                    <a id="assignment-download" class="module-card__action" href="#" target="_blank" rel="noopener" hidden>Download</a>
+                </header>
+                <div class="module-card__body">
+                    <object id="assignment-preview" class="module-pdf" type="application/pdf">
+                        <p>PDF preview unavailable. Use the download link above to view the assignment.</p>
+                    </object>
+                </div>
+            </article>
+
+            <article class="module-card">
+                <header class="module-card__header">
+                    <h2 class="module-card__title">Parsed Moderation Rubric</h2>
+                    <a id="rubric-download" class="module-card__action" href="#" target="_blank" rel="noopener" hidden>Download</a>
+                </header>
+                <div class="module-card__body">
+                    <ol id="rubric-list" class="rubric-list"></ol>
+                    <p id="rubric-empty" class="rubric-empty" hidden>No rubric criteria were parsed for this module.</p>
+
+                    <br>
+                    <div id="rubric-table">
+                        <div id="handsontable-grid"></div>
+                    </div>
+                </div>
+            </article>
+        </section>
+    </main>
+    
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <script src="../js/admin/module-detail.js"></script>
+    <script src="../js/navbar.js"></script>
+</body>
+</html>
