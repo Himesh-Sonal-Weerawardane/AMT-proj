@@ -208,6 +208,8 @@ body {
 
 .invite-section {
     display: flex;
+    flex-direction: column;
+    gap: 10px; 
     margin: 10px;
 
 }
@@ -264,7 +266,16 @@ body {
     display: none;
 }
 
+.delete-user-button {
+    display: none;
+    margin-left: 10px;
+    padding: 10px 40px;
+    font-size: 15px;
+    background-color: #CC2C04;
+    color: solid gray;
+    cursor: pointer;
 
+}
 
 
 

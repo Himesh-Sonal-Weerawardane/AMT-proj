@@ -1,0 +1,5 @@
+upload.js is the only one that I edited.
+
+Required installs are below:
+npm install libreoffice-convert
+npm install pdf-parse
