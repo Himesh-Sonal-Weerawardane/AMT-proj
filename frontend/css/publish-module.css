@@ -195,6 +195,19 @@ body {
     color: var(--text-color);
 }
 
+/* ensure preview sits above the input */
+.file-upload-card__preview,
+.file-upload-card__document,
+.file-upload-card__preview * {
+  z-index: 2;
+  position: relative;
+}
+
+/* disable the invisible input only when a preview exists */
+.file-upload-card[data-has-preview="true"] .file-upload-card__input {
+  pointer-events: none;
+}
+
 .file-upload-card__details {
     display: flex;
     flex-direction: column;

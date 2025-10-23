@@ -39,6 +39,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 }
                 preview.hidden = true
                 placeholder.hidden = false
+                fileNameEl.textContent = ""
                 delete card.dataset.hasPreview
                 return
             }
