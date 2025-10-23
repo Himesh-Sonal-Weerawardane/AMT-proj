@@ -252,11 +252,11 @@ const rubricTable = new Handsontable(element, {
     // other options
     columns: [
         { data: `${criteria}`, title: "Criteria", width: 170 },
-        { data: `${gradeMap[0].key}`, title: `${gradeMap[0].name}`, width: 170 },
-        { data: `${gradeMap[1].key}`, title: `${gradeMap[0].name}`, width: 170 },
-        { data: `${gradeMap[2].key}`, title: `${gradeMap[0].name}`, width: 170 },
-        { data: `${gradeMap[3].key}`, title: `${gradeMap[0].name}`, width: 170 },
-        { data: `${gradeMap[4].key}`, title: `${gradeMap[0].name}`, width: 170 },
+        ...gradeMap.map(g => ({
+            data: g.key,
+            title: g.name,
+            width: 170
+        })),
         { data: `${criteriaScore}`, title: "Criteria Score", width: 100 },
     ],
     data: [

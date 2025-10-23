@@ -94,13 +94,11 @@ window.addEventListener("DOMContentLoaded", async () => {
             rubricDownload.hidden = false;
         }
 
-        rubricList.textContent = "";
-        if (Array.isArray(data.rubric) && data.rubric.length > 0) {
-            data.rubric.forEach((criterion) => {
-                const item = document.createElement("li");
-                item.textContent = criterion.criterion || "(Untitled criterion)";
-                rubricList.appendChild(item);
-            });
+        console.log(data.rubric_json);
+        const tableData = populateRubricTable(data.rubric_json);
+        rubricTable.loadData(tableData);
+
+        if (tableData) {
             rubricEmpty.hidden = true;
         } else {
             rubricEmpty.hidden = false;
@@ -120,3 +118,75 @@ window.addEventListener("DOMContentLoaded", async () => {
         showStatus("An unexpected error occurred while loading the module.", true);
     }
 });
+
+
+const criteria = "criteria";
+const gradeMap = [
+    { key: "highDistinction", name: "High Distinction" },
+    { key: "distinction", name: "Distinction" },
+    { key: "credit", name: "Credit" },
+    { key: "pass", name: "Pass" },
+    { key: "fail", name: "Fail" }
+];
+const criteriaScore = "criteriaScore";
+
+// https://github.com/handsontable/handsontable
+// npm install handsontable
+const element = document.getElementById("handsontable-grid");
+const rubricTable = new Handsontable(element, {
+    // theme name with obligatory ht-theme-* prefix
+    themeName: 'ht-theme-main',
+    // other options
+    columns: [
+        { data: `${criteria}`, title: "Criteria", width: 170 },
+        ...gradeMap.map(g => ({
+            data: g.key,
+            title: g.name,
+            width: 170
+        })),
+        { data: `${criteriaScore}`, title: "Criteria Score", width: 100 },
+    ],
+    data: [
+        {}
+    ],
+    
+    height: '100%',
+    width: '100%',
+    stretchH: 'all',
+    rowHeaders: true,
+    navigableHeaders: true,
+    tabNavigation: true,
+    manualColumnResize: true,
+    selectionMode: 'range',
+    headerClassName: "htLeft",
+    licenseKey: "non-commercial-and-evaluation",
+    manualRowMove: true,
+    contextMenu: true
+});
+
+
+function populateRubricTable(rubricJSON) {
+    // Fallback empty row
+    if (!rubricJSON?.criteria) return [{}];
+
+    return rubricJSON.criteria.map(c => {
+        const row = {
+            criteria: c.criterion || "",
+            criteriaScore: c.maxPoints ? `/ ${c.maxPoints}` : ""
+        };
+
+        // Initialize all grades to empty string
+        gradeMap.forEach(g => row[g.key] = "");
+
+        // Fill in grades from rubric JSON
+        (c.grades || []).forEach(g => {
+            const gradeKey = gradeMap.find(m => m.name === g.grade)?.key;
+            if (!gradeKey) return;
+
+            const descriptionText = (g.description || []).join("\n\n");
+            row[gradeKey] = `${descriptionText}\n\n${g.pointsRange || ""}`;
+        });
+
+        return row;
+    });
+}

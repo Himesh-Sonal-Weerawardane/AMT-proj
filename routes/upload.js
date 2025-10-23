@@ -195,7 +195,7 @@ export default function uploadRoutes(supabase) {
             try {
                 // 2) Upload assignment to Supabase storage
                 console.log("[UploadModeration] Uploading assignment to Supabase storage")
-                const assignmentBuffer = await fs.readFileSync(assignmentFile.path)
+                const assignmentBuffer = fs.readFileSync(assignmentFile.path)
 
                 {
                     const { data, error } = await supabase.storage
@@ -214,11 +214,11 @@ export default function uploadRoutes(supabase) {
                 }
 
                 // 3) Upload rubric to Supabase storage
-                
-                console.log("[UploadModeration] Uploading rubric to Supabase storage")
-                const rubricBuffer = await fs.readFileSync(rubricFile.path);
 
                 if (isRubricUploaded) {
+                    console.log("[UploadModeration] Uploading rubric to Supabase storage")
+                    const rubricBuffer = fs.readFileSync(rubricFile.path);
+
                     {
                         rubricUrl = `modules/rubrics/${rubricFile.originalname}`;
                         const { data, error } = await supabase.storage
@@ -336,7 +336,8 @@ export default function uploadRoutes(supabase) {
                 ...rest,
                 // Make it explicit in payload naming
                 assignment_public_url: assignmentPublicUrl,
-                rubric_public_url: rubricPublicUrl
+                rubric_public_url: rubricPublicUrl,
+                rubric_json: data.rubric_json
             })
         } catch (err) {
             console.error("Failed to fetch module:", err)
