@@ -87,10 +87,12 @@ app.use(express.static(path.join(__dirname, "frontend")));
 import authRoutes from "./routes/auth.js"
 import uploadRoutes from "./routes/upload.js"
 import moduleInfoRoutes from "./routes/module_info.js"
+import userRoutes from "./routes/users.js"
 import { Session } from 'inspector';
 app.use("/api", authRoutes(supabase))
 app.use("/api", uploadRoutes(supabase))
 app.use("/api", moduleInfoRoutes(supabase))
+app.use("/api", userRoutes(supabase))
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
