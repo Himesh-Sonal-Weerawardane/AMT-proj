@@ -51,6 +51,51 @@
         <section id="module-statistics" class="module-statistics" hidden>
             <div id="statistics-status" class="statistics-status" role="status" hidden></div>
 
+            <article id="progress-card" class="module-card" hidden>
+                <header class="module-card__header">
+                    <div class="module-card__header-text">
+                        <h2 id="progress-title" class="module-card__title">Progress</h2>
+                        <p id="progress-subtitle" class="module-card__subtitle" hidden></p>
+                    </div>
+                    <p id="progress-updated" class="module-card__meta" hidden></p>
+                </header>
+                <div class="module-card__body">
+                    <div class="progress-summary">
+                        <div id="progress-ring" class="progress-ring" role="img" aria-label="Marked submissions">
+                            <span id="progress-ring-value" class="progress-ring__value">0</span>
+                        </div>
+                        <dl class="progress-breakdown" aria-label="Submission counts">
+                            <div class="progress-breakdown__item">
+                                <dt>Marked</dt>
+                                <dd id="progress-marked">0</dd>
+                            </div>
+                            <div class="progress-breakdown__item">
+                                <dt>Unmarked</dt>
+                                <dd id="progress-unmarked">0</dd>
+                            </div>
+                            <div class="progress-breakdown__item">
+                                <dt>Total</dt>
+                                <dd id="progress-total">0</dd>
+                            </div>
+                        </dl>
+                    </div>
+                    <ul id="progress-list" class="progress-list" aria-label="Marker progress"></ul>
+                </div>
+            </article>
+
+            <article id="overall-stats-card" class="module-card" hidden>
+                <header class="module-card__header">
+                    <div class="module-card__header-text">
+                        <h2 id="overall-title" class="module-card__title">Overall statistics</h2>
+                        <p id="overall-subtitle" class="module-card__subtitle" hidden></p>
+                    </div>
+                    <p id="overall-updated" class="module-card__meta" hidden></p>
+                </header>
+                <div class="module-card__body">
+                    <div id="overall-table-wrapper" class="statistics-table-container"></div>
+                </div>
+            </article>
+
             <article id="moderation-stats-card" class="module-card" hidden>
                 <header class="module-card__header">
                     <div class="module-card__header-text">
