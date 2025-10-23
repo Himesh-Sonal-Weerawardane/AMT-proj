@@ -222,10 +222,8 @@ const renderModerations = (groupedData, role, container) => {
             const semesterPanel = document.createElement("div");
             semesterPanel.className = "panel";
 
-            for (const assignmentNum in grouped[year][semester]) {
-                const assignentButton = document.createElement("button");
-                assignentButton.className = "accordion2";
-                assignentButton.textContent = `Assignment ${assignmentNum}`;
+            const row = document.createElement("div");
+            row.className = "row";
 
             modules.forEach((module) => {
                 row.appendChild(createModuleColumn(module, role));
