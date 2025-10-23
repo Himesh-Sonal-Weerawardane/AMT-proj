@@ -40,43 +40,43 @@ app.use(cookieParser());
 // if they are signed in first, then checks if they are an admin.
 // If so, allow access to the page, otherwise redirects.
 app.use("/admin", async (req, res, next) => {
-  try {
-    const token = req.cookies?.supabase_session;
-    if (!token) return res.redirect("/index.html");
+    try {
+        const token = req.cookies?.supabase_session;
+        if (!token) return res.redirect("/index.html");
 
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return res.redirect("/index.html");
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (error || !user) return res.redirect("/index.html");
 
-    const { data: userData } = await supabase
-      .from("users")
-      .select("is_admin")
-      .eq("auth_id", user.id)
-      .single();
+        const { data: userData } = await supabase
+            .from("users")
+            .select("is_admin")
+            .eq("auth_id", user.id)
+            .single();
 
-    if (!userData?.is_admin) return res.redirect("/index.html");
+        if (!userData?.is_admin) return res.redirect("/index.html");
 
-    next(); // allow access
-  } catch (err) {
-    console.error(err);
-    res.redirect("/index.html");
-  }
+        next(); // allow access
+    } catch (err) {
+        console.error(err);
+        res.redirect("/index.html");
+    }
 }, express.static(path.join(__dirname, "frontend/admin")));
 
 // When someone tries to access any page starting with /admin, this checks
 // if they are signed in.
 // If so, allow access to the page, otherwise redirects.
 app.use("/marker", async (req, res, next) => {
-  try {
-    const token = req.cookies?.supabase_session;
-    if (!token) return res.redirect("/index.html");
+    try {
+        const token = req.cookies?.supabase_session;
+        if (!token) return res.redirect("/index.html");
 
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return res.redirect("/index.html");
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (error || !user) return res.redirect("/index.html");
 
-    next(); // allow access
-  } catch {
-    res.redirect("/index.html");
-  }
+        next(); // allow access
+    } catch {
+        res.redirect("/index.html");
+    }
 }, express.static(path.join(__dirname, "frontend/marker")));
 
 // Serve public frontend HTML files (login page)
@@ -87,11 +87,12 @@ app.use(express.static(path.join(__dirname, "frontend")));
 import authRoutes from "./routes/auth.js"
 import uploadRoutes from "./routes/upload.js"
 import moduleInfoRoutes from "./routes/module_info.js"
+import moderationRoutes from "./routes/moderation.js"
 import userRoutes from "./routes/users.js"
-import { Session } from 'inspector';
 app.use("/api", authRoutes(supabase))
 app.use("/api", uploadRoutes(supabase))
 app.use("/api", moduleInfoRoutes(supabase))
+app.use("/api", moderationRoutes(supabase))
 app.use("/api", userRoutes(supabase))
 
 // Start server

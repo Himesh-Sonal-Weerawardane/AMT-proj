@@ -97,7 +97,7 @@ html, body {
     height: 100%;
     width: 95%;
     border: none;
-    margin: auto 20px;
+    margin: 0 20px 20px 20px;
     display: flex;
 }
 
@@ -346,7 +346,7 @@ html, body {
 
 
 .marked-criterion {
-    border-bottom: 1px solid darkgray;
+    border-bottom: 1px solid lightgray;
     padding-bottom: 20px;
     margin-bottom: 25px;
 }
@@ -368,3 +368,62 @@ html, body {
 
 
 
+.moderation-desc {
+    font-size: 17px;
+    margin: 10px 0 20px 10px;
+    white-space: pre-wrap;
+}
+
+
+#due-date {
+    margin: 10px 0 20px 10px;
+}
+
+
+.criterion-wrapper {
+    border-bottom: 1px solid lightgray;
+}
+
+.criterion-wrapper:last-child {
+    border-bottom: none;
+}
+
+.feedback-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px;
+}
+
+.feedback-comment {
+    margin: 20px 25px 40px 25px;
+    padding: 10px;
+    border: 1px solid lightgray;
+    overflow-y: auto;
+    height: 200px;
+}
+
+.feedback-title {
+    margin: 0;
+}
+
+
+/* Statistics content */
+
+.stats-table {
+    border: 1px solid darkgray;
+    margin: 25px;
+    text-align: center;
+    border-spacing: 0;
+}
+
+
+.stats-table td, .stats-table th {
+    border: 1px solid darkgray;
+    padding: 15px;
+}
+
+
+.hidden {
+    display: none !important;
+}
