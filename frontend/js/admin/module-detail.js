@@ -42,6 +42,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     const assignmentPreview = document.getElementById("assignment-preview");
     const assignmentDownload = document.getElementById("assignment-download");
     const rubricDownload = document.getElementById("rubric-download");
+    const statsCard = document.getElementById("moderation-stats-card");
+    const statsTable = document.getElementById("moderation-stats-table");
+    const statsTableBody = statsTable?.querySelector("tbody");
+    const statsEmpty = document.getElementById("stats-empty");
 
     if (!moduleId) {
         showStatus("Module ID missing from the URL.", true);
@@ -103,6 +107,14 @@ window.addEventListener("DOMContentLoaded", async () => {
         } else {
             rubricEmpty.hidden = false;
         }
+
+        await loadModerationStats({
+            moderationId: moduleId,
+            headers,
+            statsCard,
+            statsTableBody,
+            statsEmpty,
+        });
 
         showStatus("Module ready.");
         setTimeout(() => {
@@ -189,4 +201,95 @@ function populateRubricTable(rubricJSON) {
 
         return row;
     });
+}
+
+function formatNumber(value) {
+    if (value === null || value === undefined || value === "") return "—";
+    const numericValue = Number(value);
+    if (Number.isFinite(numericValue)) {
+        return numericValue.toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+        });
+    }
+    return value;
+}
+
+function formatPercent(value) {
+    const formatted = formatNumber(value);
+    return formatted === "—" ? formatted : `${formatted}%`;
+}
+
+function formatDateTime(value) {
+    if (!value) return "—";
+    try {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value;
+        return date.toLocaleString();
+    } catch (err) {
+        console.error("Failed to format date", err);
+        return value;
+    }
+}
+
+function appendCell(rowEl, value, type = "text") {
+    const cell = document.createElement("td");
+    if (type === "number") {
+        cell.dataset.type = "number";
+    }
+    cell.textContent = value;
+    rowEl.appendChild(cell);
+}
+
+async function loadModerationStats({ moderationId, headers, statsCard, statsTableBody, statsEmpty }) {
+    if (!statsCard || !statsTableBody || !statsEmpty) return;
+
+    try {
+        const res = await fetch(`/api/moderations/${encodeURIComponent(moderationId)}/stats`, { headers });
+
+        if (!res.ok) {
+            throw new Error(`Failed to fetch stats: ${res.status}`);
+        }
+
+        const payload = await res.json();
+        const rows = payload?.data || [];
+
+        statsTableBody.innerHTML = "";
+
+        if (!rows.length) {
+            statsEmpty.textContent = "No moderation statistics have been recorded yet.";
+            statsEmpty.hidden = false;
+            statsCard.hidden = false;
+            return;
+        }
+
+        statsEmpty.hidden = true;
+
+        rows.forEach((row) => {
+            const tableRow = document.createElement("tr");
+
+            appendCell(tableRow, row.marker_id ?? "—");
+            appendCell(tableRow, row.moderation_id ?? "—");
+            appendCell(tableRow, row.criterion ?? "—");
+            appendCell(tableRow, formatNumber(row.max_points), "number");
+            appendCell(tableRow, formatNumber(row.unit_chair_marks), "number");
+            appendCell(tableRow, formatNumber(row.range_lower), "number");
+            appendCell(tableRow, formatNumber(row.range_upper), "number");
+            appendCell(tableRow, formatNumber(row.marker_mark), "number");
+            appendCell(tableRow, formatPercent(row.unit_chair_pct), "number");
+            appendCell(tableRow, formatPercent(row.marker_pct), "number");
+            appendCell(tableRow, formatPercent(row.difference_pct), "number");
+            appendCell(tableRow, formatDateTime(row.updated_at));
+
+            statsTableBody.appendChild(tableRow);
+        });
+
+        statsCard.hidden = false;
+    } catch (err) {
+        console.error("Failed to load moderation stats", err);
+        statsTableBody.innerHTML = "";
+        statsEmpty.textContent = "Failed to load moderation statistics.";
+        statsEmpty.hidden = false;
+        statsCard.hidden = false;
+    }
 }

@@ -31,6 +31,24 @@ export default function moderationRoutes(supabase) {
 
     });
 
+    router.get("/moderations/:id/stats", async (req, res) => {
+        const { id } = req.params;
+
+        const { data, error } = await supabase
+            .from("moderation_stats")
+            .select("*")
+            .eq("moderation_id", id)
+            .order("updated_at", { ascending: false });
+
+        if (error) {
+            console.error(error);
+            return res.status(500).json({ error: "Failed to fetch moderation statistics" });
+        }
+
+        res.json({ data });
+
+    });
+
 
     // saving marker's marks
     router.post("/marks", async (req, res) => {
