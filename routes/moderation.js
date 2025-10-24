@@ -4,6 +4,78 @@ const router = express.Router();
 
 export default function moderationRoutes(supabase) {
 
+
+    // get active moderations by sem and assignment
+    router.get("/moderations/current", async (req, res) => {
+
+        try {
+
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentSemester = now.getMonth() < 6 ? 1 : 2;
+
+            const { data: moderations, error: moderationError } = await supabase
+                .from("moderations")
+                .select("id, name, year, semester, name, due_date")
+                .eq("year", currentYear)
+                .eq("semester", currentSemester);
+
+            if (moderationError) throw moderationError;
+
+
+            const { data: marks, error: markError } = await supabase
+                .from("marks")
+                .select("moderation_id, total_score, submitted_at");
+
+            if (markError) throw markError;
+
+            const markMap = {};
+            marks.forEach((mark) => {
+                markMap[mark.moderation_id] = {
+                    total_score: mark.total_score,
+                    submitted_at: mark.submitted_at,
+                };
+            });
+
+            const merged = moderations.map(m => ({
+                ...m,
+                score: markMap[m.id]?.total_score || "-",
+                submitted_at: markMap[m.id]?.submitted_at
+                    ? new Date(markMap[m.id].submitted_at).toLocaleDateString("en-AU", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    })
+                    : "-",
+            }));
+
+            const grouped = {};
+            merged.forEach(row => {
+                if (!grouped[row.name]) {
+                    grouped[row.name] = [];
+                }
+                grouped[row.name].push(row);
+            });
+
+
+            const result = {
+                year: currentYear,
+                semester: currentSemester,
+                assignments: Object.entries(grouped).map(([name, moderations]) => ({
+                    name,
+                    moderations,
+                })),
+            };
+
+            console.log(result);
+            res.json(result);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "Failed to fetch active moderations" } );
+        }
+    });
+
     // fetching moderation
     router.get("/moderations/:id", async (req, res) => {
         const { id } = req.params;

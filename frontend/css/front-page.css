@@ -1,4 +1,5 @@
 
+
 body {
     margin: 0;
     padding: 0;
@@ -31,6 +32,7 @@ body {
     font-weight: normal;
 }
 
+/*
 .table-header {
     display: flex;
     justify-content: center;
@@ -39,6 +41,30 @@ body {
     align-items: center;
     margin: 0 auto;
     gap: 100%;
+}
+*/
+
+
+.table-header {
+    justify-content: center;
+    display: grid;
+    grid-template-columns: 0.2fr 0.2fr 0.2fr 0.2fr; /* same as moderation rows */
+    text-align: center;
+    color: #333;
+    padding: 10px 0;
+    width: 80%;
+    margin: auto 20px;
+}
+
+.moderation {
+    display: grid;
+    grid-template-columns: 0.2fr 0.2fr 0.2fr 0.2fr;
+    align-items: center;
+    text-align: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    width: 80%;
+    margin: auto;
 }
 
 .head-divider {
@@ -87,15 +113,23 @@ body {
     transition: transform 0.3s ease;
 }
 
+/*
 .moderation {
-    padding: 5px 10px;
+
     margin: 0 400px;
-    display: flex;
     text-align: center;
-    justify-content: center;
     font-size: 15px;
     gap: 115px;
+
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr; /* same as header
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
 }
+*/
+
 
 .moderation-score {
     margin-left: 35px;
