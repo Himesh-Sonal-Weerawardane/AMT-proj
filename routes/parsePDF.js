@@ -1,7 +1,7 @@
-// Adapted from: https://www.npmjs.com/package/pdf-parse 
+// Adapted from: https://www.npmjs.com/package/pdf-parse
 
-import fs from 'fs';
-import { PDFParse } from 'pdf-parse';
+import fs from "fs";
+import { PDFParse } from "pdf-parse";
 
 /**
  * Parse a rubric PDF into JSON structure
@@ -11,7 +11,7 @@ import { PDFParse } from 'pdf-parse';
 export default async function parsePDF(filePath) {
   try {
     const dataBuffer = fs.readFileSync(filePath);
-    const parser = new PDFParse( { data: new Uint8Array(dataBuffer)} );
+    const parser = new PDFParse({ data: new Uint8Array(dataBuffer) });
     const data = await parser.getText();
     await parser.destroy();
 
@@ -19,7 +19,10 @@ export default async function parsePDF(filePath) {
     const text = data.text;
     // console.log(text);
 
-    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    const lines = text
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
     // console.log("\n\n=======================Lines are:\n", lines);
 
     // First line = rubric title
@@ -36,7 +39,7 @@ export default async function parsePDF(filePath) {
         currentCriterion = {
           criterion: line.replace(/^Criterion[:\s]*/i, ""),
           maxPoints: 0,
-          grades: []
+          grades: [],
         };
       } else if (/^\(.*\)$/.test(line)) {
         // Points range in parentheses, e.g. "(8-10)"
@@ -44,13 +47,15 @@ export default async function parsePDF(filePath) {
           currentCriterion.grades.push({
             grade: "Unknown",
             pointsRange: line,
-            description: []
+            description: [],
           });
         }
       } else {
         // Treat as description text
         if (currentCriterion && currentCriterion.grades.length > 0) {
-          currentCriterion.grades[currentCriterion.grades.length - 1].description.push(line);
+          currentCriterion.grades[
+            currentCriterion.grades.length - 1
+          ].description.push(line);
         }
       }
     }
@@ -61,15 +66,15 @@ export default async function parsePDF(filePath) {
     return;
 
     if (currentCriterion) criteria.push(currentCriterion);
-        return {
-            rubric: {
-                rubricTitle,
-                pdfFile: filePath.split("/").pop()
-            },
-            criteria
-        };
-    } catch (err) {
-        console.error("Error parsing PDF rubric:", err);
-        throw err;
-    }
+    return {
+      rubric: {
+        rubricTitle,
+        pdfFile: filePath.split("/").pop(),
+      },
+      criteria,
+    };
+  } catch (err) {
+    console.error("Error parsing PDF rubric:", err);
+    throw err;
+  }
 }

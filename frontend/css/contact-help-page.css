@@ -3,7 +3,7 @@
 body {
   background-color: #eeeeee;
   color: black;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   height: 100%;
   margin: 0 0 150px 0;
 }
@@ -19,8 +19,8 @@ body {
 }
 
 h1 {
-    font-size: 24px;
-    font-weight: bold;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 iframe {
@@ -49,7 +49,9 @@ iframe {
   align-items: center;
 }
 
-.submit-button, .file-upload-label, .file-label {
+.submit-button,
+.file-upload-label,
+.file-label {
   font-size: 16px;
 }
 
@@ -71,7 +73,8 @@ iframe {
   cursor: pointer;
   font-weight: 500;
 }
-.file-label:hover, .submit-button:hover {
+.file-label:hover,
+.submit-button:hover {
   background-color: #eeeeee;
 }
 

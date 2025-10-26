@@ -69,7 +69,7 @@ const requestJson = async (url, options = {}) => {
   const headers = {
     "Content-Type": "application/json",
     ...baseHeaders,
-    ...getAuthHeaders()
+    ...getAuthHeaders(),
   };
 
   const response = await fetch(url, {
@@ -220,7 +220,7 @@ function downloadStats() {
       row
         .map((value) => {
           const stringValue = value == null ? "" : String(value);
-          if (stringValue.includes(",") || stringValue.includes("\"")) {
+          if (stringValue.includes(",") || stringValue.includes('"')) {
             return `"${stringValue.replace(/"/g, '""')}"`;
           }
           return stringValue;

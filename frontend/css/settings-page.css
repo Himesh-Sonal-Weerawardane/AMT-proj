@@ -3,7 +3,7 @@
 body {
   background-color: #eeeeee;
   color: black;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 /* Style page content */
@@ -14,7 +14,8 @@ body {
 
 /********************************************************/
 /* Form */
-#email-form, #psw-form {
+#email-form,
+#psw-form {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -45,10 +46,10 @@ body {
 .profile-text {
   width: 175px;
   height: 175px;
-  border: 3px solid #6b7280;  /* circle border */
+  border: 3px solid #6b7280; /* circle border */
   border-radius: 50%;
-  background-color: #eeeeee;  /* circle background */
-  color: black;               /* text color */
+  background-color: #eeeeee; /* circle background */
+  color: black; /* text color */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,7 +75,9 @@ label {
 }
 
 /* Input boxes */
-input[type=text], input[type=email], input[type=password] {
+input[type="text"],
+input[type="email"],
+input[type="password"] {
   width: 600px;
   border: 1px solid #6b7280;
   padding: 12px 10px;
@@ -103,9 +106,10 @@ input[type=text], input[type=email], input[type=password] {
   height: 25px;
 }
 
-#email-error-msg, #psw-error-msg {
+#email-error-msg,
+#psw-error-msg {
   color: #d41a1a;
-  display: none;      /* hidden by default */
+  display: none; /* hidden by default */
   margin: 0;
   font-size: 14px;
 }
@@ -119,14 +123,16 @@ input[type=text], input[type=email], input[type=password] {
   font-weight: medium;
 }
 
-#current-email-title, #role-title {
+#current-email-title,
+#role-title {
   width: 600px;
   margin: 10px 0 0 0;
   font-size: 20px;
   font-weight: medium;
 }
 
-#current-email-text, #role-text {
+#current-email-text,
+#role-text {
   width: 600px;
   margin: 0 0 10px 0;
   font-size: 16px;

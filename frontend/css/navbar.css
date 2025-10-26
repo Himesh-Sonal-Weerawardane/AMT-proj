@@ -1,7 +1,7 @@
 /* Black Background, white text, Inter font to all body texts */
 body {
   background-color: #eeeeee;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   margin: 0;
   color: #111827;
 }
@@ -196,7 +196,9 @@ body {
   color: #f3f4f6;
   font-size: 16px;
   font-weight: 500;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .profile-panel-link:hover {

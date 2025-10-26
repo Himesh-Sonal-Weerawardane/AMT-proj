@@ -1,5 +1,1 @@
-
-
-function searchFilter() {
-
-}
+function searchFilter() {}

@@ -1,104 +1,126 @@
 /* Profile panel toggle */
 window.addEventListener("DOMContentLoaded", () => {
-    initNavbar();
-    navbarInfo();
-})
+  initNavbar();
+  navbarInfo();
+});
 
 function initNavbar() {
-    document.getElementById("navbar-container").innerHTML = navbarHTML;
+  document.getElementById("navbar-container").innerHTML = navbarHTML;
 
-    var profileButton = document.querySelector(".profile-button");
-    var profilePanel = document.getElementById("profile-panel");
+  var profileButton = document.querySelector(".profile-button");
+  var profilePanel = document.getElementById("profile-panel");
 
-    if (profileButton && profilePanel) {
-        profileButton.addEventListener("click", function(event) {
-            event.stopPropagation();
-            var isVisible = profilePanel.classList.toggle("is-visible");
-            profileButton.setAttribute("aria-expanded", isVisible);
-        });
+  if (profileButton && profilePanel) {
+    profileButton.addEventListener("click", function (event) {
+      event.stopPropagation();
+      var isVisible = profilePanel.classList.toggle("is-visible");
+      profileButton.setAttribute("aria-expanded", isVisible);
+    });
 
-        document.addEventListener("click", function(event) {
-            if (!profilePanel.contains(event.target) && profilePanel.classList.contains("is-visible")) {
-                profilePanel.classList.remove("is-visible");
-                profileButton.setAttribute("aria-expanded", false);
-            }
-        });
+    document.addEventListener("click", function (event) {
+      if (
+        !profilePanel.contains(event.target) &&
+        profilePanel.classList.contains("is-visible")
+      ) {
+        profilePanel.classList.remove("is-visible");
+        profileButton.setAttribute("aria-expanded", false);
+      }
+    });
 
-        document.addEventListener("keydown", function(event) {
-            if (event.key === "Escape" && profilePanel.classList.contains("is-visible")) {
-                profilePanel.classList.remove("is-visible");
-                profileButton.setAttribute("aria-expanded", false);
-            }
-        });
-    }
+    document.addEventListener("keydown", function (event) {
+      if (
+        event.key === "Escape" &&
+        profilePanel.classList.contains("is-visible")
+      ) {
+        profilePanel.classList.remove("is-visible");
+        profileButton.setAttribute("aria-expanded", false);
+      }
+    });
+  }
 
-    document.getElementById("sign-out-button").addEventListener("click", signOut);
+  document.getElementById("sign-out-button").addEventListener("click", signOut);
 }
 
 async function signOut() {
-    try {
-        const res = await fetch("/api/logout", {
-            method: "POST"
-        })
-        const data = await res.json()
+  try {
+    const res = await fetch("/api/logout", {
+      method: "POST",
+    });
+    const data = await res.json();
 
-        if (res.status !== 200) {
-            // Error logging out
-            console.log("Could not log out!")
-            return;
-        }
-
-        // Logged out, redirect to login page
-        console.log(data.message)
-        window.location.href = data.redirect
-    } catch (err) {
-        console.error("Network or server error:", err)
+    if (res.status !== 200) {
+      // Error logging out
+      console.log("Could not log out!");
+      return;
     }
+
+    // Logged out, redirect to login page
+    console.log(data.message);
+    window.location.href = data.redirect;
+  } catch (err) {
+    console.error("Network or server error:", err);
+  }
 }
 
 async function navbarInfo() {
-    try {
-        // fetch user data: first_name, last_name, email, role from server
-        const res = await fetch("/api/user_info", { method: "POST" });
-        const data = await res.json();
+  try {
+    // fetch user data: first_name, last_name, email, role from server
+    const res = await fetch("/api/user_info", { method: "POST" });
+    const data = await res.json();
 
-        if (res.status !== 200) {
-            console.log("Could not fetch user data!")
-            return;
-        }
-        console.log("User data has been fetched")
-
-        // Change profile info to fetched info
-        const firstInitial = data.first_name ? data.first_name[0] : "";
-        const lastInitial = data.last_name ? data.last_name[0] : "";
-        document.getElementById("button-first-last-name-initials").textContent = firstInitial + lastInitial;
-        document.getElementById("first-last-name-initials-text").textContent = firstInitial + lastInitial;
-        document.getElementById("profile-panel-first-last-name-text").textContent = data.first_name + " " + data.last_name
-        document.getElementById("profile-panel-email-text").textContent = data.email
-
-        // Add links to navbar depending on the role of the user
-        if (data.role == "Admin") {
-            document.getElementById("home-link").href = "/admin/front-page.html"
-            document.getElementById("assignment-modules-link").href = "/admin/moderation-frontpage.html"
-            document.getElementById("contact-help-link").href = "/admin/contact-help-page.html"
-            document.getElementById("information-handbook-link").href = "/admin/info-handbook-page.html"
-            document.getElementById("settings-page-profile-link").href = "/admin/settings-page-profile.html"
-            document.getElementById("settings-page-privacy-link").href = "/admin/settings-page-privacy.html"
-            document.getElementById("staff-listings-container").innerHTML = staffListingsHTML;
-            document.getElementById("staff-listings-container").style.display = "flex";
-            document.getElementById("staff-listings-link").href = "/admin/staff-listings.html"
-        } else {
-            document.getElementById("home-link").href = "/marker/front-page.html"
-            document.getElementById("assignment-modules-link").href = "/marker/moderation-frontpage.html"
-            document.getElementById("contact-help-link").href = "/marker/contact-help-page.html"
-            document.getElementById("information-handbook-link").href = "/marker/info-handbook-page.html"
-            document.getElementById("settings-page-profile-link").href = "/marker/settings-page-profile.html"
-            document.getElementById("settings-page-privacy-link").href = "/marker/settings-page-privacy.html"
-        }
-
-    } catch (err) {
-        console.log("An error occurred: ", err);
+    if (res.status !== 200) {
+      console.log("Could not fetch user data!");
+      return;
     }
+    console.log("User data has been fetched");
+
+    // Change profile info to fetched info
+    const firstInitial = data.first_name ? data.first_name[0] : "";
+    const lastInitial = data.last_name ? data.last_name[0] : "";
+    document.getElementById("button-first-last-name-initials").textContent =
+      firstInitial + lastInitial;
+    document.getElementById("first-last-name-initials-text").textContent =
+      firstInitial + lastInitial;
+    document.getElementById("profile-panel-first-last-name-text").textContent =
+      data.first_name + " " + data.last_name;
+    document.getElementById("profile-panel-email-text").textContent =
+      data.email;
+
+    // Add links to navbar depending on the role of the user
+    if (data.role == "Admin") {
+      document.getElementById("home-link").href = "/admin/front-page.html";
+      document.getElementById("assignment-modules-link").href =
+        "/admin/moderation-frontpage.html";
+      document.getElementById("contact-help-link").href =
+        "/admin/contact-help-page.html";
+      document.getElementById("information-handbook-link").href =
+        "/admin/info-handbook-page.html";
+      document.getElementById("settings-page-profile-link").href =
+        "/admin/settings-page-profile.html";
+      document.getElementById("settings-page-privacy-link").href =
+        "/admin/settings-page-privacy.html";
+      document.getElementById("staff-listings-container").innerHTML =
+        staffListingsHTML;
+      document.getElementById("staff-listings-container").style.display =
+        "flex";
+      document.getElementById("staff-listings-link").href =
+        "/admin/staff-listings.html";
+    } else {
+      document.getElementById("home-link").href = "/marker/front-page.html";
+      document.getElementById("assignment-modules-link").href =
+        "/marker/moderation-frontpage.html";
+      document.getElementById("contact-help-link").href =
+        "/marker/contact-help-page.html";
+      document.getElementById("information-handbook-link").href =
+        "/marker/info-handbook-page.html";
+      document.getElementById("settings-page-profile-link").href =
+        "/marker/settings-page-profile.html";
+      document.getElementById("settings-page-privacy-link").href =
+        "/marker/settings-page-privacy.html";
+    }
+  } catch (err) {
+    console.log("An error occurred: ", err);
+  }
 }
 
 const navbarHTML = `
@@ -168,4 +190,4 @@ const staffListingsHTML = `
     </span>
     <span class="profile-panel-link-label">Staff Listings</span>
 </a>
-`
+`;

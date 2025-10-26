@@ -1,49 +1,69 @@
 <!-- Created by William Alexander Tang Wai on 19/09/2025 -->
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reset Password</title>
-    <link rel="stylesheet" href="../css/login-page.css">
-</head>
-<body>
+    <link rel="stylesheet" href="../css/login-page.css" />
+  </head>
+  <body>
     <!-- Reset Password Form -->
     <!-- To change 'reset_psw_page.php' to whatever file will process this -->
     <!-- Should redirect to login page after the button is clicked -->
     <form id="psw-form" action="reset_psw_page.php" method="post">
-        <div class="logo-container">
-            <h1 class="logo">AMT</h1>
+      <div class="logo-container">
+        <h1 class="logo">AMT</h1>
+      </div>
+      <h3 class="logo-sub">Assignment Moderation Tool</h3>
+
+      <h3 class="reset-psw-text">Reset Password</h3>
+
+      <div class="input-container">
+        <label for="psw"><b>Password</b></label>
+        <div class="password-container">
+          <input
+            type="password"
+            placeholder="Enter New Password"
+            name="psw"
+            id="psw"
+            required
+          />
+          <img
+            src="../images/login-page/eye-closed.png"
+            class="eye-icon"
+            onclick="togglePassword('psw', 'eye')"
+            id="eye"
+          />
         </div>
-        <h3 class="logo-sub">Assignment Moderation Tool</h3>
 
-        <h3 class="reset-psw-text">Reset Password</h3>
-
-        <div class="input-container">
-            <label for="psw"><b>Password</b></label>
-            <div class="password-container">
-                <input type="password" placeholder="Enter New Password" name="psw" id="psw" required>
-                <img src="../images/login-page/eye-closed.png" class="eye-icon" 
-                    onclick="togglePassword('psw', 'eye')" id="eye">
-            </div>
-
-            <label for="confirm-psw"><b>Confirm Password</b></label>
-            <div class="password-container">
-                <input type="password" placeholder="Re-enter New Password" name="confirm-psw" id="confirm-psw" required>
-                <img src="../images/login-page/eye-closed.png" class="eye-icon" 
-                    onclick="togglePassword('confirm-psw', 'confirm-eye')" id="confirm-eye">
-            </div>
+        <label for="confirm-psw"><b>Confirm Password</b></label>
+        <div class="password-container">
+          <input
+            type="password"
+            placeholder="Re-enter New Password"
+            name="confirm-psw"
+            id="confirm-psw"
+            required
+          />
+          <img
+            src="../images/login-page/eye-closed.png"
+            class="eye-icon"
+            onclick="togglePassword('confirm-psw', 'confirm-eye')"
+            id="confirm-eye"
+          />
         </div>
+      </div>
 
-        <p id="psw-error-msg">Passwords do not match!</p>
+      <p id="psw-error-msg">Passwords do not match!</p>
 
-        <div class="button-container">
-            <button type="submit">Reset Password</button>
-        </div>
+      <div class="button-container">
+        <button type="submit">Reset Password</button>
+      </div>
     </form>
 
     <!-- Script -->
     <script src="../js/login-page.js"></script>
-</body>
+  </body>
 </html>

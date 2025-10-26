@@ -5,7 +5,7 @@
 body {
   background-color: black;
   color: #eeeeee;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 /* Form */
@@ -14,7 +14,7 @@ form {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 90vh;           /* full viewport height */
+  height: 90vh; /* full viewport height */
 }
 
 /********************************************************/
@@ -31,8 +31,8 @@ form {
   width: 200px;
   height: 200px;
   border-radius: 50%;
-  background-color: #eeeeee;  /* circle background */
-  color: black;               /* text color */
+  background-color: #eeeeee; /* circle background */
+  color: black; /* text color */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -51,7 +51,9 @@ form {
 }
 
 /* Log In text under logo sub text */
-.login-text, .forgot-psw-text, .reset-psw-text {
+.login-text,
+.forgot-psw-text,
+.reset-psw-text {
   display: flex;
   justify-content: center;
   font-size: 24px;
@@ -61,7 +63,9 @@ form {
 
 /********************************************************/
 /* Incorrect email/password text */
-.error-message, .successful-message, #psw-error-msg {
+.error-message,
+.successful-message,
+#psw-error-msg {
   /* To change display to flex when receiving error from server */
   display: none;
   justify-content: center;
@@ -87,7 +91,9 @@ form {
 }
 
 /* Input boxes */
-input[type=text], input[type=email], input[type=password] {
+input[type="text"],
+input[type="email"],
+input[type="password"] {
   width: 400px;
   padding: 12px 10px;
   margin: 10px 0;
@@ -148,7 +154,15 @@ span.psw {
 }
 
 /* Link colour for Forgot password */
-a:link { color: #eeeeee; }        /* normal unvisited link */
-a:visited { color: #aab0bc; }     /* visited link */
-a:hover { color: #00a6b2; }       /* mouse hover */
-a:active { color: #d41a1a; }      /* when clicked */
+a:link {
+  color: #eeeeee;
+} /* normal unvisited link */
+a:visited {
+  color: #aab0bc;
+} /* visited link */
+a:hover {
+  color: #00a6b2;
+} /* mouse hover */
+a:active {
+  color: #d41a1a;
+} /* when clicked */

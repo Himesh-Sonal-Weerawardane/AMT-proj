@@ -4,7 +4,7 @@
 /* Black Background, white text, Inter font to all body texts */
 body {
   background-color: #eeeeee;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 /* Container for all accordions (i.e. years) */
@@ -16,7 +16,8 @@ body {
   padding: 64px 200px 150px 200px;
 }
 
-#no-marking-attempts-message, #unknown-error-message {
+#no-marking-attempts-message,
+#unknown-error-message {
   display: none;
   justify-content: center;
   font-size: 24px;
@@ -26,8 +27,10 @@ body {
 }
 
 /*****************************************************************/
- /* Buttons used to open and close the accordion panel (Years) */
-.accordion, .accordion1, .accordion2 {
+/* Buttons used to open and close the accordion panel (Years) */
+.accordion,
+.accordion1,
+.accordion2 {
   cursor: pointer;
   padding: 8px;
   width: fit-content;
@@ -44,18 +47,24 @@ body {
   margin-top: 15px;
 }
 
-.accordion1, .accordion2 {
+.accordion1,
+.accordion2 {
   font-size: 20px;
 }
 
 /* Background color of button if hovered or clicked on (add the .active class with JS) */
-.active, .accordion:hover, .accordion1:hover, .accordion2:hover {
+.active,
+.accordion:hover,
+.accordion1:hover,
+.accordion2:hover {
   background-color: #eeeeee;
 }
 
 /*****************************************************************/
 /* Add a button to indicate whether the collapsible content is open/closed */
-.accordion:after, .accordion1:after, .accordion2:after {
+.accordion:after,
+.accordion1:after,
+.accordion2:after {
   content: "";
   display: inline-block;
   width: 16px;
@@ -63,7 +72,9 @@ body {
   margin-left: 5px;
   background: url("../images/front-page/arrow.png") no-repeat center center;
   background-size: contain;
-  transition: transform 0.2s ease, background-image 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background-image 0.2s ease;
 }
 
 /* Rotate when expanded */
@@ -72,12 +83,16 @@ body {
 }
 
 /* Rotate + enlarge on hover */
-.accordion.active:hover::after, .accordion1.active:hover::after, .accordion2.active:hover::after {
+.accordion.active:hover::after,
+.accordion1.active:hover::after,
+.accordion2.active:hover::after {
   transform: rotate(90deg) scale(1.2);
 }
 
 /* Enlarge on hover when not active */
-.accordion:not(.active):hover::after, .accordion1:not(.active):hover::after, .accordion2:not(.active):hover::after {
+.accordion:not(.active):hover::after,
+.accordion1:not(.active):hover::after,
+.accordion2:not(.active):hover::after {
   transform: scale(1.2);
 }
 
@@ -134,8 +149,8 @@ body {
 
 .row {
   display: flex;
-  margin-left:-5px;
-  margin-right:-5px;
+  margin-left: -5px;
+  margin-right: -5px;
 }
 
 .column {

@@ -1,45 +1,51 @@
 <!-- Created on 18/09/2025 by William Alexander Tang Wai -->
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Contact and Help Page - Admin</title>
-    <link rel="stylesheet" href="../css/contact-help-page.css">
-    <link rel="stylesheet" href="../css/navbar.css">
-</head>
-<body>
+    <link rel="stylesheet" href="../css/contact-help-page.css" />
+    <link rel="stylesheet" href="../css/navbar.css" />
+  </head>
+  <body>
     <!-- Navigation bar -->
     <div id="navbar-container"></div>
 
     <div class="main-container">
-        <h1>Contact and Help</h1>
-        <iframe src="../pdf/sample.pdf"></iframe>
+      <h1>Contact and Help</h1>
+      <iframe src="../pdf/sample.pdf"></iframe>
 
-        <footer class="page-footer">
-            <form class="module-form" action="#" method="post">
-                <input class="file-select" type="file" id="contact-help-file"
-                        name="contact-help-file" accept=".pdf,.doc,.docx" hidden>
-                <label for="contact-help-file" class="file-label">Upload PDF</label>
-                <span class="file-upload-label" id="file-name">No file chosen</span>
+      <footer class="page-footer">
+        <form class="module-form" action="#" method="post">
+          <input
+            class="file-select"
+            type="file"
+            id="contact-help-file"
+            name="contact-help-file"
+            accept=".pdf,.doc,.docx"
+            hidden
+          />
+          <label for="contact-help-file" class="file-label">Upload PDF</label>
+          <span class="file-upload-label" id="file-name">No file chosen</span>
 
-                <div class="form-action">
-                    <button type="submit" class="submit-button">Publish New PDF</button>
-                </div>
-            </form>
-        </footer>
-
+          <div class="form-action">
+            <button type="submit" class="submit-button">Publish New PDF</button>
+          </div>
+        </form>
+      </footer>
     </div>
 
     <script>
-        const input = document.getElementById("contact-help-file");
-        const fileName = document.getElementById("file-name");
+      const input = document.getElementById("contact-help-file");
+      const fileName = document.getElementById("file-name");
 
-        input.addEventListener("change", () => {
-        fileName.textContent = input.files.length > 0 ? input.files[0].name : "No file chosen";
-        });
+      input.addEventListener("change", () => {
+        fileName.textContent =
+          input.files.length > 0 ? input.files[0].name : "No file chosen";
+      });
     </script>
     <script src="../js/navbar.js"></script>
-</body>
+  </body>
 </html>
