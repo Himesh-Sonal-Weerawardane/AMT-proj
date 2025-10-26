@@ -3,27 +3,27 @@
 
 /* Black Background, white text, Inter font to all body texts */
 body {
-  background-color: #eeeeee;
-  font-family: "Inter", sans-serif;
+	background-color: #eeeeee;
+	font-family: "Inter", sans-serif;
 }
 
 /* Container for all accordions (i.e. years) */
 .accordion-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: left;
-  padding: 64px 200px 150px 200px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: left;
+	padding: 64px 200px 150px 200px;
 }
 
 #no-marking-attempts-message,
 #unknown-error-message {
-  display: none;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: 500;
-  padding-top: 200px;
-  color: black;
+	display: none;
+	justify-content: center;
+	font-size: 24px;
+	font-weight: 500;
+	padding-top: 200px;
+	color: black;
 }
 
 /*****************************************************************/
@@ -31,25 +31,25 @@ body {
 .accordion,
 .accordion1,
 .accordion2 {
-  cursor: pointer;
-  padding: 8px;
-  width: fit-content;
-  text-align: left;
-  border: none;
-  outline: none;
-  transition: 0.4s;
-  color: #000000;
-  font-size: 24px;
-  font-weight: 500;
+	cursor: pointer;
+	padding: 8px;
+	width: fit-content;
+	text-align: left;
+	border: none;
+	outline: none;
+	transition: 0.4s;
+	color: #000000;
+	font-size: 24px;
+	font-weight: 500;
 }
 
 .accordion {
-  margin-top: 15px;
+	margin-top: 15px;
 }
 
 .accordion1,
 .accordion2 {
-  font-size: 20px;
+	font-size: 20px;
 }
 
 /* Background color of button if hovered or clicked on (add the .active class with JS) */
@@ -57,7 +57,7 @@ body {
 .accordion:hover,
 .accordion1:hover,
 .accordion2:hover {
-  background-color: #eeeeee;
+	background-color: #eeeeee;
 }
 
 /*****************************************************************/
@@ -65,77 +65,77 @@ body {
 .accordion:after,
 .accordion1:after,
 .accordion2:after {
-  content: "";
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-left: 5px;
-  background: url("../images/front-page/arrow.png") no-repeat center center;
-  background-size: contain;
-  transition:
-    transform 0.2s ease,
-    background-image 0.2s ease;
+	content: "";
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	margin-left: 5px;
+	background: url("../images/front-page/arrow.png") no-repeat center center;
+	background-size: contain;
+	transition:
+		transform 0.2s ease,
+		background-image 0.2s ease;
 }
 
 /* Rotate when expanded */
 .active:after {
-  transform: rotate(90deg);
+	transform: rotate(90deg);
 }
 
 /* Rotate + enlarge on hover */
 .accordion.active:hover::after,
 .accordion1.active:hover::after,
 .accordion2.active:hover::after {
-  transform: rotate(90deg) scale(1.2);
+	transform: rotate(90deg) scale(1.2);
 }
 
 /* Enlarge on hover when not active */
 .accordion:not(.active):hover::after,
 .accordion1:not(.active):hover::after,
 .accordion2:not(.active):hover::after {
-  transform: scale(1.2);
+	transform: scale(1.2);
 }
 
 /*****************************************************************/
 /* Style the accordion panel. Note: hidden by default */
 .panel {
-  padding: 0 0;
-  background-color: #eeeeee;
-  display: none;
-  overflow: hidden;
+	padding: 0 0;
+	background-color: #eeeeee;
+	display: none;
+	overflow: hidden;
 }
 
 .modules-status {
-  font-size: 16px;
-  padding: 16px 20px;
-  margin: 12px 0;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
-  color: #1f2937;
+	font-size: 16px;
+	padding: 16px 20px;
+	margin: 12px 0;
+	background-color: #ffffff;
+	border: 1px solid #d1d5db;
+	border-radius: 10px;
+	color: #1f2937;
 }
 
 .modules-status[data-state="error"] {
-  background-color: #fff5f5;
-  border-color: #ffc9c9;
-  color: #c92a2a;
+	background-color: #fff5f5;
+	border-color: #ffc9c9;
+	color: #c92a2a;
 }
 
 /*****************************************************************/
 .table-header {
-  display: flex;
-  justify-content: space-between;
+	display: flex;
+	justify-content: space-between;
 }
 
 /* Link in th */
 .moderation-link {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	cursor: pointer;
 }
 
 .moderation-link:hover {
-  color: #00a6b2;
+	color: #00a6b2;
 }
 
 /*****************************************************************/
@@ -144,73 +144,73 @@ body {
 /* https://www.w3schools.com/css/css3_borders.asp */
 /* https://www.w3schools.com/css/css_table.asp */
 * {
-  box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 .row {
-  display: flex;
-  margin-left: -5px;
-  margin-right: -5px;
+	display: flex;
+	margin-left: -5px;
+	margin-right: -5px;
 }
 
 .column {
-  flex: 50%;
-  padding: 10px;
+	flex: 50%;
+	padding: 10px;
 }
 
 .column--hidden .moderation-table {
-  opacity: 0.55;
+	opacity: 0.55;
 }
 
 .column--hidden .moderation-link {
-  position: relative;
+	position: relative;
 }
 
 .column--hidden .moderation-link::after {
-  content: " (Hidden)";
-  font-size: 14px;
-  font-weight: 400;
-  color: #b91c1c;
+	content: " (Hidden)";
+	font-size: 14px;
+	font-weight: 400;
+	color: #b91c1c;
 }
 
 td [data-visibility-label] {
-  font-weight: 500;
-  color: #1f2937;
+	font-weight: 500;
+	color: #1f2937;
 }
 
 table {
-  border-radius: 10px;
-  border-spacing: 0;
-  width: 100%;
-  border: 3px solid #6b7280;
+	border-radius: 10px;
+	border-spacing: 0;
+	width: 100%;
+	border: 3px solid #6b7280;
 }
 
 th {
-  text-align: left;
-  padding: 16px;
-  font-size: 20px;
-  font-weight: 500;
-  border-bottom: 3px solid #6b7280;
+	text-align: left;
+	padding: 16px;
+	font-size: 20px;
+	font-weight: 500;
+	border-bottom: 3px solid #6b7280;
 }
 
 td {
-  text-align: left;
-  padding: 16px;
-  font-size: 16px;
-  font-weight: 300;
+	text-align: left;
+	padding: 16px;
+	font-size: 16px;
+	font-weight: 300;
 }
 
 tr:nth-child(even) {
-  background-color: #dddddd;
+	background-color: #dddddd;
 }
 
 /*****************************************************************/
 .within-threshold {
-  color: #22c55e;
-  font-weight: bold;
+	color: #22c55e;
+	font-weight: bold;
 }
 
 .outside-threshold {
-  color: #d41a1a;
-  font-weight: bold;
+	color: #d41a1a;
+	font-weight: bold;
 }

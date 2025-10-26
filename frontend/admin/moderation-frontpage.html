@@ -2,79 +2,79 @@
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Moderation Front Page - Admin</title>
-    <link rel="stylesheet" href="../css/moderation-frontpage.css" />
-    <link rel="stylesheet" href="../css/admin/edit-viewings.css" />
-    <link rel="stylesheet" href="../css/navbar.css" />
-  </head>
-  <body data-role="admin">
-    <!-- Navigation bar -->
-    <div id="navbar-container"></div>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Moderation Front Page - Admin</title>
+		<link rel="stylesheet" href="../css/moderation-frontpage.css" />
+		<link rel="stylesheet" href="../css/admin/edit-viewings.css" />
+		<link rel="stylesheet" href="../css/navbar.css" />
+	</head>
+	<body data-role="admin">
+		<!-- Navigation bar -->
+		<div id="navbar-container"></div>
 
-    <div class="accordion-container">
-      <!-- Edit Viewings and Publish New Modules buttons -->
-      <div class="button-container" id="top-buttons-container">
-        <button class="top-btns" onclick="toggleEditViewings()">Edit</button>
-        <!-- https://www.w3schools.com/html/html_links.asp -->
-        <button
-          class="top-btns"
-          onclick="window.location.href='publish-module.html'"
-        >
-          Create New Module
-        </button>
-      </div>
+		<div class="accordion-container">
+			<!-- Edit Viewings and Publish New Modules buttons -->
+			<div class="button-container" id="top-buttons-container">
+				<button class="top-btns" onclick="toggleEditViewings()">Edit</button>
+				<!-- https://www.w3schools.com/html/html_links.asp -->
+				<button
+					class="top-btns"
+					onclick="window.location.href='publish-module.html'"
+				>
+					Create New Module
+				</button>
+			</div>
 
-      <h1 id="no-marking-attempts-message">No Marking Attempts found!</h1>
-      <h1 id="unknown-error-message">An Unknown Error has occurred...</h1>
+			<h1 id="no-marking-attempts-message">No Marking Attempts found!</h1>
+			<h1 id="unknown-error-message">An Unknown Error has occurred...</h1>
 
-      <div id="accordions"></div>
-    </div>
+			<div id="accordions"></div>
+		</div>
 
-    <!-- Button area that displays above the rest of the page -->
-    <footer class="page-footer">
-      <div class="button-container-edit" id="edit-buttons-container">
-        <button
-          class="edit-btns"
-          type="button"
-          id="hide-btn"
-          onclick="hideFromMarkers()"
-        >
-          Hide From Markers
-        </button>
-        <button
-          class="edit-btns"
-          type="button"
-          id="download-btn"
-          onclick="downloadStats()"
-        >
-          Download Statistics
-        </button>
-        <button
-          class="edit-btns"
-          type="button"
-          id="delete-btn"
-          onclick="deleteSelected()"
-        >
-          Delete
-        </button>
-        <button
-          class="edit-btns"
-          type="button"
-          id="done-btn"
-          onclick="toggleEditViewings()"
-        >
-          Done
-        </button>
-      </div>
-    </footer>
+		<!-- Button area that displays above the rest of the page -->
+		<footer class="page-footer">
+			<div class="button-container-edit" id="edit-buttons-container">
+				<button
+					class="edit-btns"
+					type="button"
+					id="hide-btn"
+					onclick="hideFromMarkers()"
+				>
+					Hide From Markers
+				</button>
+				<button
+					class="edit-btns"
+					type="button"
+					id="download-btn"
+					onclick="downloadStats()"
+				>
+					Download Statistics
+				</button>
+				<button
+					class="edit-btns"
+					type="button"
+					id="delete-btn"
+					onclick="deleteSelected()"
+				>
+					Delete
+				</button>
+				<button
+					class="edit-btns"
+					type="button"
+					id="done-btn"
+					onclick="toggleEditViewings()"
+				>
+					Done
+				</button>
+			</div>
+		</footer>
 
-    <!-- Scripts -->
-    <script src="../js/accordions-toggle.js"></script>
-    <script src="../js/admin/edit-viewings.js"></script>
-    <script src="../js/show-moderations.js"></script>
-    <script src="../js/navbar.js"></script>
-  </body>
+		<!-- Scripts -->
+		<script src="../js/accordions-toggle.js"></script>
+		<script src="../js/admin/edit-viewings.js"></script>
+		<script src="../js/show-moderations.js"></script>
+		<script src="../js/navbar.js"></script>
+	</body>
 </html>

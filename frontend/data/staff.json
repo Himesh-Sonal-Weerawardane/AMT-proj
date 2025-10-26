@@ -1,58 +1,58 @@
 [
-  {
-    "id": 1,
-    "name": "John Doe",
-    "email": "johndoe@gmail.com",
-    "role": "Admin",
-    "avatar": null
-  },
-  {
-    "id": 2,
-    "name": "John Smith",
-    "email": "johnsmith@gmail.com",
-    "role": "Marker",
-    "avatar": null
-  },
-  {
-    "id": 3,
-    "name": "Charlie Brown",
-    "email": "charliebrown@gmail.com",
-    "role": "Admin",
-    "avatar": null
-  },
-  {
-    "id": 4,
-    "name": "Charlie Smith",
-    "email": "charliesmith@example.com",
-    "role": "Marker",
-    "avatar": null
-  },
-  {
-    "id": 5,
-    "name": "Jonathan Anderson",
-    "email": "jonathananderson@example.com",
-    "role": "Marker",
-    "avatar": null
-  },
-  {
-    "id": 6,
-    "name": "Eddy Lee",
-    "email": "eddyLee@example.com",
-    "role": "Marker",
-    "avatar": null
-  },
-  {
-    "id": 7,
-    "name": "George Russell",
-    "email": "georgerussell@example.com",
-    "role": "Marker",
-    "avatar": null
-  },
-  {
-    "id": 8,
-    "name": "Hannah Montanna",
-    "email": "hannahmontanna@example.com",
-    "role": "Marker",
-    "avatar": null
-  }
+	{
+		"id": 1,
+		"name": "John Doe",
+		"email": "johndoe@gmail.com",
+		"role": "Admin",
+		"avatar": null
+	},
+	{
+		"id": 2,
+		"name": "John Smith",
+		"email": "johnsmith@gmail.com",
+		"role": "Marker",
+		"avatar": null
+	},
+	{
+		"id": 3,
+		"name": "Charlie Brown",
+		"email": "charliebrown@gmail.com",
+		"role": "Admin",
+		"avatar": null
+	},
+	{
+		"id": 4,
+		"name": "Charlie Smith",
+		"email": "charliesmith@example.com",
+		"role": "Marker",
+		"avatar": null
+	},
+	{
+		"id": 5,
+		"name": "Jonathan Anderson",
+		"email": "jonathananderson@example.com",
+		"role": "Marker",
+		"avatar": null
+	},
+	{
+		"id": 6,
+		"name": "Eddy Lee",
+		"email": "eddyLee@example.com",
+		"role": "Marker",
+		"avatar": null
+	},
+	{
+		"id": 7,
+		"name": "George Russell",
+		"email": "georgerussell@example.com",
+		"role": "Marker",
+		"avatar": null
+	},
+	{
+		"id": 8,
+		"name": "Hannah Montanna",
+		"email": "hannahmontanna@example.com",
+		"role": "Marker",
+		"avatar": null
+	}
 ]

@@ -1,167 +1,167 @@
 /* Created by William Alexander Tang Wai on 18/09/2025 */
 
 body {
-  background-color: #eeeeee;
-  color: black;
-  font-family: "Inter", sans-serif;
+	background-color: #eeeeee;
+	color: black;
+	font-family: "Inter", sans-serif;
 }
 
 /* Style page content */
 .page-content {
-  margin-left: 120px; /* Same as the width of the sidebar */
-  padding: 10px;
+	margin-left: 120px; /* Same as the width of the sidebar */
+	padding: 10px;
 }
 
 /********************************************************/
 /* Form */
 #email-form,
 #psw-form {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding-top: 40px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding-top: 40px;
 }
 
 #psw-form {
-  padding-top: 0;
+	padding-top: 0;
 }
 
 .profile-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
 }
 
 /********************************************************/
 /* Initials Container */
 /* Centre the circle itself */
 .profile-circle-container {
-  display: flex;
-  justify-content: center;
+	display: flex;
+	justify-content: center;
 }
 
 /* Profile Circle */
 .profile-text {
-  width: 175px;
-  height: 175px;
-  border: 3px solid #6b7280; /* circle border */
-  border-radius: 50%;
-  background-color: #eeeeee; /* circle background */
-  color: black; /* text color */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 64px;
-  font-weight: bold;
-  margin: 50px 0 30px 0;
+	width: 175px;
+	height: 175px;
+	border: 3px solid #6b7280; /* circle border */
+	border-radius: 50%;
+	background-color: #eeeeee; /* circle background */
+	color: black; /* text color */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 64px;
+	font-weight: bold;
+	margin: 50px 0 30px 0;
 }
 
 /********************************************************/
 /* Container for input boxes */
 .input-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: medium;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	font-size: 20px;
+	font-weight: medium;
 }
 
 /* Label */
 label {
-  width: 600px;
-  margin: 5px 0 0 0;
+	width: 600px;
+	margin: 5px 0 0 0;
 }
 
 /* Input boxes */
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-  width: 600px;
-  border: 1px solid #6b7280;
-  padding: 12px 10px;
-  margin: 10px 0;
-  box-sizing: border-box;
+	width: 600px;
+	border: 1px solid #6b7280;
+	padding: 12px 10px;
+	margin: 10px 0;
+	box-sizing: border-box;
 }
 
 /* Password box and eye icon */
 .password-container {
-  position: relative;
+	position: relative;
 }
 
 /* Leave space inside password box for eye icon */
 .password-container input {
-  padding: 12px 40px 12px 10px;
+	padding: 12px 40px 12px 10px;
 }
 
 /* Position of eye icon */
 .password-container .eye-icon {
-  position: absolute;
-  right: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  width: 30px;
-  height: 25px;
+	position: absolute;
+	right: 5px;
+	top: 50%;
+	transform: translateY(-50%);
+	cursor: pointer;
+	width: 30px;
+	height: 25px;
 }
 
 #email-error-msg,
 #psw-error-msg {
-  color: #d41a1a;
-  display: none; /* hidden by default */
-  margin: 0;
-  font-size: 14px;
+	color: #d41a1a;
+	display: none; /* hidden by default */
+	margin: 0;
+	font-size: 14px;
 }
 
 /********************************************************/
 /* Other text */
 .change-title {
-  width: 600px;
-  margin: 0 0 10px 0;
-  font-size: 32px;
-  font-weight: medium;
+	width: 600px;
+	margin: 0 0 10px 0;
+	font-size: 32px;
+	font-weight: medium;
 }
 
 #current-email-title,
 #role-title {
-  width: 600px;
-  margin: 10px 0 0 0;
-  font-size: 20px;
-  font-weight: medium;
+	width: 600px;
+	margin: 10px 0 0 0;
+	font-size: 20px;
+	font-weight: medium;
 }
 
 #current-email-text,
 #role-text {
-  width: 600px;
-  margin: 0 0 10px 0;
-  font-size: 16px;
-  font-weight: medium;
+	width: 600px;
+	margin: 0 0 10px 0;
+	font-size: 16px;
+	font-weight: medium;
 }
 
 /********************************************************/
 /* Save Changes Button Container */
 /* Right align the button */
 .button-container {
-  width: 600px;
-  display: flex;
-  justify-content: flex-end;
+	width: 600px;
+	display: flex;
+	justify-content: flex-end;
 }
 
 /* Login Button */
 .submit-changes-button {
-  background-color: #eeeeee;
-  color: black;
-  border: 1px solid #6b7280;
-  padding: 5px;
-  margin: 20px 0 0 0;
-  cursor: pointer;
-  width: 175px;
-  font-size: 16px;
-  font-weight: 500;
+	background-color: #eeeeee;
+	color: black;
+	border: 1px solid #6b7280;
+	padding: 5px;
+	margin: 20px 0 0 0;
+	cursor: pointer;
+	width: 175px;
+	font-size: 16px;
+	font-weight: 500;
 }
 
 /* Add a hover effect for login button */
 .submit-changes-button:hover {
-  background-color: #6b7280;
+	background-color: #6b7280;
 }

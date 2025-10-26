@@ -2,180 +2,180 @@
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Front Home Page - Admin</title>
-    <link rel="stylesheet" href="../css/front-page.css" />
-    <link rel="stylesheet" href="../css/navbar.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
-  </head>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Front Home Page - Admin</title>
+		<link rel="stylesheet" href="../css/front-page.css" />
+		<link rel="stylesheet" href="../css/navbar.css" />
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+	</head>
 
-  <body>
-    <!-- Navigation bar -->
-    <div id="navbar-container"></div>
+	<body>
+		<!-- Navigation bar -->
+		<div id="navbar-container"></div>
 
-    <div class="container">
-      <!-- Marking Summary and directory to main moderation page -->
-      <h2>Your Current Markings</h2>
-      <h3>2025 Semester 1</h3>
+		<div class="container">
+			<!-- Marking Summary and directory to main moderation page -->
+			<h2>Your Current Markings</h2>
+			<h3>2025 Semester 1</h3>
 
-      <div class="table-header">
-        <span id="header-name">Name</span>
-        <span id="header-due-date">Due</span>
-        <span id="header-submit-date">Submitted</span>
-        <span id="header-score">Score</span>
-      </div>
+			<div class="table-header">
+				<span id="header-name">Name</span>
+				<span id="header-due-date">Due</span>
+				<span id="header-submit-date">Submitted</span>
+				<span id="header-score">Score</span>
+			</div>
 
-      <div class="head-divider"></div>
+			<div class="head-divider"></div>
 
-      <button class="marking-accordion">
-        <img class="arrow" src="../images/front-page/arrow.png" alt="arrow" />
-        Assignment 1
-      </button>
-      <div class="divider"></div>
-      <div class="panel">
-        <div class="moderation">
-          <a href="moderation.html" class="moderation-title">Moderation 1</a>
-          <div class="moderation-due">Aug 22 at 5:00PM</div>
-          <div class="moderation-submitted">Aug 15 at 5:45PM</div>
-          <div class="moderation-score">45/50</div>
-        </div>
-        <div class="mini-divider"></div>
-        <div class="moderation">
-          <a href="moderation2.html" class="moderation-title">Moderation 2</a>
-          <div class="moderation-due">Aug 22 at 5:00PM</div>
-          <div class="moderation-submitted">Aug 20 at 5:45PM</div>
-          <div class="moderation-score">40/50</div>
-        </div>
-        <div class="mini-divider"></div>
-      </div>
+			<button class="marking-accordion">
+				<img class="arrow" src="../images/front-page/arrow.png" alt="arrow" />
+				Assignment 1
+			</button>
+			<div class="divider"></div>
+			<div class="panel">
+				<div class="moderation">
+					<a href="moderation.html" class="moderation-title">Moderation 1</a>
+					<div class="moderation-due">Aug 22 at 5:00PM</div>
+					<div class="moderation-submitted">Aug 15 at 5:45PM</div>
+					<div class="moderation-score">45/50</div>
+				</div>
+				<div class="mini-divider"></div>
+				<div class="moderation">
+					<a href="moderation2.html" class="moderation-title">Moderation 2</a>
+					<div class="moderation-due">Aug 22 at 5:00PM</div>
+					<div class="moderation-submitted">Aug 20 at 5:45PM</div>
+					<div class="moderation-score">40/50</div>
+				</div>
+				<div class="mini-divider"></div>
+			</div>
 
-      <!-- Marker Progress Summary -->
-      <h2>Marker Progress</h2>
-      <h3>2025 Semester 1</h3>
-      <button class="progress-accordion">
-        <img class="arrow" src="../images/front-page/arrow.png" alt="arrow" />
-        Assignment 1
-      </button>
-      <div class="head-divider"></div>
+			<!-- Marker Progress Summary -->
+			<h2>Marker Progress</h2>
+			<h3>2025 Semester 1</h3>
+			<button class="progress-accordion">
+				<img class="arrow" src="../images/front-page/arrow.png" alt="arrow" />
+				Assignment 1
+			</button>
+			<div class="head-divider"></div>
 
-      <div class="moderation-container">
-        <div class="panel-2">
-          <div class="moderation-box">
-            <div class="moderation-title-2">
-              <a href="moderation.html">Moderation 1</a>
-            </div>
-            <div class="mini-divider-2"></div>
-            <div class="moderation-progress">
-              <div
-                class="chart-wrapper"
-                data-chart-id="myChart1"
-                data-marked="5"
-                data-unmarked="3"
-              >
-                <canvas id="myChart1"></canvas>
-                <div class="chart-center">
-                  <span class="chart-count"></span>
-                  <span class="chart-center-label">Marked</span>
-                </div>
-              </div>
-              <ul class="progress-breakdown">
-                <li>
-                  <span class="legend-dot legend-marked"></span>Marked:
-                  <span class="detail-value" data-detail="marked"></span>
-                </li>
-                <li>
-                  <span class="legend-dot legend-unmarked"></span>Unmarked:
-                  <span class="detail-value" data-detail="unmarked"></span>
-                </li>
-                <li>
-                  Total: <span class="detail-value" data-detail="total"></span>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div class="moderation-box">
-            <div class="moderation-title-2">
-              <a href="moderation2.html">Moderation 2</a>
-            </div>
-            <div class="mini-divider-2"></div>
-            <div class="moderation-progress">
-              <div
-                class="chart-wrapper"
-                data-chart-id="myChart2"
-                data-marked="0"
-                data-unmarked="8"
-              >
-                <canvas id="myChart2"></canvas>
-                <div class="chart-center">
-                  <span class="chart-count"></span>
-                  <span class="chart-center-label">Marked</span>
-                </div>
-              </div>
-              <ul class="progress-breakdown">
-                <li>
-                  <span class="legend-dot legend-marked"></span>Marked:
-                  <span class="detail-value" data-detail="marked"></span>
-                </li>
-                <li>
-                  <span class="legend-dot legend-unmarked"></span>Unmarked:
-                  <span class="detail-value" data-detail="unmarked"></span>
-                </li>
-                <li>
-                  Total: <span class="detail-value" data-detail="total"></span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
+			<div class="moderation-container">
+				<div class="panel-2">
+					<div class="moderation-box">
+						<div class="moderation-title-2">
+							<a href="moderation.html">Moderation 1</a>
+						</div>
+						<div class="mini-divider-2"></div>
+						<div class="moderation-progress">
+							<div
+								class="chart-wrapper"
+								data-chart-id="myChart1"
+								data-marked="5"
+								data-unmarked="3"
+							>
+								<canvas id="myChart1"></canvas>
+								<div class="chart-center">
+									<span class="chart-count"></span>
+									<span class="chart-center-label">Marked</span>
+								</div>
+							</div>
+							<ul class="progress-breakdown">
+								<li>
+									<span class="legend-dot legend-marked"></span>Marked:
+									<span class="detail-value" data-detail="marked"></span>
+								</li>
+								<li>
+									<span class="legend-dot legend-unmarked"></span>Unmarked:
+									<span class="detail-value" data-detail="unmarked"></span>
+								</li>
+								<li>
+									Total: <span class="detail-value" data-detail="total"></span>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="moderation-box">
+						<div class="moderation-title-2">
+							<a href="moderation2.html">Moderation 2</a>
+						</div>
+						<div class="mini-divider-2"></div>
+						<div class="moderation-progress">
+							<div
+								class="chart-wrapper"
+								data-chart-id="myChart2"
+								data-marked="0"
+								data-unmarked="8"
+							>
+								<canvas id="myChart2"></canvas>
+								<div class="chart-center">
+									<span class="chart-count"></span>
+									<span class="chart-center-label">Marked</span>
+								</div>
+							</div>
+							<ul class="progress-breakdown">
+								<li>
+									<span class="legend-dot legend-marked"></span>Marked:
+									<span class="detail-value" data-detail="marked"></span>
+								</li>
+								<li>
+									<span class="legend-dot legend-unmarked"></span>Unmarked:
+									<span class="detail-value" data-detail="unmarked"></span>
+								</li>
+								<li>
+									Total: <span class="detail-value" data-detail="total"></span>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
 
-      <!-- Overall Summarized Statistics -->
-      <h2>Summarized Statistics</h2>
-      <h3>2025 Semester 1</h3>
-      <button class="progress-accordion">
-        <img class="arrow" src="../images/front-page/arrow.png" alt="arrow" />
-        Assignment 1
-      </button>
-      <div class="head-divider"></div>
+			<!-- Overall Summarized Statistics -->
+			<h2>Summarized Statistics</h2>
+			<h3>2025 Semester 1</h3>
+			<button class="progress-accordion">
+				<img class="arrow" src="../images/front-page/arrow.png" alt="arrow" />
+				Assignment 1
+			</button>
+			<div class="head-divider"></div>
 
-      <div class="moderation-container">
-        <div class="panel-2">
-          <div class="moderation-box">
-            <div class="moderation-title-2">
-              <a href="moderation.html">Moderation 1</a>
-            </div>
-            <div class="mini-divider-2"></div>
-            <table class="statistics-table">
-              <tr>
-                <td>Your Mark</td>
-                <td>72</td>
-              </tr>
-              <tr>
-                <td>Marker's Average</td>
-                <td>78</td>
-              </tr>
-              <tr>
-                <td>Difference</td>
-                <td>6</td>
-              </tr>
-            </table>
-          </div>
+			<div class="moderation-container">
+				<div class="panel-2">
+					<div class="moderation-box">
+						<div class="moderation-title-2">
+							<a href="moderation.html">Moderation 1</a>
+						</div>
+						<div class="mini-divider-2"></div>
+						<table class="statistics-table">
+							<tr>
+								<td>Your Mark</td>
+								<td>72</td>
+							</tr>
+							<tr>
+								<td>Marker's Average</td>
+								<td>78</td>
+							</tr>
+							<tr>
+								<td>Difference</td>
+								<td>6</td>
+							</tr>
+						</table>
+					</div>
 
-          <div class="moderation-box">
-            <div class="moderation-title-2">
-              <a href="moderation2.html">Moderation 2</a>
-            </div>
-            <div class="mini-divider-2"></div>
-            <table class="statistics-table"></table>
-          </div>
-        </div>
-      </div>
-    </div>
+					<div class="moderation-box">
+						<div class="moderation-title-2">
+							<a href="moderation2.html">Moderation 2</a>
+						</div>
+						<div class="mini-divider-2"></div>
+						<table class="statistics-table"></table>
+					</div>
+				</div>
+			</div>
+		</div>
 
-    <script src="../js/front-page.js"></script>
-    <script src="../js/chart.js"></script>
-    <script src="../js/navbar.js"></script>
-  </body>
+		<script src="../js/front-page.js"></script>
+		<script src="../js/chart.js"></script>
+		<script src="../js/navbar.js"></script>
+	</body>
 </html>

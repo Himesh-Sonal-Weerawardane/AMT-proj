@@ -1,116 +1,116 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Settings - Marker</title>
-    <link rel="stylesheet" href="../css/settings-sidebar.css" />
-    <link rel="stylesheet" href="../css/settings-page.css" />
-    <link rel="stylesheet" href="../css/navbar.css" />
-  </head>
-  <body>
-    <!-- Navigation bar -->
-    <div id="navbar-container"></div>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Settings - Marker</title>
+		<link rel="stylesheet" href="../css/settings-sidebar.css" />
+		<link rel="stylesheet" href="../css/settings-page.css" />
+		<link rel="stylesheet" href="../css/navbar.css" />
+	</head>
+	<body>
+		<!-- Navigation bar -->
+		<div id="navbar-container"></div>
 
-    <!-- Settings Sidebar -->
-    <div class="settings-sidebar">
-      <a href="settings-page-profile.html">Profile</a>
-      <a class="active" href="settings-page-privacy.html">Privacy</a>
-    </div>
+		<!-- Settings Sidebar -->
+		<div class="settings-sidebar">
+			<a href="settings-page-profile.html">Profile</a>
+			<a class="active" href="settings-page-privacy.html">Privacy</a>
+		</div>
 
-    <!-- Page Content -->
-    <div class="page-content">
-      <!-- Profile Form -->
-      <!-- To change 'privacy_page_email.php' to whatever file will process email changes -->
-      <form id="email-form">
-        <h1 class="change-title">Change Email</h1>
+		<!-- Page Content -->
+		<div class="page-content">
+			<!-- Profile Form -->
+			<!-- To change 'privacy_page_email.php' to whatever file will process email changes -->
+			<form id="email-form">
+				<h1 class="change-title">Change Email</h1>
 
-        <div class="input-container">
-          <h3 id="current-email-title">Current Email</h3>
-          <p id="current-email-text">...</p>
+				<div class="input-container">
+					<h3 id="current-email-title">Current Email</h3>
+					<p id="current-email-text">...</p>
 
-          <label for="email"><b>New Email</b></label>
-          <input
-            type="email"
-            placeholder="Enter new email"
-            name="email"
-            id="email"
-            required
-          />
+					<label for="email"><b>New Email</b></label>
+					<input
+						type="email"
+						placeholder="Enter new email"
+						name="email"
+						id="email"
+						required
+					/>
 
-          <label for="confirm-email"><b>Confirm Email</b></label>
-          <input
-            type="email"
-            placeholder="Confirm email"
-            name="confirm-email"
-            id="confirm-email"
-            required
-          />
-        </div>
+					<label for="confirm-email"><b>Confirm Email</b></label>
+					<input
+						type="email"
+						placeholder="Confirm email"
+						name="confirm-email"
+						id="confirm-email"
+						required
+					/>
+				</div>
 
-        <p id="email-error-msg">Emails do not match!</p>
-        <div class="button-container">
-          <button class="submit-changes-button" type="submit">
-            Confirm Email
-          </button>
-        </div>
-      </form>
+				<p id="email-error-msg">Emails do not match!</p>
+				<div class="button-container">
+					<button class="submit-changes-button" type="submit">
+						Confirm Email
+					</button>
+				</div>
+			</form>
 
-      <br />
-      <hr />
-      <!-- To change 'privacy_page_psw.php' to whatever file will process psw changes -->
-      <form id="psw-form">
-        <h1 class="change-title">Change Password</h1>
+			<br />
+			<hr />
+			<!-- To change 'privacy_page_psw.php' to whatever file will process psw changes -->
+			<form id="psw-form">
+				<h1 class="change-title">Change Password</h1>
 
-        <div class="input-container">
-          <label for="password"><b>New Password</b></label>
-          <div class="password-container">
-            <input
-              type="password"
-              placeholder="Enter new password"
-              name="password"
-              id="password"
-              required
-            />
-            <img
-              src="../images/login-page/eye-closed.png"
-              class="eye-icon"
-              id="eye-new"
-              onclick="togglePassword('password', 'eye-new')"
-            />
-          </div>
+				<div class="input-container">
+					<label for="password"><b>New Password</b></label>
+					<div class="password-container">
+						<input
+							type="password"
+							placeholder="Enter new password"
+							name="password"
+							id="password"
+							required
+						/>
+						<img
+							src="../images/login-page/eye-closed.png"
+							class="eye-icon"
+							id="eye-new"
+							onclick="togglePassword('password', 'eye-new')"
+						/>
+					</div>
 
-          <label for="confirm-password"><b>Confirm Password</b></label>
-          <div class="password-container">
-            <input
-              type="password"
-              placeholder="Confirm password"
-              name="confirm-password"
-              id="confirm-password"
-              required
-            />
-            <img
-              src="../images/login-page/eye-closed.png"
-              class="eye-icon"
-              id="eye-confirm"
-              onclick="togglePassword('confirm-password', 'eye-confirm')"
-            />
-          </div>
-        </div>
+					<label for="confirm-password"><b>Confirm Password</b></label>
+					<div class="password-container">
+						<input
+							type="password"
+							placeholder="Confirm password"
+							name="confirm-password"
+							id="confirm-password"
+							required
+						/>
+						<img
+							src="../images/login-page/eye-closed.png"
+							class="eye-icon"
+							id="eye-confirm"
+							onclick="togglePassword('confirm-password', 'eye-confirm')"
+						/>
+					</div>
+				</div>
 
-        <p id="psw-error-msg">Passwords do not match!</p>
-        <div class="button-container">
-          <button class="submit-changes-button" type="submit">
-            Confirm Password
-          </button>
-        </div>
-      </form>
-    </div>
+				<p id="psw-error-msg">Passwords do not match!</p>
+				<div class="button-container">
+					<button class="submit-changes-button" type="submit">
+						Confirm Password
+					</button>
+				</div>
+			</form>
+		</div>
 
-    <!-- Script -->
-    <script src="../js/settings-info.js"></script>
-    <script src="../js/settings-privacy.js"></script>
-    <script src="../js/toggle-password.js"></script>
-    <script src="../js/navbar.js"></script>
-  </body>
+		<!-- Script -->
+		<script src="../js/settings-info.js"></script>
+		<script src="../js/settings-privacy.js"></script>
+		<script src="../js/toggle-password.js"></script>
+		<script src="../js/navbar.js"></script>
+	</body>
 </html>

@@ -2,50 +2,50 @@
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Information and Handbook Page - Admin</title>
-    <link rel="stylesheet" href="../css/contact-help-page.css" />
-    <link rel="stylesheet" href="../css/navbar.css" />
-  </head>
-  <body>
-    <!-- Navigation bar -->
-    <div id="navbar-container"></div>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Information and Handbook Page - Admin</title>
+		<link rel="stylesheet" href="../css/contact-help-page.css" />
+		<link rel="stylesheet" href="../css/navbar.css" />
+	</head>
+	<body>
+		<!-- Navigation bar -->
+		<div id="navbar-container"></div>
 
-    <div class="main-container">
-      <h1>Information and Handbook</h1>
-      <iframe src="../pdf/sample.pdf"></iframe>
+		<div class="main-container">
+			<h1>Information and Handbook</h1>
+			<iframe src="../pdf/sample.pdf"></iframe>
 
-      <footer class="page-footer">
-        <form class="module-form" action="#" method="post">
-          <input
-            class="file-select"
-            type="file"
-            id="upload-file"
-            name="upload-file"
-            accept=".pdf,.doc,.docx"
-            hidden
-          />
-          <label for="upload-file" class="file-label">Upload PDF</label>
-          <span class="file-upload-label" id="file-name">No file chosen</span>
+			<footer class="page-footer">
+				<form class="module-form" action="#" method="post">
+					<input
+						class="file-select"
+						type="file"
+						id="upload-file"
+						name="upload-file"
+						accept=".pdf,.doc,.docx"
+						hidden
+					/>
+					<label for="upload-file" class="file-label">Upload PDF</label>
+					<span class="file-upload-label" id="file-name">No file chosen</span>
 
-          <div class="form-action">
-            <button type="submit" class="submit-button">Publish New PDF</button>
-          </div>
-        </form>
-      </footer>
-    </div>
+					<div class="form-action">
+						<button type="submit" class="submit-button">Publish New PDF</button>
+					</div>
+				</form>
+			</footer>
+		</div>
 
-    <script>
-      const input = document.getElementById("upload-file");
-      const fileName = document.getElementById("file-name");
+		<script>
+			const input = document.getElementById("upload-file");
+			const fileName = document.getElementById("file-name");
 
-      input.addEventListener("change", () => {
-        fileName.textContent =
-          input.files.length > 0 ? input.files[0].name : "No file chosen";
-      });
-    </script>
-    <script src="../js/navbar.js"></script>
-  </body>
+			input.addEventListener("change", () => {
+				fileName.textContent =
+					input.files.length > 0 ? input.files[0].name : "No file chosen";
+			});
+		</script>
+		<script src="../js/navbar.js"></script>
+	</body>
 </html>

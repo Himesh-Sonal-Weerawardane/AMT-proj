@@ -1,71 +1,71 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Settings - Marker</title>
-    <link rel="stylesheet" href="../css/settings-sidebar.css" />
-    <link rel="stylesheet" href="../css/settings-page.css" />
-    <link rel="stylesheet" href="../css/navbar.css" />
-  </head>
-  <body>
-    <!-- Navigation bar -->
-    <div id="navbar-container"></div>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Settings - Marker</title>
+		<link rel="stylesheet" href="../css/settings-sidebar.css" />
+		<link rel="stylesheet" href="../css/settings-page.css" />
+		<link rel="stylesheet" href="../css/navbar.css" />
+	</head>
+	<body>
+		<!-- Navigation bar -->
+		<div id="navbar-container"></div>
 
-    <!-- Settings Sidebar -->
-    <div class="settings-sidebar">
-      <a class="active" href="settings-page-profile.html">Profile</a>
-      <a href="settings-page-privacy.html">Privacy</a>
-    </div>
+		<!-- Settings Sidebar -->
+		<div class="settings-sidebar">
+			<a class="active" href="settings-page-profile.html">Profile</a>
+			<a href="settings-page-privacy.html">Privacy</a>
+		</div>
 
-    <!-- Page Content -->
-    <div class="page-content">
-      <!-- Profile Form -->
-      <!-- To change 'profile_page.php' to whatever file will process profile changes -->
-      <form class="profile-page" action="profile_page.php" method="post">
-        <div class="profile-circle-container">
-          <!-- Change this to the first name and last name intials -->
-          <h1 id="profile-text-initials" class="profile-text">...</h1>
-        </div>
+		<!-- Page Content -->
+		<div class="page-content">
+			<!-- Profile Form -->
+			<!-- To change 'profile_page.php' to whatever file will process profile changes -->
+			<form class="profile-page" action="profile_page.php" method="post">
+				<div class="profile-circle-container">
+					<!-- Change this to the first name and last name intials -->
+					<h1 id="profile-text-initials" class="profile-text">...</h1>
+				</div>
 
-        <div class="input-container">
-          <!-- Placeholders should be the marker's currently saved name -->
-          <label id="profile-first-name" for="first-name"
-            ><b>First Name</b></label
-          >
-          <input
-            type="text"
-            placeholder="..."
-            name="first-name"
-            id="first-name"
-            required
-          />
+				<div class="input-container">
+					<!-- Placeholders should be the marker's currently saved name -->
+					<label id="profile-first-name" for="first-name"
+						><b>First Name</b></label
+					>
+					<input
+						type="text"
+						placeholder="..."
+						name="first-name"
+						id="first-name"
+						required
+					/>
 
-          <label id="profile-last-name" for="last-name"><b>Last Name</b></label>
-          <input
-            type="text"
-            placeholder="..."
-            name="last-name"
-            id="last-name"
-            required
-          />
-        </div>
+					<label id="profile-last-name" for="last-name"><b>Last Name</b></label>
+					<input
+						type="text"
+						placeholder="..."
+						name="last-name"
+						id="last-name"
+						required
+					/>
+				</div>
 
-        <h3 id="role-title">Role</h3>
-        <p id="role-text">...</p>
+				<h3 id="role-title">Role</h3>
+				<p id="role-text">...</p>
 
-        <h3 id="current-email-title">Email</h3>
-        <p id="current-email-text">...</p>
+				<h3 id="current-email-title">Email</h3>
+				<p id="current-email-text">...</p>
 
-        <div class="button-container">
-          <button class="submit-changes-button" type="submit">
-            Save Changes
-          </button>
-        </div>
-      </form>
-    </div>
+				<div class="button-container">
+					<button class="submit-changes-button" type="submit">
+						Save Changes
+					</button>
+				</div>
+			</form>
+		</div>
 
-    <script src="../js/settings-info.js"></script>
-    <script src="../js/navbar.js"></script>
-  </body>
+		<script src="../js/settings-info.js"></script>
+		<script src="../js/navbar.js"></script>
+	</body>
 </html>
