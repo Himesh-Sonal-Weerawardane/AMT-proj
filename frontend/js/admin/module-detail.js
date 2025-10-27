@@ -324,48 +324,30 @@ function clearBoxplots(chartTarget) {
     }
 }
 
-function calculateQuantile(sortedValues, quantile) {
-    if (!sortedValues.length) return null;
-
-    const position = (sortedValues.length - 1) * quantile;
-    const baseIndex = Math.floor(position);
-    const fraction = position - baseIndex;
-
-    if (sortedValues[baseIndex + 1] !== undefined) {
-        return sortedValues[baseIndex] + fraction * (sortedValues[baseIndex + 1] - sortedValues[baseIndex]);
-    }
-
-    return sortedValues[baseIndex];
-}
-
-function computeBoxStats(values) {
-    if (!values.length) return null;
-
-    const sortedValues = [...values].sort((a, b) => a - b);
-    const min = sortedValues[0];
-    const max = sortedValues[sortedValues.length - 1];
-    const q1 = calculateQuantile(sortedValues, 0.25);
-    const median = calculateQuantile(sortedValues, 0.5);
-    const q3 = calculateQuantile(sortedValues, 0.75);
-
-    return [min, q1, median, q3, max];
-}
-
 function renderDifferenceBoxPlot(rows, chartContainer, chartTarget) {
     if (!chartContainer || !chartTarget || typeof ApexCharts === "undefined") return;
 
     clearBoxplots(chartTarget);
 
     const criterionMap = rows.reduce((map, row) => {
-        const difference = Number(row?.difference_pct);
-        if (!Number.isFinite(difference)) return map;
+        const lower = Number(row?.range_lower);
+        const upper = Number(row?.range_upper);
+        const markerMark = Number(row?.marker_mark);
+        if (!Number.isFinite(lower) || !Number.isFinite(upper) || !Number.isFinite(markerMark)) {
+            return map;
+        }
 
         const criterionName = row?.criterion?.trim() || "Unspecified Criterion";
         if (!map.has(criterionName)) {
             map.set(criterionName, []);
         }
 
-        map.get(criterionName).push(difference);
+        map.get(criterionName).push({
+            lower,
+            upper,
+            markerMark,
+            markerId: row?.marker_id,
+        });
         return map;
     }, new Map());
 
@@ -375,8 +357,7 @@ function renderDifferenceBoxPlot(rows, chartContainer, chartTarget) {
     }
 
     criterionMap.forEach((values, criterionName) => {
-        const boxStats = computeBoxStats(values);
-        if (!boxStats) return;
+        if (!values.length) return;
 
         const wrapper = document.createElement("section");
         wrapper.className = "stats-boxplot__item";
@@ -392,6 +373,14 @@ function renderDifferenceBoxPlot(rows, chartContainer, chartTarget) {
 
         chartTarget.appendChild(wrapper);
 
+        const seriesData = values.map((entry, index) => ({
+            x:
+                entry.markerId != null && entry.markerId !== ""
+                    ? `Marker ${entry.markerId}`
+                    : `Entry ${index + 1}`,
+            y: [entry.lower, entry.lower, entry.markerMark, entry.upper, entry.upper],
+        }));
+
         const options = {
             chart: {
                 type: "boxPlot",
@@ -402,21 +391,28 @@ function renderDifferenceBoxPlot(rows, chartContainer, chartTarget) {
             },
             series: [
                 {
-                    name: "Difference %",
-                    data: [
-                        {
-                            x: criterionName,
-                            y: boxStats,
-                        },
-                    ],
+                    name: "Marks",
+                    data: seriesData,
                 },
             ],
             tooltip: {
                 shared: false,
                 intersect: true,
                 y: {
-                    formatter(value) {
-                        return `${value.toFixed(2)}%`;
+                    formatter(value, { seriesIndex, dataPointIndex, w }) {
+                        const dataPoint = w?.config?.series?.[seriesIndex]?.data?.[dataPointIndex];
+                        if (!dataPoint || !Array.isArray(dataPoint.y)) {
+                            return `${value.toFixed(2)}`;
+                        }
+
+                        const [lower, , marker, , upper] = dataPoint.y;
+                        const format = (num) => (Number.isFinite(num) ? num.toFixed(2) : "—");
+
+                        return [
+                            `Range Lower: ${format(lower)}`,
+                            `Marker Mark: ${format(marker)}`,
+                            `Range Upper: ${format(upper)}`,
+                        ].join("\n");
                     },
                 },
             },
@@ -430,12 +426,12 @@ function renderDifferenceBoxPlot(rows, chartContainer, chartTarget) {
             },
             dataLabels: { enabled: false },
             xaxis: {
-                labels: { show: false },
+                labels: { rotateAlways: true },
                 axisTicks: { show: false },
                 axisBorder: { show: false },
             },
             yaxis: {
-                title: { text: "Difference %" },
+                title: { text: "Mark" },
                 decimalsInFloat: 2,
             },
             grid: {
