@@ -60,10 +60,45 @@
                     </div>
                 </div>
             </article>
+
+            <article id="moderation-stats-card" class="module-card module-card--span">
+                <header class="module-card__header">
+                    <h2 class="module-card__title">Moderation Statistics</h2>
+                </header>
+                <div class="module-card__body">
+                    <p id="moderation-stats-status" class="stats-status" hidden></p>
+                    <p id="moderation-stats-empty" class="stats-empty" hidden>No moderation statistics available yet.</p>
+
+                    <div class="stats-table-wrapper">
+                        <table class="stats-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Marker</th>
+                                    <th scope="col">Moderation ID</th>
+                                    <th scope="col">Criterion</th>
+                                    <th scope="col">Max Points</th>
+                                    <th scope="col">Unit Chair Mark</th>
+                                    <th scope="col">Lower Bound</th>
+                                    <th scope="col">Upper Bound</th>
+                                    <th scope="col">Marker Mark</th>
+                                    <th scope="col">Unit Chair %</th>
+                                    <th scope="col">Marker %</th>
+                                    <th scope="col">Difference %</th>
+                                    <th scope="col">Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody id="moderation-stats-tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="moderation-chart-sections" class="moderation-chart-sections" hidden></div>
+                </div>
+            </article>
         </section>
     </main>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="../js/admin/module-detail.js"></script>
     <script src="../js/navbar.js"></script>
 </body>

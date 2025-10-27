@@ -133,33 +133,70 @@ export default function moderationRoutes(supabase) {
             const rubricCriteria = moderationData.rubric_json?.criteria || [];
             const markerScores = markData.scores || [];
 
+            const parseScore = (scoreString = "") => {
+                const [scoreValue, outOfValue] = scoreString
+                    .split(" / ")
+                    .map((value) => {
+                        const parsed = parseFloat(value);
+                        return Number.isFinite(parsed) ? parsed : 0;
+                    });
+
+                return {
+                    score: Number.isFinite(scoreValue) ? scoreValue : 0,
+                    outOf: Number.isFinite(outOfValue) ? outOfValue : 0,
+                };
+            };
+
+            const roundToTwo = (value) => {
+                if (!Number.isFinite(value)) return null;
+                return Number(Math.round(value * 100) / 100);
+            };
+
             const criteriaStats = adminCriteria.map((criterion, index) => {
-                const [adminScore, adminOutOf] = criterion.admin_score
-                    .split(" / ")
-                    .map(parseFloat);
-
+                const adminParts = parseScore(criterion?.admin_score || "0 / 0");
                 const markerScoreStr = markerScores[index]?.score || "0 / 0";
-                const [markerScore, markerOutOf] = markerScoreStr
-                    .split(" / ")
-                    .map(parseFloat);
+                const markerParts = parseScore(markerScoreStr);
 
-                const maxPoints = rubricCriteria[index]?.maxPoints || adminOutOf || markerOutOf || 0;
-                const adminPercent = ((adminScore / maxPoints) * 100).toFixed(2);
-                const markerPercent = ((markerScore / maxPoints) * 100).toFixed(2);
-                const diffPercent = (adminPercent - markerPercent).toFixed(2);
+                const rubricMax = rubricCriteria[index]?.maxPoints;
+                const maxPointsCandidate = [rubricMax, adminParts.outOf, markerParts.outOf]
+                    .map((value) => {
+                        const numeric = parseFloat(value);
+                        return Number.isFinite(numeric) ? numeric : 0;
+                    })
+                    .find((value) => value > 0) || 0;
+
+                const maxPoints = roundToTwo(maxPointsCandidate);
+
+                const unitChairPercent = maxPoints && adminParts.score >= 0
+                    ? roundToTwo((adminParts.score / maxPoints) * 100)
+                    : null;
+                const markerPercent = maxPoints && markerParts.score >= 0
+                    ? roundToTwo((markerParts.score / maxPoints) * 100)
+                    : null;
+
+                const lowerBound = maxPoints != null && Number.isFinite(maxPoints)
+                    ? roundToTwo(adminParts.score - (maxPoints * 0.05))
+                    : null;
+                const upperBound = maxPoints != null && Number.isFinite(maxPoints)
+                    ? roundToTwo(adminParts.score + (maxPoints * 0.05))
+                    : null;
+
+                const differencePercent = (markerPercent != null && unitChairPercent != null)
+                    ? roundToTwo(markerPercent - unitChairPercent)
+                    : null;
 
                 return {
                     moderation_id,
                     marker_id,
-                    criterion: criterion.criterion,
+                    criterion: criterion?.criterion || `Criterion ${index + 1}`,
                     max_points: maxPoints,
-                    unit_chair_marks: adminScore,
-                    range_lower: (adminScore - maxPoints * 0.05).toFixed(2),
-                    range_upper: (adminScore + maxPoints * 0.05).toFixed(2),
-                    marker_mark: markerScore,
-                    unit_chair_pct: adminPercent,
+                    unit_chair_mark: roundToTwo(adminParts.score),
+                    range_lower: lowerBound,
+                    range_upper: upperBound,
+                    marker_mark: roundToTwo(markerParts.score),
+                    unit_chair_pct: unitChairPercent,
                     marker_pct: markerPercent,
-                    difference_pct: diffPercent,
+                    difference_pct: differencePercent,
                 };
             });
 
@@ -170,8 +207,12 @@ export default function moderationRoutes(supabase) {
                 .eq("moderation_id", moderation_id)
                 .eq("marker_id", marker_id);
 
-            const { error: statsError } = await supabase.from("moderation_stats").insert(criteriaStats);
-            if (statsError) throw statsError;
+            const filteredStats = criteriaStats.filter((stat) => stat.criterion);
+
+            if (filteredStats.length > 0) {
+                const { error: statsError } = await supabase.from("moderation_stats").insert(filteredStats);
+                if (statsError) throw statsError;
+            }
 
             res.status(200).json({
                 message: "Marks and stats saved successfully",
@@ -188,6 +229,26 @@ export default function moderationRoutes(supabase) {
             res.status(500).json({ error: "Failed to save stats" } );
         }
 
+    });
+
+    router.get("/moderations/:moderationId/stats", async (req, res) => {
+        const { moderationId } = req.params;
+
+        try {
+            const { data, error } = await supabase
+                .from("moderation_stats")
+                .select("*")
+                .eq("moderation_id", moderationId)
+                .order("criterion", { ascending: true })
+                .order("marker_id", { ascending: true });
+
+            if (error) throw error;
+
+            res.json(data || []);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "Failed to fetch moderation statistics" });
+        }
     });
 
 
