@@ -264,8 +264,8 @@ async function loadModerationStats({ moderationId, headers, statsCard, statsTabl
             statsEmpty.textContent = "No moderation statistics have been recorded yet.";
             statsEmpty.hidden = false;
             statsCard.hidden = false;
-            if (statsChartContainer && statsBoxplot && typeof Plotly !== "undefined") {
-                Plotly.purge(statsBoxplot);
+            if (statsChartContainer && statsBoxplot) {
+                clearBoxplots(statsBoxplot);
                 statsChartContainer.hidden = true;
             }
             return;
@@ -301,63 +301,159 @@ async function loadModerationStats({ moderationId, headers, statsCard, statsTabl
         statsEmpty.textContent = "Failed to load moderation statistics.";
         statsEmpty.hidden = false;
         statsCard.hidden = false;
-        if (statsChartContainer && statsBoxplot && typeof Plotly !== "undefined") {
-            Plotly.purge(statsBoxplot);
+        if (statsChartContainer && statsBoxplot) {
+            clearBoxplots(statsBoxplot);
             statsChartContainer.hidden = true;
         }
     }
 }
 
+let activeBoxplotCharts = [];
+
+function clearBoxplots(chartTarget) {
+    activeBoxplotCharts.forEach((chart) => {
+        try {
+            chart.destroy();
+        } catch (err) {
+            console.warn("Failed to destroy chart", err);
+        }
+    });
+    activeBoxplotCharts = [];
+    if (chartTarget) {
+        chartTarget.innerHTML = "";
+    }
+}
+
+function calculateQuantile(sortedValues, quantile) {
+    if (!sortedValues.length) return null;
+
+    const position = (sortedValues.length - 1) * quantile;
+    const baseIndex = Math.floor(position);
+    const fraction = position - baseIndex;
+
+    if (sortedValues[baseIndex + 1] !== undefined) {
+        return sortedValues[baseIndex] + fraction * (sortedValues[baseIndex + 1] - sortedValues[baseIndex]);
+    }
+
+    return sortedValues[baseIndex];
+}
+
+function computeBoxStats(values) {
+    if (!values.length) return null;
+
+    const sortedValues = [...values].sort((a, b) => a - b);
+    const min = sortedValues[0];
+    const max = sortedValues[sortedValues.length - 1];
+    const q1 = calculateQuantile(sortedValues, 0.25);
+    const median = calculateQuantile(sortedValues, 0.5);
+    const q3 = calculateQuantile(sortedValues, 0.75);
+
+    return [min, q1, median, q3, max];
+}
+
 function renderDifferenceBoxPlot(rows, chartContainer, chartTarget) {
-    if (!chartContainer || !chartTarget || typeof Plotly === "undefined") return;
+    if (!chartContainer || !chartTarget || typeof ApexCharts === "undefined") return;
 
-    const differenceValues = rows
-        .map((row) => Number(row?.difference_pct))
-        .filter((value) => Number.isFinite(value));
+    clearBoxplots(chartTarget);
 
-    if (!differenceValues.length) {
-        Plotly.purge(chartTarget);
+    const criterionMap = rows.reduce((map, row) => {
+        const difference = Number(row?.difference_pct);
+        if (!Number.isFinite(difference)) return map;
+
+        const criterionName = row?.criterion?.trim() || "Unspecified Criterion";
+        if (!map.has(criterionName)) {
+            map.set(criterionName, []);
+        }
+
+        map.get(criterionName).push(difference);
+        return map;
+    }, new Map());
+
+    if (!criterionMap.size) {
         chartContainer.hidden = true;
         return;
     }
 
-    const plotData = [
-        {
-            y: differenceValues,
-            type: "box",
-            name: "Difference %",
-            boxpoints: "outliers",
-            marker: {
-                color: "#4c6ef5",
+    criterionMap.forEach((values, criterionName) => {
+        const boxStats = computeBoxStats(values);
+        if (!boxStats) return;
+
+        const wrapper = document.createElement("section");
+        wrapper.className = "stats-boxplot__item";
+
+        const title = document.createElement("h3");
+        title.className = "stats-boxplot__title";
+        title.textContent = criterionName;
+        wrapper.appendChild(title);
+
+        const chartElement = document.createElement("div");
+        chartElement.className = "stats-boxplot__chart";
+        wrapper.appendChild(chartElement);
+
+        chartTarget.appendChild(wrapper);
+
+        const options = {
+            chart: {
+                type: "boxPlot",
+                height: 320,
+                toolbar: { show: false },
+                animations: { enabled: false },
+                fontFamily: "'Inter', 'Segoe UI', sans-serif",
             },
-            line: {
-                color: "#364fc7",
+            series: [
+                {
+                    name: "Difference %",
+                    data: [
+                        {
+                            x: criterionName,
+                            y: boxStats,
+                        },
+                    ],
+                },
+            ],
+            tooltip: {
+                shared: false,
+                intersect: true,
+                y: {
+                    formatter(value) {
+                        return `${value.toFixed(2)}%`;
+                    },
+                },
             },
-            hovertemplate: "Difference: %{y:.2f}%<extra></extra>",
-        },
-    ];
+            plotOptions: {
+                boxPlot: {
+                    colors: {
+                        upper: "#4c6ef5",
+                        lower: "#91a7ff",
+                    },
+                },
+            },
+            dataLabels: { enabled: false },
+            xaxis: {
+                labels: { show: false },
+                axisTicks: { show: false },
+                axisBorder: { show: false },
+            },
+            yaxis: {
+                title: { text: "Difference %" },
+                decimalsInFloat: 2,
+            },
+            grid: {
+                borderColor: "rgba(76, 110, 245, 0.18)",
+            },
+            theme: {
+                palette: "palette2",
+            },
+        };
 
-    const layout = {
-        margin: { l: 50, r: 20, t: 10, b: 40 },
-        yaxis: {
-            title: "Difference %",
-            zeroline: true,
-            zerolinecolor: "#adb5ff",
-            hoverformat: ".2f",
-        },
-        xaxis: {
-            showticklabels: false,
-        },
-        showlegend: false,
-        paper_bgcolor: "rgba(0,0,0,0)",
-        plot_bgcolor: "rgba(0,0,0,0)",
-    };
+        const chart = new ApexCharts(chartElement, options);
+        chart.render();
+        activeBoxplotCharts.push(chart);
+    });
 
-    const config = {
-        displayModeBar: false,
-        responsive: true,
-    };
-
-    Plotly.react(chartTarget, plotData, layout, config);
-    chartContainer.hidden = false;
+    if (activeBoxplotCharts.length) {
+        chartContainer.hidden = false;
+    } else {
+        chartContainer.hidden = true;
+    }
 }
