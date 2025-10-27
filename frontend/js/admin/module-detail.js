@@ -279,7 +279,8 @@ async function loadModerationStats({ moderationId, headers, statsCard, statsTabl
             appendCell(tableRow, formatPercent(row.unit_chair_pct), "number");
             appendCell(tableRow, formatPercent(row.marker_pct), "number");
             appendCell(tableRow, formatPercent(row.difference_pct), "number");
-            appendCell(tableRow, formatDateTime(row.updated_at));
+            const updatedTimestamp = row.updated_at || row.created_at || row.submitted_at || null;
+            appendCell(tableRow, formatDateTime(updatedTimestamp));
 
             statsTableBody.appendChild(tableRow);
         });

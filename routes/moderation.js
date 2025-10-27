@@ -37,8 +37,7 @@ export default function moderationRoutes(supabase) {
         const { data, error } = await supabase
             .from("moderation_stats")
             .select("*")
-            .eq("moderation_id", id)
-            .order("updated_at", { ascending: false });
+            .eq("moderation_id", id);
 
         if (error) {
             console.error(error);
