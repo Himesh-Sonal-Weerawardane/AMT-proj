@@ -67,33 +67,39 @@
                 </header>
                 <div class="module-card__body">
                     <p id="stats-empty" class="stats-empty" hidden>No moderation statistics have been recorded yet.</p>
-                    <div class="stats-table-wrapper">
-                        <table class="stats-table" id="moderation-stats-table">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Marker</th>
-                                    <th scope="col">Moderation ID</th>
-                                    <th scope="col">Criterion</th>
-                                    <th scope="col">Max Points</th>
-                                    <th scope="col">Unit Chair Marks</th>
-                                    <th scope="col">Range Lower</th>
-                                    <th scope="col">Range Upper</th>
-                                    <th scope="col">Marker Mark</th>
-                                    <th scope="col">Unit Chair %</th>
-                                    <th scope="col">Marker %</th>
-                                    <th scope="col">Difference %</th>
-                                    <th scope="col">Last Updated</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                    <div class="stats-visuals">
+                        <div class="stats-table-wrapper">
+                            <table class="stats-table" id="moderation-stats-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Marker</th>
+                                        <th scope="col">Moderation ID</th>
+                                        <th scope="col">Criterion</th>
+                                        <th scope="col">Max Points</th>
+                                        <th scope="col">Unit Chair Marks</th>
+                                        <th scope="col">Range Lower</th>
+                                        <th scope="col">Range Upper</th>
+                                        <th scope="col">Marker Mark</th>
+                                        <th scope="col">Unit Chair %</th>
+                                        <th scope="col">Marker %</th>
+                                        <th scope="col">Difference %</th>
+                                        <th scope="col">Last Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="stats-chart" id="moderation-stats-chart" hidden>
+                            <div id="moderation-boxplot" class="stats-boxplot"></div>
+                        </div>
                     </div>
                 </div>
             </article>
         </section>
     </main>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
     <script src="../js/admin/module-detail.js"></script>
     <script src="../js/navbar.js"></script>
 </body>

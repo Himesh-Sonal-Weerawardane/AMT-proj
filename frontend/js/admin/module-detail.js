@@ -46,6 +46,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     const statsTable = document.getElementById("moderation-stats-table");
     const statsTableBody = statsTable?.querySelector("tbody");
     const statsEmpty = document.getElementById("stats-empty");
+    const statsChartContainer = document.getElementById("moderation-stats-chart");
+    const statsBoxplot = document.getElementById("moderation-boxplot");
 
     if (!moduleId) {
         showStatus("Module ID missing from the URL.", true);
@@ -114,6 +116,8 @@ window.addEventListener("DOMContentLoaded", async () => {
             statsCard,
             statsTableBody,
             statsEmpty,
+            statsChartContainer,
+            statsBoxplot,
         });
 
         showStatus("Module ready.");
@@ -241,7 +245,7 @@ function appendCell(rowEl, value, type = "text") {
     rowEl.appendChild(cell);
 }
 
-async function loadModerationStats({ moderationId, headers, statsCard, statsTableBody, statsEmpty }) {
+async function loadModerationStats({ moderationId, headers, statsCard, statsTableBody, statsEmpty, statsChartContainer, statsBoxplot }) {
     if (!statsCard || !statsTableBody || !statsEmpty) return;
 
     try {
@@ -260,6 +264,10 @@ async function loadModerationStats({ moderationId, headers, statsCard, statsTabl
             statsEmpty.textContent = "No moderation statistics have been recorded yet.";
             statsEmpty.hidden = false;
             statsCard.hidden = false;
+            if (statsChartContainer && statsBoxplot && typeof Plotly !== "undefined") {
+                Plotly.purge(statsBoxplot);
+                statsChartContainer.hidden = true;
+            }
             return;
         }
 
@@ -285,6 +293,7 @@ async function loadModerationStats({ moderationId, headers, statsCard, statsTabl
             statsTableBody.appendChild(tableRow);
         });
 
+        renderDifferenceBoxPlot(rows, statsChartContainer, statsBoxplot);
         statsCard.hidden = false;
     } catch (err) {
         console.error("Failed to load moderation stats", err);
@@ -292,5 +301,63 @@ async function loadModerationStats({ moderationId, headers, statsCard, statsTabl
         statsEmpty.textContent = "Failed to load moderation statistics.";
         statsEmpty.hidden = false;
         statsCard.hidden = false;
+        if (statsChartContainer && statsBoxplot && typeof Plotly !== "undefined") {
+            Plotly.purge(statsBoxplot);
+            statsChartContainer.hidden = true;
+        }
     }
+}
+
+function renderDifferenceBoxPlot(rows, chartContainer, chartTarget) {
+    if (!chartContainer || !chartTarget || typeof Plotly === "undefined") return;
+
+    const differenceValues = rows
+        .map((row) => Number(row?.difference_pct))
+        .filter((value) => Number.isFinite(value));
+
+    if (!differenceValues.length) {
+        Plotly.purge(chartTarget);
+        chartContainer.hidden = true;
+        return;
+    }
+
+    const plotData = [
+        {
+            y: differenceValues,
+            type: "box",
+            name: "Difference %",
+            boxpoints: "outliers",
+            marker: {
+                color: "#4c6ef5",
+            },
+            line: {
+                color: "#364fc7",
+            },
+            hovertemplate: "Difference: %{y:.2f}%<extra></extra>",
+        },
+    ];
+
+    const layout = {
+        margin: { l: 50, r: 20, t: 10, b: 40 },
+        yaxis: {
+            title: "Difference %",
+            zeroline: true,
+            zerolinecolor: "#adb5ff",
+            hoverformat: ".2f",
+        },
+        xaxis: {
+            showticklabels: false,
+        },
+        showlegend: false,
+        paper_bgcolor: "rgba(0,0,0,0)",
+        plot_bgcolor: "rgba(0,0,0,0)",
+    };
+
+    const config = {
+        displayModeBar: false,
+        responsive: true,
+    };
+
+    Plotly.react(chartTarget, plotData, layout, config);
+    chartContainer.hidden = false;
 }
