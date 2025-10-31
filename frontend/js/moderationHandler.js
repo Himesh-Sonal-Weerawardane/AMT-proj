@@ -380,9 +380,9 @@ function renderMarkedModeration(results) {
         const gradeGroups = criterionData.grades;
 
         const activeGroup = gradeGroups.find((g) => {
-            const range = g.pointsRange.match(/\(([\d.]+)\s*-\s*([\d.]+)/);
-            const min = parseFloat(range[1]);
-            const max = parseFloat(range[2]);
+            const parsed = parsePointsRange(g.pointsRange);
+            const { min, max } = parsed;
+
             return scoreValue >= min && scoreValue <= max;
         })
 
@@ -606,10 +606,11 @@ function highlightGrade(score, gradeDes, grades) {
     const groupDes = gradeDes.querySelectorAll("tr:nth-child(2) td");
     const gradeHead = gradeDes.querySelectorAll("tr:first-child th");
 
+
     grades.forEach((g, i) => {
-        const range = g.pointsRange.match(/\(([\d.]+)\s*-\s*([\d.]+)/);
-        const min = parseFloat(range[1]);
-        const max = parseFloat(range[2]);
+        const parsed = parsePointsRange(g.pointsRange);
+        const { min, max } = parsed;
+
         if (score>=min && score<=max) {
             gradeHead[i].classList.add("highlighted");
             groupDes[i].classList.add("highlighted");
@@ -619,6 +620,29 @@ function highlightGrade(score, gradeDes, grades) {
         }
     });
 
+}
+
+/* ------------------------------------Parse points range---------------------------------------*/
+
+function parsePointsRange(range) {
+    if (!range || typeof range !== "string") {
+        return null;
+    }
+
+    const clean = range
+        .replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, "-")
+        .trim();
+
+    const match = clean.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+
+    if (!match) {
+        return null;
+    }
+
+    return {
+        min: parseFloat(match[1]),
+        max: parseFloat(match[2]),
+    }
 }
 
 /* -----------------------Alert the user when submission is made----------------------------- */

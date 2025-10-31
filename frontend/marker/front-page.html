@@ -1,3 +1,4 @@
+
 <!-- Created by Naroline Lim -->
 
 
@@ -7,10 +8,9 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Front Home Page - Marker</title>
+    <title>Front Home Page - Admin</title>
     <link rel="stylesheet" href="../css/front-page.css">
     <link rel="stylesheet" href="../css/navbar.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
 </head>
 
@@ -21,93 +21,31 @@
 
 <div class="container">
 
-    <!-- Marking Summary and directory to main moderation page -->
-    <h2>Your Current Markings</h2>
-    <h3>2025 Semester 1</h3>
-
-    <div class="table-header">
-        <span id="header-name">Name</span>
-        <span id="header-due-date">Due</span>
-        <span id="header-submit-date">Submitted</span>
-        <span id="header-score">Score</span>
-    </div>
-
-    <div class="head-divider"></div>
-
-    <button class="marking-accordion">
-        <img class="arrow" src="../images/front-page/arrow.png" alt="arrow"/>
-        Assignment 1</button>
-    <div class="divider"></div>
-    <div class="panel">
-        <div class="moderation">
-            <a href="moderation-page.html" class="moderation-title">Moderation 1</a>
-            <div class="moderation-due">Aug 22 at 5:00PM</div>
-            <div class="moderation-submitted">-</div>
-            <div class="moderation-score">__/60</div>
+    <section id="current-markings" class="accordion">
+        <h2>
+            Your Current Markings
+        </h2>
+        <div class="box">
+            <div id="current-assignment-markings"></div>
         </div>
-        <div class="mini-divider"></div>
-        <!--
-        <div class="moderation">
-            <a href="moderation-page.html" class="moderation-title">Moderation 2</a>
-            <div class="moderation-due">Aug 22 at 5:00PM</div>
-            <div class="moderation-submitted">-</div>
-            <div class="moderation-score">__/60</div>
+    </section>
+
+
+    <section id="marking-statistics" class="accordion">
+        <h2>
+            Statistics
+        </h2>
+        <div class="box">
+            <div id="moderation-statistics"></div>
         </div>
-        <div class="mini-divider"></div>
-        -->
-    </div>
-
-    <!-- Overall Summarized Statistics -->
-    <h2>Summarized Statistics</h2>
-    <h3>2025 Semester 1</h3>
-    <button class="progress-accordion">
-        <img class="arrow" src="../images/front-page/arrow.png" alt="arrow"/>
-        Assignment 1
-    </button>
-    <div class="head-divider"></div>
-
-    <div class="moderation-container">
-        <div class="panel-2">
-            <div class="moderation-box">
-                <div class="moderation-title-2">
-                    <a href="moderation.html">Moderation 1</a>
-                </div>
-                <div class="mini-divider-2"></div>
-                <table class="statistics-table">
-                    <tr>
-                        <td>Your Mark</td>
-                        <td>--</td>
-                    </tr>
-                    <tr>
-                        <td>Marker's Total</td>
-                        <td>--</td>
-                    </tr>
-                    <tr>
-                        <td>Difference from Unit Chair</td>
-                        <td>--</td>
-                    </tr>
-                </table>
-            </div>
-
-            <!--
-             <div class="moderation-box">
-                <div class="moderation-title-2">
-                    <a href="moderation2.html">Moderation 2</a>
-                </div>
-                <div class="mini-divider-2"></div>
-                <table class="statistics-table">
-
-                </table>
-            </div>
-            -->
-
-        </div>
-    </div>
+    </section>
 
 </div>
 
-<script src="../js/front-page.js"></script>
-<script src="../js/chart.js"></script>
+<script src="../js/frontPageHandler.js"></script>
 <script src="../js/navbar.js"></script>
 
 </body>
+
+
+</html>
