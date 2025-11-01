@@ -26,29 +26,12 @@ body {
     margin-bottom: 20px;
 }
 
-.accordion {
-
-}
-
 
 .box {
     border-collapse: collapse;
     width: 1000px;
     height: 400px;
 }
-
-/*
-.arrow {
-    width: 18px;
-    height: 18px;
-    transform: translateY(1px) translateX(-1px);
-    transition: transform 0.2s ease;
-}
-
-.accordion.active .arrow {
-    transform: translateY(1px) translateX(-1px) rotate(90deg);
-}
-*/
 
 #current-marking-progress {
     margin: auto;
@@ -105,10 +88,6 @@ body {
     margin-top: 10px;
 }
 
-/*
-    width: 475px;
-    height: 290px;
- */
 .moderation {
     display: flex;
     flex-direction: column;
@@ -313,9 +292,8 @@ canvas {
 }
 
 .stats-table td.in-range {
-    background-color: lightgreen;
+    background-color: lightgreen !important;
 }
-
 
 
 .stats-wrapper::-webkit-scrollbar {
@@ -353,6 +331,7 @@ canvas {
 }
 
 
+/* Marker's Current Markings */
 
 
 

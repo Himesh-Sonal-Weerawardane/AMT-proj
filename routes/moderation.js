@@ -309,6 +309,232 @@ export default function moderationRoutes(supabase) {
     });
 
 
+    // fetch moderation to the marker's front page
+    router.get("/marker/recent", async (req, res) => {
+
+        try {
+
+            const userId = req.user?.id;
+
+            const { data: moderations, error: modError } = await supabase
+                .from("moderations")
+                .select("id, name, assignment_number, year, semester, due_date, admin_feedback")
+                .order("year", { ascending: false })
+                .order("semester", { ascending: false })
+                .order("due_date", { ascending: false });
+
+            if (modError) throw modError;
+
+            const recentYear = moderations[0].year;
+            const recentSem = moderations[0].semester;
+            const recentAssignment = moderations[0].assignment_number;
+
+            const assignmentSameSem = moderations.filter((m) =>
+                m.year === recentYear &&
+                m.semester === recentSem &&
+                m.assignment_number === recentAssignment
+            );
+
+            assignmentSameSem.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+
+
+            const moderationIds = assignmentSameSem.map((m) => m.id);
+
+
+            const { data: marks, error: marksError } = await supabase
+                .from("marks")
+                .select("*")
+                .eq("marker_id", userId)
+                .in("moderation_id", moderationIds);
+
+
+            if (marksError) throw marksError;
+
+
+            const result = assignmentSameSem.map((mod) => {
+                const record = marks.find((m) => m.moderation_id === mod.id);
+
+                let totalScore = 0;
+                try {
+                    if (mod.admin_feedback) {
+                        const feedback =
+                            typeof mod.admin_feedback === "string"
+                                ? JSON.parse(mod.admin_feedback)
+                                : mod.admin_feedback;
+
+                        if (feedback.criteria && Array.isArray(feedback.criteria)) {
+                            totalScore = feedback.criteria.reduce((sum, c) => {
+                                const [, maxPart] = (c.admin_score || "").split("/").map((s) => s.trim());
+                                return sum + (parseFloat(maxPart) || 0);
+                            }, 0);
+                        }
+                    }
+                } catch (error) {
+                    console.warn("error parsing admin_feedback", error);
+                }
+
+                let markerScore = "-";
+                if (record?.scores) {
+                    try {
+                        const parsedScores =
+                            typeof record.scores === "string"
+                                ? JSON.parse(record.scores)
+                                : record.scores;
+
+                        const numericScores = parsedScores.map((s) => {
+                            const [numPart] = (s.score || "").split("/").map((s) => s.trim());
+                            return parseFloat(numPart) || 0;
+                        });
+
+                        markerScore = numericScores.reduce((a, b) => a + b, 0).toFixed(2);
+
+                    } catch (error) {
+                        console.warn("error parsing marker scores", error);
+                    }
+                }
+
+                return {
+                    id: mod.id,
+                    name: mod.name,
+                    due_date: mod.due_date,
+                    submitted_at: record?.submitted_at || "-",
+                    score_progress:
+                        markerScore === "-" ? `- / ${totalScore}` : `${markerScore} / ${totalScore}`
+                };
+
+            });
+
+            res.json({
+                assignment_name: recentAssignment,
+                semester: recentSem,
+                year: recentYear,
+                result,
+            });
+
+        } catch (err) {
+            console.error("error fetching current markings", err);
+            res.status(500).json({ error: "failed fetching current markings" });
+        }
+    });
+
+
+    // fetching marker's stats
+    router.get("/marker/stats/assignment", async(req, res) => {
+
+        try {
+
+            const userId = req.user?.id;
+
+            const { data: moderation, error: modError } = await supabase
+                .from("moderations")
+                .select("id, name, assignment_number, year, semester, due_date, admin_feedback")
+                .order("year", { ascending: false })
+                .order("semester", { ascending: false })
+                .order("due_date", { ascending: false });
+
+            if (modError) throw modError;
+
+            const recentYear = moderation[0].year;
+            const recentSem = moderation[0].semester;
+            const recentAssignment = moderation[0].assignment_number;
+
+            const assignmentSameSem = moderation.filter((m) =>
+                m.year === recentYear &&
+                m.semester === recentSem &&
+                m.assignment_number === recentAssignment
+            );
+
+            assignmentSameSem.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+
+            const moderationIds = assignmentSameSem.map((m) => m.id);
+
+            const { data: stats, error: statsError } = await supabase
+                .from("moderation_stats")
+                .select("moderation_id, marker_id, criterion, max_points, unit_chair_marks, range_lower, range_upper, marker_mark")
+                .in("moderation_id", moderationIds);
+
+            if (statsError) throw statsError;
+
+            const groupedStats = {};
+            for (const s of stats || []) {
+                if (!groupedStats[s.moderation_id]) groupedStats[s.moderation_id] = [];
+                groupedStats[s.moderation_id].push(s);
+            }
+
+            const moderationStats = assignmentSameSem.map((mod) => {
+                const stats = groupedStats[mod.id] || [];
+                const criteria = [...new Set(stats.map((s) => s.criterion))];
+
+                const adminScores = criteria.map((c) => {
+                    const row = stats.find((s) => s.criterion === c && s.unit_chair_marks != null);
+                    return row ? parseFloat(row.unit_chair_marks) : 0;
+                });
+                const adminTotal = adminScores.reduce((a, b) => a + b, 0).toFixed(2);
+
+                const lowerBound = criteria.map((c) => {
+                    const row = stats.find((s) => s.criterion === c);
+                    return row ? parseFloat(row.range_lower) : 0;
+                });
+
+                const upperBound = criteria.map((c) => {
+                    const row = stats.find((s) => s.criterion === c);
+                    return row ? parseFloat(row.range_upper) : 0;
+                });
+
+                const lowerTotal = lowerBound.reduce((a, b) => a + b, 0).toFixed(2);
+                const upperTotal = upperBound.reduce((a, b) => a + b, 0).toFixed(2);
+
+                const markerScores = criteria.map((c) => {
+                    const row = stats.find((s) => s.criterion === c && Number(s.marker_id) === Number(userId));
+                    return row && row.marker_mark != null ? parseFloat(row.marker_mark) : "-";
+                });
+
+                const markerTotal =
+                    markerScores.every((v) => v === "-") ? "-"
+                        : markerScores
+                            .reduce((sum, v) => (v !== "-" ? sum + parseFloat(v) : sum), 0)
+                            .toFixed(2);
+
+                const hasMarked = markerScores.some((v) => v !== "-");
+
+                const rows = hasMarked ?
+                    [
+                        { label: "Unit Chair Marks", scores: adminScores, total: adminTotal },
+                        { label: "5% Lower Range", scores: lowerBound, total: lowerTotal },
+                        { label: "5% Upper Range", scores: upperBound, total: upperTotal },
+                        { label: "Your Marks", scores: markerScores, total: markerTotal },
+                    ] : [];
+
+                return {
+                    id: mod.id,
+                    moderationName: mod.name,
+                    criteria,
+                    rows,
+                    hasMarked,
+                };
+
+            });
+
+            res.json({
+                assignment_name: recentAssignment,
+                semester: recentSem,
+                year: recentYear,
+                moderations: moderationStats,
+            });
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ error: "failed fetching marker stats" });
+        }
+
+
+    });
+
+
+
+
+
+
     // fetching moderation
     router.get("/moderations/:id", async (req, res) => {
         const { id } = req.params;

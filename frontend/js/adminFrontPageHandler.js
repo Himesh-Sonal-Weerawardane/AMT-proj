@@ -18,6 +18,16 @@ async function loadFrontPage() {
         }
 
         const progressData = await res.json();
+
+        if (!progressData.results || progressData.results.length === 0) {
+            document.getElementById("current-marking-progress").innerHTML =
+                '<p class="no-moderation-msg">No moderations at the moment</p>';
+            document.getElementById("current-assignment-markings").innerHTML =
+                '<p class="no-moderation-msg">No moderations at the moment</p>';
+            document.getElementById("moderation-statistics").innerHTML =
+                '<p class="no-moderation-msg">No moderations at the moment</p>';
+            return;
+        }
         renderMarkerProgress(progressData);
         renderCurrentMarking(progressData);
 
@@ -26,8 +36,8 @@ async function loadFrontPage() {
             console.error("failed to fetch recent assignment stats", res.status);
         }
 
-        const statsDate = await statsRes.json();
-        renderStatistics(statsDate);
+        const statsData = await statsRes.json();
+        renderStatistics(statsData);
 
     } catch (err) {
         console.error(err);
@@ -230,10 +240,23 @@ function renderStatistics(statsData) {
             `;
         });
 
+        const lowerRow = rows.find((row) => row.label === "5% Lower Range");
+        const upperRow = rows.find((row) => row.label === "5% Upper Range");
+
         statsHTML += `
             <tr class="total-row">
                 <td class="row-label">Total</td>
-                ${rows.map((r) => `<td class="total-cell">${r.total}</td>`).join("")}
+                ${rows.map((r) => {
+                    if (!r.label.includes("Range") && !r.label.includes("Unit Chair")) {
+                        const lower = parseFloat(lowerRow?.total || 0);
+                        const upper = parseFloat(upperRow?.total || 0);
+                        const totalVal = parseFloat(r.total || 0);
+                        
+                        const inRange = totalVal >= lower && totalVal <= upper;
+                        return `<td class="total-cell ${inRange ? "in-range" : "out-of-range"}">${r.total}</td>`;
+                    }
+                    return `<td class="total-cell">${r.total}</td>`;
+                }).join("")}
             </tr>
         `;
 

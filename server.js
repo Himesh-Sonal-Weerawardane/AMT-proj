@@ -83,6 +83,30 @@ app.use("/marker", async (req, res, next) => {
 app.use(express.static(path.join(__dirname, "frontend")));
 // #################################
 
+app.use(async (req, res, next) => {
+    try {
+        const token = req.cookies?.supabase_session;
+        if (!token) return next();
+
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (error || !user) return next();
+
+        const { data: dbUser, error: dbError } = await supabase
+            .from("users")
+            .select("user_id")
+            .eq("auth_id", user.id)
+            .single();
+
+        if (!dbUser) return next();
+
+        req.user = { id: dbUser.user_id };
+
+    } catch (err) {
+        console.error(err);
+    }
+    next();
+});
+
 // Attach routes and pass supabase instance
 import authRoutes from "./routes/auth.js"
 import uploadRoutes from "./routes/upload.js"
