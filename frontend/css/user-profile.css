@@ -138,13 +138,61 @@ body {
 
 .moderation-history {
     display: flex;
+    flex-direction: column;
     box-sizing: border-box;
     border: 2px solid dimgray;
     border-radius: 10px;
-    padding: 300px;
     width: 90%;
     margin-bottom: 50px;
+    height: 600px;
+    overflow-y: auto;
+    padding: 20px;
+    scroll-behavior: smooth;
 }
+
+.moderation-header, .moderation-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.2fr 1.5fr 1fr;
+    align-items: center;
+    padding: 10px;
+    text-align: center;
+
+}
+
+.divider {
+    width: 98%;
+    height: 3px;
+    background-color: darkgrey;
+    margin: 10px auto;
+    align-self: center;
+}
+
+
+.mini-divider {
+    width: 97%;
+    height: 2px;
+    background-color: lightgrey;
+    margin: 10px 0;
+    align-self: center;
+}
+
+
+.no-history {
+    display: block;
+    margin: 20px auto;
+    justify-content: center;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

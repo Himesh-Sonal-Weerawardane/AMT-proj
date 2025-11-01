@@ -87,7 +87,7 @@ export default function userRoutes(supabase) {
         try{
             const{data, error} = await supabase
                 .from("users")
-                .select("auth_id, first_name, last_name, email, is_admin")
+                .select("user_id, auth_id, first_name, last_name, email, is_admin")
                 .eq("is_deleted", false)
             if(error){
                 console.error("be error", error)

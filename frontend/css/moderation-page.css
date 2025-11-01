@@ -410,11 +410,17 @@ html, body {
 
 /* Statistics content */
 
+#stats {
+    overflow: auto;
+    max-width: 100%;
+}
+
 .stats-table {
     border: 1px solid darkgray;
-    margin: 25px;
+    margin: 5px 25px 25px 25px;
     text-align: center;
     border-spacing: 0;
+    overflow-x: auto;
 }
 
 
