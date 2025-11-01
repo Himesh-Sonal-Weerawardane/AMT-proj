@@ -538,6 +538,7 @@ export default function moderationRoutes(supabase) {
     // fetching moderation
     router.get("/moderations/:id", async (req, res) => {
         const { id } = req.params;
+        const markerId = req.query.marker_id || req.user?.id;
 
         const { data, error } = await supabase
             .from("moderations")
@@ -557,6 +558,15 @@ export default function moderationRoutes(supabase) {
 
             data.assignment_url = publicURL.publicUrl;
         }
+
+        const { data: marks } = await supabase
+            .from("marks")
+            .select("*")
+            .eq("moderation_id", id)
+            .eq("marker_id", markerId)
+            .maybeSingle();
+
+            data.marks = marks || null;
 
         res.json(data);
 

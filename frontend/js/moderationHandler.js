@@ -7,6 +7,7 @@
 let rubricData;
 let currentUser = null;
 let moderationId = null;
+let overrideMarkerId = null;
 
 
 /* -----------------------------------Fetch User Info--------------------------------------- */
@@ -20,7 +21,6 @@ async function getUserInfo() {
 
         if (!user.ok) throw new Error("Failed to fetch user data");
         currentUser = await user.json();
-        console.log(currentUser);
     } catch (error) {
         console.error("error fetching user info", error);
     }
@@ -32,6 +32,8 @@ async function getUserInfo() {
 function getModerationID() {
     const urlParams = new URLSearchParams(window.location.search);
     moderationId = urlParams.get("id") || 1;
+    overrideMarkerId = urlParams.get("marker");
+    return { moderationId, overrideMarkerId };
 }
 
 
@@ -42,7 +44,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         await getUserInfo();
         getModerationID();
 
-        if (currentUser.role === "Admin") {
+        if (currentUser.role === "Admin" && overrideMarkerId) {
+            await loadMarkerModeration();
+        } else if (currentUser.role === "Admin") {
             await loadAdminModeration();
         } else {
             await loadMarkerModeration();
@@ -121,16 +125,36 @@ async function loadAdminModeration() {
 /* ---------------------------------Load Marker's Moderation-----------------------------------*/
 
 async function loadMarkerModeration() {
-    const moderationRes = await fetch(`/api/moderations/${moderationId}`)
-    const moderationData = await moderationRes.json();
+    const { moderationId, overrideMarkerId } = getModerationID();
 
-    console.log("Moderation Data:", moderationData);
+    let moderationURL = `/api/moderations/${moderationId}`;
+    if (overrideMarkerId) {
+        moderationURL += `?marker_id=${overrideMarkerId}`;
+    }
+
+    const moderationRes = await fetch(moderationURL, { credentials: 'include' });
+    const moderationData = await moderationRes.json();
     rubricData = moderationData;
+
+    let subtitle = `${currentUser.first_name} ${currentUser.last_name}`;
+    if (overrideMarkerId && overrideMarkerId !== currentUser.user_id.toString()) {
+        try {
+            const markerRes = await fetch(`/api/admin/marker/${overrideMarkerId}/profile`);
+            if (markerRes.ok) {
+                const markerData = await markerRes.json();
+                if (markerData.marker) {
+                    subtitle = `${markerData.marker.first_name} ${markerData.marker.last_name}`;
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
 
     document.getElementById("moderation-title").textContent = rubricData.name;
     document.getElementById("moderation-doc").src = rubricData.assignment_public_url;
-    document.getElementById("moderation-subtitle").textContent =
-        `${currentUser.first_name} ${currentUser.last_name}'s Moderation Attempt`;
+    document.getElementById("moderation-subtitle").textContent = `${subtitle}'s Moderation`;
 
     document.getElementById("moderation-description").textContent = rubricData.description || "No description";
     const dueDate = document.getElementById("due-date");
@@ -153,7 +177,8 @@ async function loadMarkerModeration() {
         }
     }
 
-    const marksRes = await fetch(`/api/marks/${moderationId}/${currentUser.user_id}`)
+    const markerId = overrideMarkerId || currentUser.user_id;
+    const marksRes = await fetch(`/api/marks/${moderationId}/${markerId}`)
     const statsTab = document.getElementById("tab-stats");
     const feedbackTab = document.getElementById("tab-feedback");
     const statsTabContent = document.getElementById("Statistics");
@@ -161,6 +186,7 @@ async function loadMarkerModeration() {
 
     if (marksRes.ok) {
         const marksData = await marksRes.json();
+        console.log(marksData);
 
         if (marksData && marksData.scores) {
 
@@ -179,7 +205,7 @@ async function loadMarkerModeration() {
                 submitted_at: marksData.submitted_at
             });
 
-            await renderStatistics(moderationId, currentUser.user_id);
+            await renderStatistics(moderationId, markerId);
             await renderAdminFeedback(moderationId);
 
         } else {
@@ -351,14 +377,18 @@ function renderMarkedModeration(results) {
         return;
     }
 
+    console.log(resultStorage);
 
     resultStorage.forEach((element) => {
-        if (!element || !rubricData?.rubric_json?.criteria[element.criterionID]) {
+        console.log(element);
+        console.log(rubricData.rubric_json.criteria[Number(element.criterionID)]);
+
+        if (!element || !rubricData?.rubric_json?.criteria[Number(element.criterionID)]) {
             console.warn("Skipping invalid entry:", element);
             return;
         }
 
-        const criterionData = rubricData.rubric_json.criteria[element.criterionID]
+        const criterionData = rubricData.rubric_json.criteria[Number(element.criterionID)]
         const criterion = document.createElement("div");
         criterion.classList.add("marked-criterion");
 

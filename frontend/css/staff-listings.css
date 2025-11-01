@@ -92,7 +92,7 @@ body {
 #horizontal-divider {
     display: flex;
     height: 5px;
-    width: 70%;
+    width: 1100px;
     background-color: dimgray;
     margin: 5px auto 10px auto;
 }
@@ -272,7 +272,6 @@ body {
     padding: 10px 40px;
     font-size: 15px;
     background-color: #CC2C04;
-    color: solid gray;
     cursor: pointer;
 
 }
