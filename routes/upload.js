@@ -391,6 +391,7 @@ export default function uploadRoutes(supabase) {
                     name: module.name,
                     year: module.year,
                     semester: module.semester,
+                    assignment_number : module.assignment_number,
                     moderation_number: module.moderation_number,
                     due_date: module.due_date, // <-- expose due_date only
                     description: module.description,

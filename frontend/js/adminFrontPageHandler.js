@@ -2,7 +2,9 @@
 
 document.addEventListener("DOMContentLoaded", async() => {
 
+    console.time("FrontPage Load");
     await loadFrontPage();
+    console.timeEnd("FrontPage Load");
 
 
 });
@@ -11,33 +13,41 @@ document.addEventListener("DOMContentLoaded", async() => {
 async function loadFrontPage() {
 
     try {
+
+        const [progressRes, statsRes] = await Promise.all([
+            fetch("/api/moderations/progress/recent-assignment"),
+            fetch("/api/moderations/stats/assignment")
+        ]);
+
+
         const res = await fetch("/api/moderations/progress/recent-assignment");
 
-        if (!res.ok) {
+        if (!progressRes.ok) {
             console.error("failed to fetch recent assignment", res.status);
         }
 
-        const progressData = await res.json();
+        if (!statsRes.ok) {
+            console.error("failed to fetch assignment stats", res.status);
+        }
 
-        if (!progressData.results || progressData.results.length === 0) {
-            document.getElementById("current-marking-progress").innerHTML =
-                '<p class="no-moderation-msg">No moderations at the moment</p>';
-            document.getElementById("current-assignment-markings").innerHTML =
-                '<p class="no-moderation-msg">No moderations at the moment</p>';
-            document.getElementById("moderation-statistics").innerHTML =
-                '<p class="no-moderation-msg">No moderations at the moment</p>';
+        const [progressData, statsData] = await Promise.all([
+            progressRes.json(),
+            statsRes.json()
+        ]);
+
+        if (!progressData?.results?.length) {
+            const message = '<p class="no-moderation-msg">No moderations at the moment</p>';
+            document.getElementById('current-marking-progress').innerHTML = message;
+            document.getElementById("current-assignment-markings").innerHTML = message;
+            document.getElementById("moderation-statistics").innerHTML = message;
             return;
         }
-        renderMarkerProgress(progressData);
-        renderCurrentMarking(progressData);
 
-        const statsRes = await fetch("/api/moderations/stats/assignment");
-        if (!statsRes.ok) {
-            console.error("failed to fetch recent assignment stats", res.status);
-        }
-
-        const statsData = await statsRes.json();
-        renderStatistics(statsData);
+        requestAnimationFrame(() => {
+            renderMarkerProgress(progressData);
+            renderCurrentMarking(progressData);
+            renderStatistics(statsData);
+        });
 
     } catch (err) {
         console.error(err);
@@ -169,6 +179,7 @@ function renderCurrentMarking(data) {
 
 
 function renderStatistics(statsData) {
+    console.time("renderStatistics");
 
     const container = document.getElementById("moderation-statistics");
 
@@ -189,6 +200,7 @@ function renderStatistics(statsData) {
     `;
 
     const statsWrapper = document.getElementById("moderation-stats-cards");
+    let allStatsHTML = "";
 
     moderations.forEach((moderation) => {
         const { moderationName, criteria, rows } = moderation;
@@ -267,10 +279,13 @@ function renderStatistics(statsData) {
             </div>
         `;
 
-        statsWrapper.insertAdjacentHTML("beforeend", statsHTML);
+        allStatsHTML += statsHTML;
 
     });
 
+    statsWrapper.innerHTML = allStatsHTML;
+
+    console.timeEnd("renderStatistics");
 }
 
 

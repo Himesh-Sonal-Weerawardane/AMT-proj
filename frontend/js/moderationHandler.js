@@ -31,7 +31,7 @@ async function getUserInfo() {
 
 function getModerationID() {
     const urlParams = new URLSearchParams(window.location.search);
-    moderationId = urlParams.get("id") || 1;
+    moderationId = urlParams.get("id");
     overrideMarkerId = urlParams.get("marker");
     return { moderationId, overrideMarkerId };
 }
@@ -137,13 +137,18 @@ async function loadMarkerModeration() {
     rubricData = moderationData;
 
     let subtitle = `${currentUser.first_name} ${currentUser.last_name}`;
-    if (overrideMarkerId && overrideMarkerId !== currentUser.user_id.toString()) {
+
+    const overrideString = String(overrideMarkerId ?? "");
+    if (overrideString && overrideString !== String(currentUser.user_id)) {
         try {
-            const markerRes = await fetch(`/api/admin/marker/${overrideMarkerId}/profile`);
+            const markerRes = await fetch(`/api/admin/user/${encodeURIComponent(overrideString)}/profile`, {
+                credentials: 'include'
+            });
             if (markerRes.ok) {
                 const markerData = await markerRes.json();
-                if (markerData.marker) {
-                    subtitle = `${markerData.marker.first_name} ${markerData.marker.last_name}`;
+                const user = markerData.user;
+                if (user && user.first_name && user.last_name) {
+                    subtitle = `${user.first_name} ${user.last_name}`;
                 }
             }
         } catch (err) {
@@ -177,8 +182,8 @@ async function loadMarkerModeration() {
         }
     }
 
-    const markerId = overrideMarkerId || currentUser.user_id;
-    const marksRes = await fetch(`/api/marks/${moderationId}/${markerId}`)
+    const markerId = overrideString || currentUser.user_id;
+    const marksRes = await fetch(`/api/marks/${moderationId}/${markerId}`, { credentials: 'include' });
     const statsTab = document.getElementById("tab-stats");
     const feedbackTab = document.getElementById("tab-feedback");
     const statsTabContent = document.getElementById("Statistics");

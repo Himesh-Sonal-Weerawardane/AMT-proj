@@ -5,14 +5,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const params = new URLSearchParams(window.location.search);
 
-    const markerID = params.get("id");
+    const userID = params.get("id");
 
-    if (!markerID) throw new Error("No user ID");
+    if (!userID) throw new Error("No user ID");
 
 
     try {
 
-        const res = await fetch(`/api/admin/marker/${markerID}/profile`, {
+        const res = await fetch(`/api/admin/user/${userID}/profile`, {
             credentials: "include"
         });
 
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const data = await res.json();
 
-        const user = data.marker;
+        const user = data.user;
 
         const moderations = data.moderations || [];
 
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <span class="col-title">Moderation</span>
                     <span class="col-assignment">Assignment</span>
                     <span class="col-semester">Semester</span>
-                    <span class="col-date">Submitted At</span>
+                    ${user.is_admin ? "<span>Due Date</span>": "<span>Submitted At</span>"}
                     <span class="col-score">Score</span>
                 </div>
                 
@@ -53,20 +53,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
             moderations.forEach(mod => {
-                const formattedDate = new Date(mod.submitted_at).toLocaleDateString("en-AU", {
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                });
+                const date = user.is_admin ? mod.due_date : mod.submitted_at;
+                const formattedDate = date
+                    ? new Date(date).toLocaleDateString("en-AU", {
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                    }) : "-";
+
+                const moderationLink = user.is_admin
+                    ? `/admin/moderation.html?id=${mod.id}`
+                    : `/marker/moderation-page.html?id=${mod.id}&marker=${user.user_id}`;
 
                 moderationContainer.insertAdjacentHTML(
                     "beforeend",
 
                     `
                     <div class="moderation-row">
-                        <a href="/marker/moderation-page.html?id=${mod.id}&marker=${user.user_id}" class="moderation-link">${mod.name}</a>
+                        <a href="${moderationLink}" class="moderation-link">${mod.name}</a>
                         <p>${mod.assignment_number}</p>
                         <p>${mod.year} Semester ${mod.semester}</p>
                         <p>${formattedDate}</p>
