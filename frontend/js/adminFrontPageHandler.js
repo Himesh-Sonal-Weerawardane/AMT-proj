@@ -20,7 +20,6 @@ async function loadFrontPage() {
         ]);
 
 
-        const res = await fetch("/api/moderations/progress/recent-assignment");
 
         if (!progressRes.ok) {
             console.error("failed to fetch recent assignment", res.status);
