@@ -20,6 +20,8 @@ export default function profileRoutes(supabase) {
                 .eq("user_id", userId)
                 .single();
 
+            console.log(user);
+
 
             if (userError) throw userError;
 
@@ -35,7 +37,7 @@ export default function profileRoutes(supabase) {
 
                 if (modError) throw modError;
 
-                moderations = mods.map((m) => {
+                moderations = (mods || []).map((m) => {
                     let totalScore = "-";
 
                     try {
@@ -82,13 +84,17 @@ export default function profileRoutes(supabase) {
 
                 const { data: marks, error: marksError } = await supabase
                     .from("marks")
-                    .select(
-                        "moderation_id, total_score, submitted_at")
+                    .select("moderation_id, total_score, submitted_at")
                     .eq("marker_id", userId);
 
                 if (marksError) throw marksError;
 
-                const moderationIds = marks.map((m) => m.moderation_id);
+                const safeMarks = marks || [];
+                if (safeMarks.length === 0) {
+                    return res.json({ user, moderations: [] });
+                }
+
+                const moderationIds = (marks || []).map((m) => m.moderation_id);
                 let moderationsData = [];
 
                 if (moderationIds.length > 0) {
@@ -98,10 +104,10 @@ export default function profileRoutes(supabase) {
                         .in("id", moderationIds);
 
                     if (modsError) throw modsError;
-                    moderationsData = mods;
+                    moderationsData = mods || [];
                 }
 
-                moderations = marks.map(m => {
+                moderations = safeMarks.map(m => {
                     const mod = moderationsData.find(mod => mod.id === m.moderation_id);
                     return {
                         id: m.moderation_id,

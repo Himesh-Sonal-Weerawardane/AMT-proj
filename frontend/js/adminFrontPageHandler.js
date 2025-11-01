@@ -14,31 +14,49 @@ async function loadFrontPage() {
 
     try {
 
-        const [progressRes, statsRes] = await Promise.all([
+        const [progressRes, statsRes] = await Promise.allSettled([
             fetch("/api/moderations/progress/recent-assignment"),
             fetch("/api/moderations/stats/assignment")
         ]);
 
-
-
-        if (!progressRes.ok) {
-            console.error("failed to fetch recent assignment", res.status);
+        async function safeJSON(res) {
+            if (!res || !res.ok) return null;
+            const text = await res.text();
+            if (!text) return null;
+            try {
+                return JSON.parse(text);
+            } catch (err) {
+                console.warn("json parse failed:", err);
+                return null;
+            }
         }
 
-        if (!statsRes.ok) {
-            console.error("failed to fetch assignment stats", res.status);
+
+        let progressData = null;
+        if (progressRes.status === "fulfilled" && progressRes.value.ok) {
+            progressData = await safeJSON(progressRes.value);
+        } else {
+            console.warn("Failed to fetch moderations from progress");
         }
 
-        const [progressData, statsData] = await Promise.all([
-            progressRes.json(),
-            statsRes.json()
-        ]);
 
-        if (!progressData?.results?.length) {
-            const message = '<p class="no-moderation-msg">No moderations at the moment</p>';
-            document.getElementById('current-marking-progress').innerHTML = message;
-            document.getElementById("current-assignment-markings").innerHTML = message;
-            document.getElementById("moderation-statistics").innerHTML = message;
+        let statsData = null;
+        if (statsRes.status === "fulfilled" && statsRes.value.ok) {
+            statsData = await safeJSON(statsRes.value);
+        } else {
+            console.warn("Failed to fetch stats");
+        }
+
+        console.log("Progress data:", progressData);
+        console.log("Results length:", progressData?.results?.length);
+
+
+
+        if (!progressData || !Array.isArray(progressData.results) || progressData.results.length === 0) {
+            const messageHTML = '<p class="no-moderation-msg">No moderations at the moment.</p>';
+            document.getElementById("current-assignment-markings").innerHTML = messageHTML;
+            document.getElementById('current-marking-progress').innerHTML = messageHTML;
+            document.getElementById("moderation-statistics").innerHTML = messageHTML;
             return;
         }
 

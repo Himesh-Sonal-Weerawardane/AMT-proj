@@ -177,9 +177,11 @@ body {
 }
 
 
-
-
-
+.no-history {
+    display: block;
+    margin: 20px auto;
+    justify-content: center;
+}
 
 
 

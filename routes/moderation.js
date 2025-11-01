@@ -18,7 +18,14 @@ export default function moderationRoutes(supabase) {
                 .order("due_date", { ascending: false });
 
             if (modsErr) throw modsErr;
-            if (!allMods.length) return res.json();
+            if (!allMods || allMods.length === 0) {
+                return res.json({
+                    assignment_name: null,
+                    semester: null,
+                    year: null,
+                    results: []
+                });
+            }
 
             const recentYear = allMods[0].year;
             const recentSem = allMods[0].semester;
@@ -170,8 +177,6 @@ export default function moderationRoutes(supabase) {
 
                     let criteria = [];
                     let adminScores = [];
-                    let lowerBound = [];
-                    let upperBound = [];
 
                     try {
                         if (mod.admin_feedback) {
@@ -324,6 +329,7 @@ export default function moderationRoutes(supabase) {
                 .order("due_date", { ascending: false });
 
             if (modError) throw modError;
+            if (!moderations?.length) return res.json({ results: [] });
 
             const recentYear = moderations[0].year;
             const recentSem = moderations[0].semester;

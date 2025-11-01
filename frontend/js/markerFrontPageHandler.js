@@ -13,14 +13,19 @@ async function loadMarkerFrontPage() {
         ]);
 
         const [userInfo, recentData, statsData] = await Promise.all([
-            userRes.json(),
-            recentRes.json(),
-            statsRes.json()
+            safeJSON(userRes),
+            safeJSON(recentRes),
+            safeJSON(statsRes),
         ]);
 
         const markerId = userInfo?.user_id;
         if (!markerId) {
             console.error("Unable to fetch the marker");
+            return;
+        }
+
+        if (!recentData?.result?.length) {
+            noModerationsMessage();
             return;
         }
 
@@ -31,6 +36,24 @@ async function loadMarkerFrontPage() {
         console.error(err);
     }
 
+}
+
+function noModerationsMessage() {
+    const messageHTML = '<p class="no-moderation-msg">No moderations at the moment.</p>';
+    document.getElementById("marker-current-markings").innerHTML = messageHTML;
+    document.getElementById("marker-moderation-statistics").innerHTML = messageHTML;
+}
+
+async function safeJSON(res) {
+    if (!res || !res.ok) return null;
+    const text = await res.text();
+    if (!text) return null;
+    try {
+        return JSON.parse(text);
+    } catch (err) {
+        console.warn("json parse failed:", err);
+        return null;
+    }
 }
 
 

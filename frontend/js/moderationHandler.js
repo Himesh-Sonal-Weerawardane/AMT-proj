@@ -806,3 +806,5 @@ function calculateTotalScore(data) {
 
     totalScore.textContent = `_ / ${maxScore}`;
 }
+
+

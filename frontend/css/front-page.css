@@ -33,13 +33,6 @@ body {
     height: 400px;
 }
 
-#current-marking-progress {
-    margin: auto;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    height: auto;
-}
 
 /* Assignment Head */
 
@@ -331,7 +324,17 @@ canvas {
 }
 
 
-/* Marker's Current Markings */
+.no-moderation-msg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid lightgray;
+    width: 100%;
+    height: 45px;
+    border-radius: 5px;
+    background-color: white;
+    margin: 0 auto;
+}
 
 
 
