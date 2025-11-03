@@ -49,7 +49,8 @@ export default function uploadRoutes(supabase) {
         "/upload_moderation",
         upload.fields([
             { name: "assignment" },
-            { name: "rubric" }
+            { name: "rubric" },
+            { name: "admin_feedback" }
         ]),
         async (req, res) => {
             console.log("[UploadModeration] Incoming request received")
@@ -87,6 +88,7 @@ export default function uploadRoutes(supabase) {
 
             const assignmentFile = req.files?.assignment?.[0]
             const rubricFile = req.files?.rubric?.[0]
+            const feedbackFile = req.files?.admin_feedback?.[0];
 
             console.log("[UploadModeration] Assignment file metadata:",
                 assignmentFile
@@ -131,23 +133,9 @@ export default function uploadRoutes(supabase) {
             if (isRubricUploaded) {
                 if (!rubricFile) return res.status(400).json({ error: "Rubric file required" })
             }
-          
-            // Check if this module already exists
-            const { data: moderationData, error: moderationError } = await supabase
-                .from("moderations")
-                .select("id")
-                .eq("year", year)
-                .eq("semester", semester)
-                .eq("assignment_number", assignment_number)
-                .eq("moderation_number", moderation_number)
+            ///
 
-            if (moderationError) {
-                return res.json({ error: "Error trying to access the database" });
-            }
 
-            if (moderationData.length > 0) {
-                return res.json({ error: "This module already exists" })
-            }
           
             // 1) Rubric file parsing here.
             let rubricJSON = {};
@@ -191,11 +179,32 @@ export default function uploadRoutes(supabase) {
             
             let assignmentUrl = `modules/assignments/${assignmentFile.originalname}`;
             let rubricUrl = null
+            let feedbackUrl = null;
 
             try {
                 // 2) Upload assignment to Supabase storage
                 console.log("[UploadModeration] Uploading assignment to Supabase storage")
                 const assignmentBuffer = fs.readFileSync(assignmentFile.path)
+                if (feedbackFile) {
+                    console.log("[UploadModeration] Uploading admin feedback to Supabase storage");
+                    const feedbackBuffer = fs.readFileSync(feedbackFile.path);
+                    // Use unique keys to avoid filename collisions:
+                    const feedbackKey = `modules/feedback/${Date.now()}-${feedbackFile.originalname}`;
+
+                    const { data: fbData, error: fbErr } = await supabase.storage
+                        .from("comp30022-amt")
+                        .upload(feedbackKey, feedbackBuffer, {
+                            contentType: feedbackFile.mimetype,
+                            upsert: true
+                        });
+
+                    if (fbErr) {
+                        console.error("[UploadModeration] Admin feedback upload failed:", fbErr);
+                        throw fbErr;
+                    }
+                    feedbackUrl = feedbackKey;
+                    console.log("[UploadModeration] Admin feedback upload response:", fbData);
+                }
 
                 {
                     const { data, error } = await supabase.storage
@@ -235,6 +244,9 @@ export default function uploadRoutes(supabase) {
 
                         console.log("[UploadModeration] Rubric upload response:", data)
                     }
+
+
+
                 }
 
                 console.log("[UploadModeration] Assignment URL (storage path):", assignmentUrl)
@@ -271,7 +283,9 @@ export default function uploadRoutes(supabase) {
                         hidden_from_markers: false,
                         rubric_json: rubricJSON,
                         assignment_url: assignmentUrl,
-                        rubric_url: rubricUrl
+                        rubric_url: rubricUrl,
+                        admin_feedback_url: feedbackUrl,                     // NEW
+                        admin_feedback_hidden_from_markers: true
                     }])
                     .select("id") // ensure we get back the id
 
@@ -290,7 +304,8 @@ export default function uploadRoutes(supabase) {
                 // Clean up temp files
                 await Promise.all([
                     safeUnlink(assignmentFile?.path),
-                    safeUnlink(rubricFile?.path)
+                    safeUnlink(rubricFile?.path),
+                    safeUnlink(feedbackFile?.path)
                 ])
             }
         }
@@ -317,6 +332,12 @@ export default function uploadRoutes(supabase) {
 
             const assignmentPath = data.assignment_url
             const rubricPath = data.rubric_url
+            const feedbackPath = data.admin_feedback_url;
+
+            const adminFeedbackPublicUrl = feedbackPath
+                ? supabase.storage.from("comp30022-amt").getPublicUrl(feedbackPath).data.publicUrl
+                : null;
+
 
             const assignmentPublicUrl = assignmentPath
                 ? supabase.storage
@@ -337,6 +358,7 @@ export default function uploadRoutes(supabase) {
                 // Make it explicit in payload naming
                 assignment_public_url: assignmentPublicUrl,
                 rubric_public_url: rubricPublicUrl,
+                admin_feedback_public_url: adminFeedbackPublicUrl,
                 rubric_json: data.rubric_json
             })
         } catch (err) {
@@ -385,6 +407,9 @@ export default function uploadRoutes(supabase) {
                         .from("comp30022-amt")
                         .getPublicUrl(module.rubric_url).data.publicUrl
                     : null
+                const adminFeedbackPublicUrl = module.admin_feedback_url
+                    ? supabase.storage.from("comp30022-amt").getPublicUrl(module.admin_feedback_url).data.publicUrl
+                    : null;
 
                 return {
                     id: module.id,
@@ -398,6 +423,7 @@ export default function uploadRoutes(supabase) {
                     hidden_from_markers: module.hidden_from_markers,
                     assignment_public_url: assignmentPublicUrl,
                     rubric_public_url: rubricPublicUrl,
+                    admin_feedback_public_url: adminFeedbackPublicUrl,
                     rubric: module.rubric_json
                 }
             })
