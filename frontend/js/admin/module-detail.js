@@ -244,6 +244,66 @@ function wireRubricToolbar() {
 }
 
 // ---------- Page bootstrapping ----------
+const OFFICE_VIEWER_EXTENSIONS = new Set([
+    "doc",
+    "docx",
+    "xls",
+    "xlsx",
+    "ppt",
+    "pptx"
+]);
+
+function getFileExtensionFromUrl(url) {
+    if (!url || typeof url !== "string") return null;
+    const withoutHash = url.split("#")[0];
+    const withoutQuery = withoutHash.split("?")[0];
+    const parts = withoutQuery.split(".");
+    if (parts.length <= 1) return null;
+    return parts.pop().toLowerCase();
+}
+
+function getDocumentPreviewConfig(url) {
+    const extension = getFileExtensionFromUrl(url);
+    if (!extension) return null;
+
+    if (extension === "pdf") {
+        return {
+            mimeType: "application/pdf",
+            src: url
+        };
+    }
+
+    if (OFFICE_VIEWER_EXTENSIONS.has(extension)) {
+        const viewerUrl = "https://view.officeapps.live.com/op/embed.aspx?src=" + encodeURIComponent(url);
+        return {
+            mimeType: "text/html",
+            src: viewerUrl
+        };
+    }
+
+    return null;
+}
+
+function applyDocumentPreview(objectEl, url, options = {}) {
+    if (!objectEl) {
+        return { supported: false, reason: "missing-element" };
+    }
+
+    const { hideOnUnsupported = true } = options;
+
+    const config = getDocumentPreviewConfig(url);
+    if (!config) {
+        objectEl.removeAttribute("data");
+        objectEl.hidden = hideOnUnsupported;
+        return { supported: false, reason: "unsupported-extension" };
+    }
+
+    objectEl.type = config.mimeType;
+    objectEl.data = config.src;
+    objectEl.hidden = false;
+    return { supported: true };
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
     const moduleId = params.get("id");
@@ -254,6 +314,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     const assignmentPreview = document.getElementById("assignment-preview");
     const assignmentDownload = document.getElementById("assignment-download");
     const rubricDownload = document.getElementById("rubric-download");
+    const adminFeedbackCard = document.getElementById("admin-feedback-card");
+    const adminFeedbackPreview = document.getElementById("admin-feedback-preview");
+    const adminFeedbackDownload = document.getElementById("admin-feedback-download");
+    const adminFeedbackMessage = document.getElementById("admin-feedback-message");
 
     if (!moduleId) {
         showStatus("Module ID missing from the URL.", true);
@@ -298,16 +362,39 @@ window.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("module-uploaded").textContent = uploaded ? `Uploaded: ${uploaded}` : "";
 
         if (data.assignment_public_url) {
-            assignmentPreview.data = data.assignment_public_url;
+            const assignmentPreviewState = applyDocumentPreview(assignmentPreview, data.assignment_public_url, { hideOnUnsupported: false });
             assignmentDownload.href = data.assignment_public_url;
             assignmentDownload.hidden = false;
+            if (!assignmentPreviewState.supported) {
+                assignmentPreview.removeAttribute("data");
+            }
         } else {
             assignmentPreview.removeAttribute("data");
+            assignmentPreview.hidden = true;
         }
 
         if (data.rubric_public_url) {
             rubricDownload.href = data.rubric_public_url;
             rubricDownload.hidden = false;
+        }
+
+        adminFeedbackCard.hidden = false;
+        adminFeedbackDownload.hidden = true;
+        adminFeedbackPreview.hidden = true;
+        adminFeedbackPreview.removeAttribute("data");
+        adminFeedbackMessage.hidden = true;
+
+        if (data.admin_feedback_public_url) {
+            adminFeedbackDownload.href = data.admin_feedback_public_url;
+            adminFeedbackDownload.hidden = false;
+            const adminFeedbackPreviewState = applyDocumentPreview(adminFeedbackPreview, data.admin_feedback_public_url);
+            if (!adminFeedbackPreviewState.supported) {
+                adminFeedbackMessage.textContent = "Preview is only available for PDF, Word, and Excel files. Use the download link above to view the admin feedback document.";
+                adminFeedbackMessage.hidden = false;
+            }
+        } else {
+            adminFeedbackMessage.textContent = "No admin feedback file has been uploaded for this module.";
+            adminFeedbackMessage.hidden = false;
         }
 
         // Build table data from JSON and load into Handsontable
