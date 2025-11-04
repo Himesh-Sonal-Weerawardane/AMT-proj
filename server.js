@@ -128,6 +128,7 @@ import moduleInfoRoutes from "./routes/module_info.js"
 import moderationRoutes from "./routes/moderation.js"
 import userRoutes from "./routes/users.js"
 import profileRoutes from "./routes/profile.js"
+import statsRoutes from "./routes/statistics.js"
 
 // ===== 3. TEMPORARILY COMMENT OUT THE EXTERNAL ROUTE =====
 // import router from "./routes/emailRoutes.js"
@@ -139,6 +140,7 @@ app.use("/api", moduleInfoRoutes(supabase))
 app.use("/api", moderationRoutes(supabase))
 app.use("/api", userRoutes(supabase))
 app.use("/api", profileRoutes(supabase))
+app.use("/api", statsRoutes(supabase))
 
 // ===== 4. ADD THE DIAGNOSTIC ROUTE HANDLER =====
 app.post("/api/email/send", async (req, res) => {
