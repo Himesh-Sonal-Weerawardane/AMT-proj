@@ -350,7 +350,14 @@ export default function uploadRoutes(supabase) {
                 console.log("[UploadModeration] Module created successfully with ID:", moduleId);
                 try {
                     console.log("[UploadModeration] Sending module creation email...");
-                    await sendModuleCreationEmail("rkkulka@icloud.com");
+                    const { data: moderatorsEmails} = await supabase
+                        .from("users")
+                        .select("email")
+                    for (const moderator of moderatorsEmails) {
+                        await sendModuleCreationEmail(moderator,name,description,normalizedDueDate);
+                    }
+
+
                     console.log("[UploadModeration] Module creation email sent successfully.");
                 } catch (emailError) {
                     console.error("[UploadModeration] Failed to send module creation email:", emailError);
