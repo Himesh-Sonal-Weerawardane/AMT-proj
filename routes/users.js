@@ -67,6 +67,7 @@ export default function userRoutes(supabase) {
       const { data, error } = await supabase
         .from("users")
         .update({
+          auth_id: null,
           email: null,
           first_name: null,
           last_name: null,
@@ -77,6 +78,11 @@ export default function userRoutes(supabase) {
       if (error) {
         console.error("be error", error);
         return res.status(400).json({ error: error.message }); // User has wrong email/password
+      }
+      const {data: deleteData, error: deleteError } = await supabase.auth.admin.deleteUser(id)
+      if(deleteError){
+        console.error("authentication user delete error", deleteError)
+        return res.status(400).json({deleteError }); // User has wrong email/password
       }
       res.json({ success: true, message: "user deleted" });
     } catch (err) {
