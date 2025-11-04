@@ -4,6 +4,7 @@
 import dotenv from 'dotenv'
 import express from "express";
 import path from "path";
+import cors from "cors";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 
@@ -30,7 +31,7 @@ const supabase = createClient(
 app.use(express.json())
 // Parses form submissions
 app.use(express.urlencoded({ extended: true }))
-
+app.use(cors())
 // #################################
 // Cookies can be used to track session, see auth.js /session_info for more info
 import cookieParser from "cookie-parser";

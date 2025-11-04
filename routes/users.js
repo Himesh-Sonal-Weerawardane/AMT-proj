@@ -1,4 +1,5 @@
 import express from "express";
+import { sendAccountRegistrationEmail } from "../mail.js";
 
 //https://stackoverflow.com/questions/9719570/generate-random-password-string-with-5-letters-and-3-numbers-in-javascript
 //https://supabase.com/docs/reference/javascript/
@@ -116,8 +117,10 @@ export default function userRoutes(supabase) {
 
       const link =
         `http://localhost:3000/account/account-registration.html?role=${roleLowerCase}`;
+      await sendAccountRegistrationEmail(email, link)
 
-      const {data, error} = await supabase.auth.admin.inviteUserByEmail(email, {
+      return res.json({success: true})
+      /*const {data, error} = await supabase.auth.admin.inviteUserByEmail(email, {
         redirectTo: link,
       });
 
@@ -125,12 +128,13 @@ export default function userRoutes(supabase) {
         console.error("be error", error);
         return res.status(400).json({ error: error.message }); // User has wrong email/password
       }
-      res.json({ success: true });
+      res.json({ success: true });*/
     } catch (err) {
       console.error("Network or server error:", err);
       res.status(500).json({ err });
     }
   });
+
 
   router.post("/register_user", async (req, res) => {
     try {
@@ -142,27 +146,39 @@ export default function userRoutes(supabase) {
           .status(400)
           .json({ error: "Missing Field. All Fields Are Required" });
       }
-      const { data: registerData, error: registerError } =
+      const {data: userData, error: userError} = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true, 
+      })
+      if(userError){
+        console.error(userError)
+        return res.status(400).json({ userError }); // User has wrong email/password
+      }
+      /*const {data: passwordData, error: passwordError} = await supabase.auth.admin.updateUserById(
+        user.id,
+        { password }
+      )
+      /*const { data: registerData, error: registerError } =
         await supabase.auth.signUp({
           email,
           password,
-        });
+        }); 
 
       if (registerError) {
         console.error("be error", registerError);
         return res.status(400).json({ registerError: registerError.message });
-      }
+      }*/
 
       const first_name = firstName;
       const last_name = lastName;
-      const auth_id = registerData.user?.id || null;
-      console.log("registerdata", registerData)
+      const auth_id = userData.user.id;
       if(!auth_id){
         console.warn("no authid")
       }
       const user_role = role.toLowerCase();
       const is_admin = user_role === "admin";
-      console.log("user created in auth", registerData);
+
       const { data, error } = await supabase.from("users").insert(
         [
           {

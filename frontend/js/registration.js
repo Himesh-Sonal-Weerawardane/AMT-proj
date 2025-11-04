@@ -3,7 +3,7 @@ registration.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const urlParams = new URLSearchParams(window.location.search);
-  const role = urlParams.get("role") || 1;
+  const role = urlParams.get("role");
 
   const firstName = document.getElementById("firstName").value.trim();
   const lastName = document.getElementById("lastName").value.trim();
@@ -11,6 +11,7 @@ registration.addEventListener("submit", async (e) => {
   const password = document.getElementById("password").value;
 
   try {
+    //const {data: passwordData, error: passwordError} = await supabase.auth.updateUser( { password})
     const res = await fetch("/api/register_user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
