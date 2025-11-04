@@ -1,6 +1,7 @@
 import express from 'express';
 //import {error} from "handsontable/helpers";
 const router = express.Router();
+import { computeModerationStats } from "../frontend/js/computeModerationStats.js";
 
 
 export default function moderationRoutes(supabase) {
@@ -145,7 +146,7 @@ export default function moderationRoutes(supabase) {
             const recentSem = moderation[0].semester;
             const recentAssignment = moderation[0].assignment_number;
 
-            const assignmentSameSem = moderation.filter((m) =>
+            const assignmentSameSem = moderation.filter(m =>
                 m.year === recentYear &&
                 m.semester === recentSem &&
                 m.assignment_number === recentAssignment
@@ -162,149 +163,17 @@ export default function moderationRoutes(supabase) {
 
             if (userError) throw userError;
 
-            const moderationStats = [];
-
+            const moderations = [];
             for (const mod of assignmentSameSem) {
-
-                const { data: stats, error: statsError } = await supabase
-                    .from("moderation_stats")
-                    .select("moderation_id, marker_id, criterion, max_points, unit_chair_marks, range_lower, range_upper, marker_mark")
-                    .eq("moderation_id", mod.id);
-
-                if (statsError) throw statsError;
-
-                if (!stats || stats.length === 0) {
-
-                    let criteria = [];
-                    let adminScores = [];
-
-                    try {
-                        if (mod.admin_feedback) {
-                            const feedback =
-                                typeof mod.admin_feedback === "string"
-                                    ? JSON.parse(mod.admin_feedback)
-                                    : mod.admin_feedback;
-
-                            if (feedback.criteria && Array.isArray(feedback.criteria)) {
-                                criteria = feedback.criteria.map((c) => c.criterion);
-                                adminScores = feedback.criteria.map((c) => {
-                                    const [scorePart] = c.admin_score.split("/").map(s => s.trim());
-                                    return parseFloat(scorePart) || 0;
-                                });
-                            }
-                        }
-                    } catch (error) {
-                        console.warn(`error parsing admin_feedback`, error);
-                    }
-
-                    const adminTotal = adminScores.reduce((a, b) => a + b, 0);
-                    const lowerBoundScores = adminScores.map((s) => +(s * 0.95).toFixed(2));
-                    const upperBoundScores = adminScores.map((s) => +(s * 1.05).toFixed(2));
-                    const lowerTotal = lowerBoundScores.reduce((a, b) => a + b, 0).toFixed(2);
-                    const upperTotal = upperBoundScores.reduce((a, b) => a + b, 0).toFixed(2);
-
-                    const rows = [
-                        { label: "Unit Chair Marks", scores: adminScores, total: adminTotal },
-                        { label: "5% Lower Range", scores: lowerBoundScores, total: lowerTotal },
-                        { label: "5% Upper Range", scores: upperBoundScores, total: upperTotal },
-                    ];
-
-
-                    for (const user of users) {
-                        const name = user.first_name
-                            ? `${user.first_name} ${user.last_name}`.trim()
-                            : `Marker ${user.user_id}`;
-
-                        rows.push({
-                            label: name,
-                            scores: Array(criteria.length).fill("-"),
-                            total: "-",
-                        });
-
-                    }
-
-                    moderationStats.push({
-                        id: mod.id,
-                        moderationName: mod.name,
-                        criteria,
-                        rows,
-                    });
-
-                    continue;
-
-                }
-
-                const criteria = [...new Set(stats.map(s => s.criterion))];
-
-                const adminScores = criteria.map(c => {
-                    const row = stats.find(s => s.criterion === c && s.unit_chair_marks != null);
-                    return row ? parseFloat(row.unit_chair_marks) : 0;
-                });
-                const adminTotal = adminScores.reduce((a, b) => a + b, 0);
-
-                const lowerBound = criteria.map(c => {
-                    const row = stats.find(s => s.criterion === c);
-                    return row ? parseFloat(row.range_lower) : 0;
-                });
-
-                const upperBound = criteria.map(c => {
-                    const row = stats.find(s => s.criterion === c);
-                    return row ? parseFloat(row.range_upper) : 0;
-                });
-
-                const lowerTotal = lowerBound.reduce((a, b) => a + b, 0).toFixed(2);
-                const upperTotal = upperBound.reduce((a, b) => a + b, 0).toFixed(2);
-
-                const rows = [
-                    { label: "Unit Chair Marks", scores: adminScores, total: adminTotal },
-                    { label: "5% Lower Range", scores: lowerBound, total: lowerTotal },
-                    { label: "5% Upper Range", scores: upperBound, total: upperTotal },
-                ];
-
-                for (const user of users) {
-                    const name = user.first_name
-                        ? `${user.first_name} ${user.last_name}`.trim()
-                        : `Marker ${user.user_id}`;
-
-                    const userScores = criteria.map(c => {
-                        const record = stats.find(
-                            s => s.criterion === c && s.marker_id === user.user_id
-                        );
-                        return record && record.marker_mark != null
-                            ? parseFloat(record.marker_mark)
-                            : "-";
-                    });
-
-                    const total =
-                        userScores.every(v => v === "-")
-                            ? "-"
-                            : userScores.reduce(
-                                (sum, v) => (v !== "-" ? sum + parseFloat(v) : sum), 0
-                            );
-
-                    rows.push({
-                        label: name,
-                        scores: userScores,
-                        total,
-                        user_id: user.user_id,
-                    });
-
-                }
-
-                moderationStats.push({
-                    id: mod.id,
-                    moderationName: mod.name,
-                    criteria,
-                    rows,
-                });
-
+                moderations.push(await computeModerationStats(supabase, mod, users));
             }
+
 
             res.json({
                 assignment_name: recentAssignment,
                 semester: recentSem,
                 year: recentYear,
-                moderations: moderationStats,
+                moderations,
             });
 
         } catch (err) {
@@ -535,8 +404,6 @@ export default function moderationRoutes(supabase) {
 
 
     });
-
-
 
 
 

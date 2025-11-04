@@ -60,6 +60,8 @@ async function loadFrontPage() {
             return;
         }
 
+        console.log("stats data:", statsData);
+
         requestAnimationFrame(() => {
             renderMarkerProgress(progressData);
             renderCurrentMarking(progressData);
