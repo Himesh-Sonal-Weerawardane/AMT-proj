@@ -361,6 +361,19 @@ export default function uploadRoutes(supabase) {
 
                 const moduleId = inserted?.[0]?.id;
                 console.log("[UploadModeration] Returning success response with moduleId:", moduleId);
+                await fetch("/api/email/send", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        to: "rkkulka@iclodu.com",
+                        subject: "Hello from the form",
+                        text: "Plain text body",
+                        html: "<b>HTML body</b>"
+                    })
+                });
+
                 return res.json({ success: true, moduleId });
             } catch (err) {
                 console.error("[UploadModeration] Unhandled error while publishing module:", err);
