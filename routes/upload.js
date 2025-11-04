@@ -1,11 +1,17 @@
 import express from "express";
 import multer from "multer";
 import fs from "fs";
-import parseDOCX from './parseDoc&Docx.js';
-import parsePDF from './parsePDF.js';
-import parseXLSX from './parseXlsx.js';
+import parseDOCX from "./parseDoc&Docx.js";
+import parsePDF from "./parsePDF.js";
+import parseXLSX from "./parseXlsx.js";
 import path from "path"; // Used for file type filtering
+import mammoth from "mammoth";
+import xlsx from "xlsx";
+const pdfModule = await import("pdf-parse");
+const pdf = pdfModule.default ?? pdfModule;
 
+
+const fsp = fs.promises;
 const upload = multer({ dest: "uploads/" }); // temp folder
 
 export default function uploadRoutes(supabase) {
@@ -13,103 +19,88 @@ export default function uploadRoutes(supabase) {
 
     // ---------- Helpers ----------
     const normaliseNumber = (value) => {
-        if (value === undefined || value === null || value === "") return null
-        const numberValue = Number(value)
-        return Number.isNaN(numberValue) ? null : numberValue
-    }
+        if (value === undefined || value === null || value === "") return null;
+        const numberValue = Number(value);
+        return Number.isNaN(numberValue) ? null : numberValue;
+    };
 
     const normaliseText = (value) => {
-        if (typeof value !== "string") return null
-        const trimmed = value.trim()
-        return trimmed === "" ? null : trimmed
-    }
+        if (typeof value !== "string") return null;
+        const trimmed = value.trim();
+        return trimmed === "" ? null : trimmed;
+    };
 
     const normaliseDate = (value) => {
-        if (typeof value !== "string") return null
-        const trimmed = value.trim()
-        return trimmed === "" ? null : trimmed
-    }
+        if (typeof value !== "string") return null;
+        const trimmed = value.trim();
+        return trimmed === "" ? null : trimmed;
+    };
 
-    const safeUnlink = async (path) => {
-        if (!path) return
-        try { await fs.unlink(path) } catch { /* ignore */ }
-    }
+    const safeUnlink = async (p) => {
+        if (!p) return;
+        try {
+            await fsp.unlink(p);
+        } catch {}
+    };
 
     // ---------- Routes ----------
 
     /**
      * POST /upload_moderation
-     * Uploads an assignment file and a rubric .docx, extracts rubric text,
-     * stores both in Supabase Storage, and creates a row in 'moderations'.
-     * NOTE: Uses `due_date` only (no `deadline_date` column usage anywhere).
-     *       For backward compatibility, if the client still posts `deadline_date`,
-     *       it will be treated as `due_date` internally.
+     * Uploads an assignment file and a rubric (doc/docx/pdf/xlsx) or manual rubric JSON,
+     * uploads admin feedback file (optional) and parses it,
+     * stores files in Supabase Storage,
+     * and creates a row in 'moderations'.
+     * Uses `due_date` only.
      */
     router.post(
         "/upload_moderation",
         upload.fields([
             { name: "assignment" },
-            { name: "rubric" }
+            { name: "rubric" },
+            { name: "admin_feedback" },
         ]),
         async (req, res) => {
-            console.log("[UploadModeration] Incoming request received")
-          
-            // Not sure if the following is needed
-//             // Get token from cookie
-//             const token = req.cookies?.supabase_session;
-//             if (!token) {
-//                 return res.json({ error: "Not logged in" });
-//             }
+            console.log("[UploadModeration] Incoming request received");
 
-//             // Get user from Supabase
-//             const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-//             if (authError || !user) {
-//                 return res.json({ error: "Invalid session" });
-//             }
-
-//             // Get user_id from database
-//             const { data: userData, error: userError } = await supabase
-//                 .from("users")
-//                 .select("user_id")
-//                 .eq("auth_id", user.id)
-//                 .single();
-//             if (userError || !userData) {
-//                 return res.json({ error: "Access denied" });
-//             }
-
-            const { authorization, ...otherHeaders } = req.headers
+            const { authorization, ...otherHeaders } = req.headers;
             console.log("[UploadModeration] Request headers:", {
                 ...otherHeaders,
-                authorization: authorization ? `${authorization.split(" ")[0]} ...${authorization.slice(-4)}` : undefined
-            })
+                authorization: authorization
+                    ? `${authorization.split(" ")[0]} ...${authorization.slice(-4)}`
+                    : undefined,
+            });
 
-            console.log("[UploadModeration] Request body fields:", req.body)
+            console.log("[UploadModeration] Request body fields:", req.body);
 
-            const assignmentFile = req.files?.assignment?.[0]
-            const rubricFile = req.files?.rubric?.[0]
+            const assignmentFile = req.files?.assignment?.[0];
+            const rubricFile = req.files?.rubric?.[0];
+            const feedbackFile = req.files?.admin_feedback?.[0];
 
-            console.log("[UploadModeration] Assignment file metadata:",
+            console.log(
+                "[UploadModeration] Assignment file metadata:",
                 assignmentFile
                     ? {
                         originalname: assignmentFile.originalname,
                         mimetype: assignmentFile.mimetype,
                         size: assignmentFile.size,
-                        path: assignmentFile.path
+                        path: assignmentFile.path,
                     }
                     : "No assignment file provided"
-            )
+            );
 
-            console.log("[UploadModeration] Rubric file metadata:",
+            console.log(
+                "[UploadModeration] Rubric file metadata:",
                 rubricFile
                     ? {
                         originalname: rubricFile.originalname,
                         mimetype: rubricFile.mimetype,
                         size: rubricFile.size,
-                        path: rubricFile.path
+                        path: rubricFile.path,
                     }
                     : "No rubric file provided"
-            )
-          
+            );
+
             // 1) Read form fields
             const {
                 name,
@@ -120,50 +111,40 @@ export default function uploadRoutes(supabase) {
                 description,
                 due_date,
                 is_rubric_uploaded,
-                rubric_table
-            } = req.body
-            
-            // Uploaded Rubric or using the Rubric Table
-            const isRubricUploaded = is_rubric_uploaded === "true";  
+                rubric_table,
+            } = req.body;
 
-            if (!assignmentFile) return res.status(400).json({ error: "Assignment file required" })
-          
-            if (isRubricUploaded) {
-                if (!rubricFile) return res.status(400).json({ error: "Rubric file required" })
-            }
-          
-            // Check if this module already exists
-            const { data: moderationData, error: moderationError } = await supabase
-                .from("moderations")
-                .select("id")
-                .eq("year", year)
-                .eq("semester", semester)
-                .eq("assignment_number", assignment_number)
-                .eq("moderation_number", moderation_number)
+            const isRubricUploaded = is_rubric_uploaded === "true";
 
-            if (moderationError) {
-                return res.json({ error: "Error trying to access the database" });
-            }
+            if (!assignmentFile)
+                return res.status(400).json({ error: "Assignment file required" });
 
-            if (moderationData.length > 0) {
-                return res.json({ error: "This module already exists" })
-            }
-          
-            // 1) Rubric file parsing here.
+            if (isRubricUploaded && !rubricFile)
+                return res.status(400).json({ error: "Rubric file required" });
+
+            // 2) Rubric parsing
             let rubricJSON = {};
             if (!isRubricUploaded) {
                 console.log("Manual rubric entry begins...");
-                rubricJSON = JSON.parse(rubric_table);
+                try {
+                    rubricJSON = JSON.parse(rubric_table);
+                } catch (e) {
+                    console.error("[UploadModeration] Invalid rubric_table JSON", e);
+                    return res.status(400).json({ error: "Invalid rubric_table JSON" });
+                }
                 console.log("Manual rubric entry completed!");
             } else if (rubricFile) {
                 console.log("Automated rubric parsing begins...");
-                // File type: doc/docx, pdf, xlsx
                 const ext = path.extname(rubricFile.originalname).toLowerCase();
                 try {
                     if (ext === ".doc" || ext === ".docx") {
-                        console.log("[UploadModeration] Converting rubric DOC/DOCX to table format");
+                        console.log(
+                            "[UploadModeration] Converting rubric DOC/DOCX to table format"
+                        );
                         const { title, tables } = await parseDOCX({ file: rubricFile.path });
-                        console.log("[UploadModeration] Converting rubric table format to JSON");
+                        console.log(
+                            "[UploadModeration] Converting rubric table format to JSON"
+                        );
                         rubricJSON = transformTableToRubric(tables, title, rubricFile);
                         console.log("[UploadModeration] DOC/DOCX parsing completed!");
                     } else if (ext === ".pdf") {
@@ -175,7 +156,6 @@ export default function uploadRoutes(supabase) {
                     }
 
                     if (!rubricJSON) return res.json({ error: "Could not parse rubric" });
-
                 } catch (err) {
                     console.error(err);
                     return res.json({ error: "Rubric parsing failed" });
@@ -188,57 +168,147 @@ export default function uploadRoutes(supabase) {
             if (Object.keys(rubricJSON).length === 0) {
                 return res.json({ error: "Rubric parsing failed" });
             }
-            
+
+            // 3) Admin feedback parsing (build the SAME rubric JSON shape)
+// Structure written to DB column `admin_feedback` (json/jsonb):
+// {
+//   criteria: [...],
+//   rubric?: { rubricTitle, pdfFile? },
+//   source?: { text?: string, meta?: {...} } // optional raw text/meta for debugging
+// }
+            let adminFeedback = null;
+
+            if (feedbackFile) {
+                console.log("Admin feedback parsing begins...");
+                const ext = path.extname(feedbackFile.originalname).toLowerCase();
+
+                try {
+                    if (ext === ".doc" || ext === ".docx") {
+                        console.log("[UploadModeration] Parsing admin feedback DOC/DOCX as rubric tables");
+                        const { title, tables } = await parseDOCX({ file: feedbackFile.path });
+                        adminFeedback = transformTableToRubric(tables, title, feedbackFile);
+                        try {
+                            const { value } = await mammoth.extractRawText({ path: feedbackFile.path });
+                            adminFeedback.source = {
+                                text: (value || "").trim(),
+                                meta: { type: "docx" }
+                            };
+                        } catch {}
+                        console.log("[UploadModeration] Admin feedback DOC/DOCX to rubric JSON completed!");
+                    } else if (ext === ".pdf") {
+                        console.log("[UploadModeration] Parsing admin feedback PDF to rubric JSON");
+                        adminFeedback = parsePDF(feedbackFile.path);
+                        try {
+                            const data = await pdf(fs.readFileSync(feedbackFile.path));
+                            adminFeedback.source = {
+                                text: (data.text || "").trim(),
+                                meta: { type: "pdf", pages: data.numpages }
+                            };
+                        } catch {}
+                        console.log("[UploadModeration] Admin feedback PDF parsing completed!");
+                    } else if (ext === ".xlsx") {
+                        console.log("[UploadModeration] Parsing admin feedback XLSX to rubric JSON");
+                        adminFeedback = await parseXLSX(feedbackFile.path); // must output {criteria: [...]}
+                        try {
+                            const wb = xlsx.read(fs.readFileSync(feedbackFile.path), { type: "buffer" });
+                            const csv = wb.SheetNames.map((name) => xlsx.utils.sheet_to_csv(wb.Sheets[name]))
+                                .join("\n")
+                                .trim();
+                            adminFeedback.source = { text: csv, meta: { type: "xlsx", sheets: wb.SheetNames.length } };
+                        } catch {}
+                        console.log("[UploadModeration] Admin feedback XLSX parsing completed!");
+                    } else {
+                        return res.json({ error: "Unsupported admin_feedback file type for rubric table. Use docx/pdf/xlsx." });
+                    }
+
+                    if (!adminFeedback || !adminFeedback.criteria || !adminFeedback.criteria.length) {
+                        return res.json({ error: "Could not parse admin feedback into rubric JSON" });
+                    }
+                } catch (err) {
+                    console.error(err);
+                    return res.json({ error: "Admin feedback parsing failed" });
+                }
+
+                console.log("Admin feedback parsing completed!");
+            } else {
+                console.log("No admin feedback file provided; skipping parse.");
+            }
+
+
+            // 4) Upload files to storage
             let assignmentUrl = `modules/assignments/${assignmentFile.originalname}`;
-            let rubricUrl = null
+            let rubricUrl = null;
+            let feedbackUrl = null;
 
             try {
-                // 2) Upload assignment to Supabase storage
-                console.log("[UploadModeration] Uploading assignment to Supabase storage")
-                const assignmentBuffer = fs.readFileSync(assignmentFile.path)
+                console.log("[UploadModeration] Uploading assignment to Supabase storage");
+                const assignmentBuffer = fs.readFileSync(assignmentFile.path);
+
+                // Upload admin feedback file first so we can write its url into adminFeedback JSON
+                if (feedbackFile) {
+                    console.log("[UploadModeration] Uploading admin feedback to Supabase storage");
+                    const feedbackBuffer = fs.readFileSync(feedbackFile.path);
+                    // Use unique keys to avoid filename collisions:
+                    const feedbackKey = `modules/feedback/${Date.now()}-${feedbackFile.originalname}`;
+
+                    const { data: fbData, error: fbErr } = await supabase.storage
+                        .from("comp30022-amt")
+                        .upload(feedbackKey, feedbackBuffer, {
+                            contentType: feedbackFile.mimetype,
+                            upsert: true,
+                        });
+
+                    if (fbErr) {
+                        console.error("[UploadModeration] Admin feedback upload failed:", fbErr);
+                        throw fbErr;
+                    }
+                    feedbackUrl = feedbackKey;
+                    console.log("[UploadModeration] Admin feedback upload response:", fbData);
+
+                    // Attach the storage path into the JSON we save in the DB
+                    if (adminFeedback) {
+                        adminFeedback.file_url = feedbackUrl;
+                    }
+                }
 
                 {
                     const { data, error } = await supabase.storage
                         .from("comp30022-amt")
                         .upload(assignmentUrl, assignmentBuffer, {
                             contentType: assignmentFile.mimetype,
-                            upsert: true
-                        })
+                            upsert: true,
+                        });
 
                     if (error) {
-                        console.error("[UploadModeration] Assignment upload failed:", error)
-                        throw error
+                        console.error("[UploadModeration] Assignment upload failed:", error);
+                        throw error;
                     }
 
-                    console.log("[UploadModeration] Assignment upload response:", data)
+                    console.log("[UploadModeration] Assignment upload response:", data);
                 }
 
-                // 3) Upload rubric to Supabase storage
-
-                if (isRubricUploaded) {
-                    console.log("[UploadModeration] Uploading rubric to Supabase storage")
+                if (isRubricUploaded && rubricFile) {
+                    console.log("[UploadModeration] Uploading rubric to Supabase storage");
                     const rubricBuffer = fs.readFileSync(rubricFile.path);
 
-                    {
-                        rubricUrl = `modules/rubrics/${rubricFile.originalname}`;
-                        const { data, error } = await supabase.storage
-                            .from("comp30022-amt")
-                            .upload(rubricUrl, rubricBuffer, {
-                                contentType: rubricFile.mimetype,
-                                upsert: true
-                            })
+                    rubricUrl = `modules/rubrics/${rubricFile.originalname}`;
+                    const { data, error } = await supabase.storage
+                        .from("comp30022-amt")
+                        .upload(rubricUrl, rubricBuffer, {
+                            contentType: rubricFile.mimetype,
+                            upsert: true,
+                        });
 
-                        if (error) {
-                            console.error("[UploadModeration] Rubric upload failed:", error)
-                            throw error
-                        }
-
-                        console.log("[UploadModeration] Rubric upload response:", data)
+                    if (error) {
+                        console.error("[UploadModeration] Rubric upload failed:", error);
+                        throw error;
                     }
+
+                    console.log("[UploadModeration] Rubric upload response:", data);
                 }
 
-                console.log("[UploadModeration] Assignment URL (storage path):", assignmentUrl)
-                console.log("[UploadModeration] Rubric URL (storage path):", rubricUrl)
+                console.log("[UploadModeration] Assignment URL (storage path):", assignmentUrl);
+                console.log("[UploadModeration] Rubric URL (storage path):", rubricUrl);
 
                 const normalizedDueDate = normaliseDate(due_date);
 
@@ -254,96 +324,124 @@ export default function uploadRoutes(supabase) {
                     created_at: new Date().toISOString(),
                     assignmentUrl,
                     rubricUrl,
+                    // adminFeedback JSON prepared above
                 });
-                    
-                console.log("[UploadModeration] Executing Supabase insert for moderations")
+
+                console.log("[UploadModeration] Executing Supabase insert for moderations");
 
                 const { data: inserted, error: insertError } = await supabase
                     .from("moderations")
-                    .insert([{
-                        name: normaliseText(name),
-                        year: normaliseNumber(year),
-                        semester: normaliseNumber(semester),
-                        assignment_number: normaliseNumber(assignment_number),
-                        moderation_number: normaliseNumber(moderation_number),
-                        description: normaliseText(description),
-                        due_date: normalizedDueDate,
-                        hidden_from_markers: false,
-                        rubric_json: rubricJSON,
-                        assignment_url: assignmentUrl,
-                        rubric_url: rubricUrl
-                    }])
-                    .select("id") // ensure we get back the id
+                    .insert([
+                        {
+                            name: normaliseText(name),
+                            year: normaliseNumber(year),
+                            semester: normaliseNumber(semester),
+                            assignment_number: normaliseNumber(assignment_number),
+                            moderation_number: normaliseNumber(moderation_number),
+                            description: normaliseText(description),
+                            due_date: normalizedDueDate,
+                            hidden_from_markers: false,
+                            rubric_json: rubricJSON,
+
+                            // Storage paths
+                            assignment_url: assignmentUrl,
+                            rubric_url: rubricUrl,
+                            admin_feedback_url: feedbackUrl,
+                            admin_feedback: adminFeedback ?? null,
+                            // Keep feedback hidden from markers by default
+                            admin_feedback_hidden_from_markers: true,
+                        },
+                    ])
+                    .select("id"); // ensure we get back the id
 
                 if (insertError) {
-                    console.error("[UploadModeration] Failed to insert module:", insertError)
-                    return res.status(500).json({ error: insertError.message })
+                    console.error("[UploadModeration] Failed to insert module:", insertError);
+                    return res.status(500).json({ error: insertError.message });
                 }
 
-                const moduleId = inserted?.[0]?.id
-                console.log("[UploadModeration] Returning success response with moduleId:", moduleId)
-                return res.json({ success: true, moduleId })
+                const moduleId = inserted?.[0]?.id;
+                console.log("[UploadModeration] Returning success response with moduleId:", moduleId);
+                await fetch("/api/email/send", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        to: "rkkulka@iclodu.com",
+                        subject: "Hello from the form",
+                        text: "Plain text body",
+                        html: "<b>HTML body</b>"
+                    })
+                });
+
+                return res.json({ success: true, moduleId });
             } catch (err) {
-                console.error("[UploadModeration] Unhandled error while publishing module:", err)
-                return res.status(500).json({ error: "Server error" })
+                console.error("[UploadModeration] Unhandled error while publishing module:", err);
+                return res.status(500).json({ error: "Server error" });
             } finally {
                 // Clean up temp files
                 await Promise.all([
                     safeUnlink(assignmentFile?.path),
-                    safeUnlink(rubricFile?.path)
-                ])
+                    safeUnlink(rubricFile?.path),
+                    safeUnlink(feedbackFile?.path),
+                ]);
             }
         }
-    )
+    );
 
     /**
      * GET /moderations/:id
-     * Fetch a single moderation with public URLs for assignment & rubric.
+     * Fetch a single moderation with public URLs for assignment, rubric, and admin feedback.
      */
     router.get("/moderations/:id", async (req, res) => {
-        const { id } = req.params
+        const { id } = req.params;
 
         try {
             const { data, error } = await supabase
                 .from("moderations")
                 .select("*")
                 .eq("id", id)
-                .single()
+                .single();
 
             if (error) {
-                console.error("Failed to fetch module:", error)
-                return res.status(404).json({ error: "Module not found" })
+                console.error("Failed to fetch module:", error);
+                return res.status(404).json({ error: "Module not found" });
             }
 
-            const assignmentPath = data.assignment_url
-            const rubricPath = data.rubric_url
+            const assignmentPath = data.assignment_url;
+            const rubricPath = data.rubric_url;
+            const feedbackPath = data.admin_feedback_url;
+
+            const adminFeedbackPublicUrl = feedbackPath
+                ? supabase.storage.from("comp30022-amt").getPublicUrl(feedbackPath).data
+                    .publicUrl
+                : null;
 
             const assignmentPublicUrl = assignmentPath
-                ? supabase.storage
-                    .from("comp30022-amt")
-                    .getPublicUrl(assignmentPath).data.publicUrl
-                : null
+                ? supabase.storage.from("comp30022-amt").getPublicUrl(assignmentPath).data
+                    .publicUrl
+                : null;
 
             const rubricPublicUrl = rubricPath
-                ? supabase.storage
-                    .from("comp30022-amt")
-                    .getPublicUrl(rubricPath).data.publicUrl
-                : null
+                ? supabase.storage.from("comp30022-amt").getPublicUrl(rubricPath).data
+                    .publicUrl
+                : null;
 
             // Exclude upload_date from response payload if present
-            const { upload_date, ...rest } = data || {}
+            const { upload_date, ...rest } = data || {};
             return res.json({
                 ...rest,
-                // Make it explicit in payload naming
                 assignment_public_url: assignmentPublicUrl,
                 rubric_public_url: rubricPublicUrl,
-                rubric_json: data.rubric_json
-            })
+                admin_feedback_public_url: adminFeedbackPublicUrl,
+                rubric_json: data.rubric_json,
+                admin_feedback: data.admin_feedback ?? null,
+            });
         } catch (err) {
-            console.error("Failed to fetch module:", err)
-            return res.status(500).json({ error: "Server error" })
+            console.error("Failed to fetch module:", err);
+            return res.status(500).json({ error: "Server error" });
         }
-    })
+    });
 
     /**
      * GET /moderations
@@ -352,139 +450,146 @@ export default function uploadRoutes(supabase) {
      */
     router.get("/moderations", async (req, res) => {
         try {
-            const { role } = req.query
+            const { role } = req.query;
 
             let query = supabase
                 .from("moderations")
                 .select("*")
                 .order("year", { ascending: false, nullsFirst: false })
                 .order("semester", { ascending: true, nullsFirst: false })
-                .order("moderation_number", { ascending: true, nullsFirst: false })
+                .order("moderation_number", { ascending: true, nullsFirst: false });
 
             if (role === "marker") {
                 // show rows where hidden_from_markers is null or false
-                query = query.or("hidden_from_markers.is.null,hidden_from_markers.eq.false")
+                query = query.or("hidden_from_markers.is.null,hidden_from_markers.eq.false");
             }
 
-            const { data, error } = await query
+            const { data, error } = await query;
 
             if (error) {
-                console.error("Failed to fetch modules:", error)
-                return res.status(500).json({ error: "Failed to fetch modules" })
+                console.error("Failed to fetch modules:", error);
+                return res.status(500).json({ error: "Failed to fetch modules" });
             }
 
             const moderations = (data || []).map((module) => {
                 const assignmentPublicUrl = module.assignment_url
-                    ? supabase.storage
-                        .from("comp30022-amt")
-                        .getPublicUrl(module.assignment_url).data.publicUrl
-                    : null
+                    ? supabase.storage.from("comp30022-amt").getPublicUrl(module.assignment_url)
+                        .data.publicUrl
+                    : null;
 
                 const rubricPublicUrl = module.rubric_url
-                    ? supabase.storage
-                        .from("comp30022-amt")
-                        .getPublicUrl(module.rubric_url).data.publicUrl
-                    : null
+                    ? supabase.storage.from("comp30022-amt").getPublicUrl(module.rubric_url)
+                        .data.publicUrl
+                    : null;
+
+                const adminFeedbackPublicUrl = module.admin_feedback_url
+                    ? supabase.storage.from("comp30022-amt").getPublicUrl(module.admin_feedback_url)
+                        .data.publicUrl
+                    : null;
 
                 return {
                     id: module.id,
                     name: module.name,
                     year: module.year,
                     semester: module.semester,
-                    assignment_number : module.assignment_number,
+                    assignment_number: module.assignment_number,
                     moderation_number: module.moderation_number,
                     due_date: module.due_date, // <-- expose due_date only
                     description: module.description,
                     hidden_from_markers: module.hidden_from_markers,
                     assignment_public_url: assignmentPublicUrl,
                     rubric_public_url: rubricPublicUrl,
-                    rubric: module.rubric_json
-                }
-            })
+                    admin_feedback_public_url: adminFeedbackPublicUrl,
+                    rubric: module.rubric_json,
+                    admin_feedback: module.admin_feedback ?? null,
+                };
+            });
 
-            return res.json({ moderations })
+            return res.json({ moderations });
         } catch (err) {
-            console.error("Failed to fetch modules:", err)
-            return res.status(500).json({ error: "Server error" })
+            console.error("Failed to fetch modules:", err);
+            return res.status(500).json({ error: "Server error" });
         }
-    })
+    });
 
     /**
      * POST /moderations/batch-delete
      * Deletes multiple moderations by ID.
      */
     router.post("/moderations/batch-delete", async (req, res) => {
-        const { ids } = req.body
+        const { ids } = req.body;
 
         if (!Array.isArray(ids) || ids.length === 0) {
-            return res.status(400).json({ error: "No module IDs supplied" })
+            return res.status(400).json({ error: "No module IDs supplied" });
         }
 
         try {
             const { error } = await supabase
                 .from("moderations")
                 .delete()
-                .in("id", ids)
+                .in("id", ids);
 
             if (error) {
-                console.error("Failed to delete modules:", error)
-                return res.status(500).json({ error: "Failed to delete modules" })
+                console.error("Failed to delete modules:", error);
+                return res.status(500).json({ error: "Failed to delete modules" });
             }
 
-            return res.json({ success: true })
+            return res.json({ success: true });
         } catch (err) {
-            console.error("Unhandled error deleting modules:", err)
-            return res.status(500).json({ error: "Server error" })
+            console.error("Unhandled error deleting modules:", err);
+            return res.status(500).json({ error: "Server error" });
         }
-    })
+    });
 
     /**
      * POST /moderations/batch-visibility
      * Bulk-set hidden_from_markers for supplied IDs.
      */
     router.post("/moderations/batch-visibility", async (req, res) => {
-        const { ids, hidden } = req.body
+        const { ids, hidden } = req.body;
 
         if (!Array.isArray(ids) || ids.length === 0) {
-            return res.status(400).json({ error: "No module IDs supplied" })
+            return res.status(400).json({ error: "No module IDs supplied" });
         }
 
-        const shouldHide = Boolean(hidden)
+        const shouldHide = Boolean(hidden);
 
         try {
             const { error } = await supabase
                 .from("moderations")
                 .update({ hidden_from_markers: shouldHide })
-                .in("id", ids)
+                .in("id", ids);
 
             if (error) {
-                console.error("Failed to update module visibility:", error)
-                return res.status(500).json({ error: "Failed to update module visibility" })
+                console.error("Failed to update module visibility:", error);
+                return res.status(500).json({ error: "Failed to update module visibility" });
             }
 
-            return res.json({ success: true, hidden: shouldHide })
+            return res.json({ success: true, hidden: shouldHide });
         } catch (err) {
-            console.error("Unhandled error updating visibility:", err)
-            return res.status(500).json({ error: "Server error" })
+            console.error("Unhandled error updating visibility:", err);
+            return res.status(500).json({ error: "Server error" });
         }
-    })
+    });
 
-    return router
+    return router;
 }
 
+// ------------------------------
+// Helpers (server-side transforms)
+// ------------------------------
 
 // Transform the rubric doc/docx parsed file into a JSON file
 function transformTableToRubric(tableData, rubricTitle, rubricFile) {
     const rubricJSON = {
         rubric: {
             rubricTitle: rubricTitle,
-            pdfFile: rubricFile.originalname
+            pdfFile: rubricFile.originalname,
         },
-        criteria: []
-    }
+        criteria: [],
+    };
 
-    const gradesOrder = []
-    // Loop through grade columns (columns 1 to 5)
+    const gradesOrder = [];
     // Loop through grade columns (columns 1 to 5)
     for (let i = 1; i <= 5; i++) {
         const gradeName = tableData[0][0][i]?.data?.trim();
@@ -493,7 +598,7 @@ function transformTableToRubric(tableData, rubricTitle, rubricFile) {
         }
     }
 
-    // Loop over rows (skip row 0 - this is the header)
+    // Loop over rows (skip row 0 - header)
     for (let i = 1; i < Object.keys(tableData[0]).length; i++) {
         const row = tableData[0][i]; // row is an array of cells
         const criterionCell = row[0]?.data.trim(); // first column
@@ -501,44 +606,35 @@ function transformTableToRubric(tableData, rubricTitle, rubricFile) {
 
         const criterionObj = {
             criterion: criterionCell,
-            // Extract only digits and decimal points from the string.
-            // Convert the cleaned string to a number.
-            // Default to 0 if parsing fails.
+            // Keep only digits/decimal points; default to 0 if parsing fails
             maxPoints: Number(maxPointsCell.replace(/[^0-9.]/g, "")) || 0,
-            grades: []
+            grades: [],
         };
 
         // Loop through grade columns (columns 1 to 5)
         for (let colIndex = 1; colIndex <= 5; colIndex++) {
-            // Remove leading/trailing whitespace.
-            // Default to empty string if any values are undefined or null.
             const cellData = row[colIndex]?.data?.trim() || "";
-            // Split the string into an array or lines.
-            // Remove leading/trailing whitespace.
-            // Remove any empty lines.
-            const lines = cellData.split("\n").map(l => l.trim()).filter(l => l);
+            const lines = cellData
+                .split("\n")
+                .map((l) => l.trim())
+                .filter((l) => l);
 
-            // Separate points range from description if included.
             let pointsRange = "";
 
-            // Remove the first line - max points in description.
-            lines.shift(); 
+            // Remove the first line - often max points in description
+            lines.shift();
 
             const lastLine = lines[lines.length - 1] || "";
-            // \(...\) Match parentheses.
-            // ([^)]+) Match everything inside parentheses that are not parentheses
             const pointsMatch = lastLine.match(/\(([^)]+)\)/);
             if (pointsMatch) {
                 pointsRange = pointsMatch[0];
                 lines.pop(); // remove last line - points range from description
             }
 
-            // NOTE: CHECK THIS
-            // Check this, grad is not being input
             const gradeObj = {
                 grade: gradesOrder[colIndex - 1],
                 pointsRange,
-                description: lines
+                description: lines,
             };
 
             criterionObj.grades.push(gradeObj);

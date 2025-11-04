@@ -39,6 +39,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 }
                 preview.hidden = true
                 placeholder.hidden = false
+                fileNameEl.textContent = ""
                 delete card.dataset.hasPreview
                 return
             }
@@ -96,7 +97,7 @@ window.addEventListener("DOMContentLoaded", () => {
         const moduleDeadline = document.getElementById("module-deadline").value
         const moduleDescription = document.getElementById("module-description").value
         const assignmentUpload = document.getElementById("assignment-upload").files[0]
-
+        const adminFeedback = document.getElementById("admin-feedback-upload")?.files?.[0];
         const now = new Date();
         const selectedDate = new Date(moduleDeadline);
         if (selectedDate <= now) {
@@ -176,6 +177,15 @@ window.addEventListener("DOMContentLoaded", () => {
                     type: assignmentUpload.type
                 });
                 formData.append("assignment", assignmentUpload);
+            }
+
+            if (adminFeedback) {
+                console.log("[PublishModule] Appending admin feedback to form data", {
+                    name: adminFeedback.name,
+                    size: adminFeedback.size,
+                    type: adminFeedback.type
+                });
+                formData.append("admin_feedback", adminFeedback);
             }
           
             // modeSelect is either "automatic" or "manual"
