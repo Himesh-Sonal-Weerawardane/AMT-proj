@@ -6,7 +6,7 @@ export default function userRoutes(supabase) {
   const router = express.Router();
 
   //Add a user
-  router.post("/add_user", async (req, res) => {
+  /*router.post("/add_user", async (req, res) => {
     try {
       console.log("attempt", req.body);
       const { first_name, last_name, email, role } = req.body;
@@ -54,7 +54,7 @@ export default function userRoutes(supabase) {
       console.error("Network or server error:", err);
       res.status(500).json({ err });
     }
-  });
+  }); */
 
   //https://dev.to/therealmrmumba/beginners-guide-to-handling-delete-requests-in-nodejs-with-express-28dh
 
@@ -101,5 +101,93 @@ export default function userRoutes(supabase) {
     }
   });
 
+  router.post("/invite_user", async (req, res) => {
+    try {
+      console.log("attempt", req.body);
+      const { email, role } = req.body;
+
+      if (!email || !role) {
+        return res
+          .status(400)
+          .json({ error: "Missing Field. All Fields Are Required" });
+      }
+
+      const roleLowerCase = role.toLowerCase();
+
+      const link =
+        `http://localhost:3000/account/account-registration.html?role=${roleLowerCase}`;
+
+      const {data, error} = await supabase.auth.admin.inviteUserByEmail(email, {
+        redirectTo: link,
+      });
+
+      if (error) {
+        console.error("be error", error);
+        return res.status(400).json({ error: error.message }); // User has wrong email/password
+      }
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Network or server error:", err);
+      res.status(500).json({ err });
+    }
+  });
+
+  router.post("/register_user", async (req, res) => {
+    try {
+      console.log("attempt", req.body);
+      const { firstName, lastName, email, password, role } = req.body;
+
+      if (!firstName || !lastName || !email || !password || !role) {
+        return res
+          .status(400)
+          .json({ error: "Missing Field. All Fields Are Required" });
+      }
+      const { data: registerData, error: registerError } =
+        await supabase.auth.signUp({
+          email,
+          password,
+        });
+
+      if (registerError) {
+        console.error("be error", registerError);
+        return res.status(400).json({ registerError: registerError.message });
+      }
+
+      const first_name = firstName;
+      const last_name = lastName;
+      const auth_id = registerData.user?.id || null;
+      console.log("registerdata", registerData)
+      if(!auth_id){
+        console.warn("no authid")
+      }
+      const user_role = role.toLowerCase();
+      const is_admin = user_role === "admin";
+      console.log("user created in auth", registerData);
+      const { data, error } = await supabase.from("users").insert(
+        [
+          {
+            first_name,
+            last_name,
+            email,
+            is_admin,
+            auth_id,
+            is_deleted: false,
+            current_marker: true,
+          },
+        ],
+        { returning: "representation" }
+      );
+      console.log("data registered", {data, error});
+      if (error) {
+        console.error("be error", error);
+        return res.status(400).json({ error: error.message }); // User has wrong email/password
+      }
+      console.log("added user");
+      return res.json({ success: true });
+    } catch (err) {
+      console.error("Network or server error:", err);
+      res.status(500).json({ err });
+    }
+  });
   return router;
 }
