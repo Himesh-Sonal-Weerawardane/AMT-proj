@@ -170,7 +170,7 @@ export default function uploadRoutes(supabase) {
                 return res.json({ error: "Rubric parsing failed" });
             }
 
-            // 3) Admin feedback parsing (build the SAME rubric JSON shape)
+
             let adminFeedback = null;
 
             if (feedbackFile) {
@@ -180,26 +180,20 @@ export default function uploadRoutes(supabase) {
                 try {
                     if (ext === ".doc" || ext === ".docx") {
                         console.log("[UploadModeration] Parsing admin feedback DOC/DOCX as rubric tables");
-                        const { title, tables } = await parseDOCX({ file: feedbackFile.path });
-                        adminFeedback = transformTableToRubric(tables, title, feedbackFile);
+
+
+                        const { title, tables } = await parseDOCX({
+                            file: feedbackFile.path });
+                        adminFeedback = transformAdminFeedbackDocxToCriteria(tables);
                         try {
                             const { value } = await mammoth.extractRawText({ path: feedbackFile.path });
-                            adminFeedback.source = {
-                                text: (value || "").trim(),
-                                meta: { type: "docx" }
-                            };
+
                         } catch {}
                         console.log("[UploadModeration] Admin feedback DOC/DOCX to rubric JSON completed!");
                     } else if (ext === ".pdf") {
                         console.log("[UploadModeration] Parsing admin feedback PDF to rubric JSON");
                         adminFeedback = parsePDF(feedbackFile.path);
-                        try {
-                            const data = await pdf(fs.readFileSync(feedbackFile.path));
-                            adminFeedback.source = {
-                                text: (data.text || "").trim(),
-                                meta: { type: "pdf", pages: data.numpages }
-                            };
-                        } catch {}
+
                         console.log("[UploadModeration] Admin feedback PDF parsing completed!");
                     } else if (ext === ".xlsx") {
                         console.log("[UploadModeration] Parsing admin feedback XLSX to rubric JSON");
@@ -258,9 +252,7 @@ export default function uploadRoutes(supabase) {
                     feedbackUrl = feedbackKey;
                     console.log("[UploadModeration] Admin feedback upload response:", fbData);
 
-                    if (adminFeedback) {
-                        adminFeedback.file_url = feedbackUrl;
-                    }
+
                 }
 
                 {
@@ -631,5 +623,54 @@ function transformTableToRubric(tableData, rubricTitle, rubricFile) {
         rubricJSON.criteria.push(criterionObj);
     }
 
+
     return rubricJSON;
 }
+function transformCriteriaTOJson(tableData, rubricTitle, rubricFile) {
+    const rubricJSON = {
+
+        criteria: [],
+    };
+
+    for (let i = 0; i < tableData.criteria.length; i++) {
+        const c = tableData.criteria[i];
+
+        const rowObj = {
+            feedback: c.feedback,
+            criterion: c.criterion,
+            adminScore: c.admin_score,
+        };
+       rubricJSON.criteria.push(rowObj);
+
+
+    }
+
+
+
+    return rubricJSON;
+}
+
+function transformAdminFeedbackDocxToCriteria(tables) {
+    const rubricJSON = { criteria: [] };
+
+    const table = tables[0];
+
+    for (let i = 1; i < Object.keys(table).length; i++) {
+        const row = table[i];
+
+        const criterion = row[0]?.data?.trim() || "";
+        const admin_score = row[1]?.data?.trim() || "";
+        const feedback = row[2]?.data?.trim() || "";
+
+        if (!criterion && !adminScore && !feedback) continue;
+
+        rubricJSON.criteria.push({
+            criterion,
+            admin_score,
+            feedback,
+        });
+    }
+
+    return rubricJSON;
+}
+
