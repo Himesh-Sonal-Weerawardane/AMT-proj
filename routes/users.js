@@ -1,163 +1,105 @@
-import express from "express";
-import { sendAccountRegistrationEmail } from "../mail.js";
+import express from "express"
 
 //https://stackoverflow.com/questions/9719570/generate-random-password-string-with-5-letters-and-3-numbers-in-javascript
 //https://supabase.com/docs/reference/javascript/
 export default function userRoutes(supabase) {
-  const router = express.Router();
-  //https://dev.to/therealmrmumba/beginners-guide-to-handling-delete-requests-in-nodejs-with-express-28dh
+    const router = express.Router()
 
-  //Deletes User
+    //Add a user 
+    router.post("/add_user", async (req, res) => {
+        try {
+            console.log("attempt", req.body)
+            const {first_name, last_name, email, role } = req.body
 
-  router.post("/delete_user/:userID", async (req, res) => {
-    const id = req.params.userID;
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .update({
-          auth_id: null,
-          email: null,
-          first_name: null,
-          last_name: null,
-          is_deleted: true,
-          current_marker: false,
-        })
-        .eq("auth_id", id);
-      if (error) {
-        console.error("be error", error);
-        return res.status(400).json({ error: error.message }); // User has wrong email/password
-      }
-      const {data: deleteData, error: deleteError } = await supabase.auth.admin.deleteUser(id)
-      if(deleteError){
-        console.error("authentication user delete error", deleteError)
-        return res.status(400).json({deleteError }); // User has wrong email/password
-      }
-      res.json({ success: true, message: "user deleted" });
-    } catch (err) {
-      console.error("Network or server error:", err);
-      res.status(500).json({ err });
-    }
-  });
+            if (!first_name || !last_name || !email ||!role){
+                return res.status(400).json({error: "Missing Field. All Fields Are Required"})
+            }
+            //const password = Math.random().toString(36).slice(-8)
 
-  router.get("/get_user", async (req, res) => {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("auth_id, first_name, last_name, email, is_admin")
-        .eq("is_deleted", false);
-      if (error) {
-        console.error("be error", error);
-        return res.status(400).json({ error: error.message }); // User has wrong email/password
-      }
-      res.json(data);
-    } catch (err) {
-      console.error("Network or server error:", err);
-      res.status(500).json({ err });
-    }
-  });
+            const {data: authData, error: authError} = await supabase.auth.admin.inviteUserByEmail(email)
+                /*{
+                    email,
+                    password
+                })*/
 
-  router.post("/invite_user", async (req, res) => {
-    try {
-      console.log("attempt", req.body);
-      const { email, role } = req.body;
+            if (authError) {
+                console.error("auth error", authError)
+                return res.status(400).json({ error: authError.message })  // User has wrong email/password
+            }
+            const auth_id = authData.user.id
+            const user_role = role.toLowerCase()
+            const is_admin = user_role === "admin"
+            console.log("user created in auth", authData)
+            const {data, error} = await supabase
+                .from("users")
+                .insert([{
+                    first_name,
+                    last_name,
+                    email,
+                    is_admin,
+                    auth_id,
+                    is_deleted: false, 
+                    current_marker: true
+                }], { returning: "representation" })
+            if (error) {
+                console.error("be error", error)
+                return res.status(400).json({ error: error.message })  // User has wrong email/password
+            }
+            console.log("added user")
+            res.json({ success: true})
 
-      if (!email || !role) {
-        return res
-          .status(400)
-          .json({ error: "Missing Field. All Fields Are Required" });
-      }
+        } catch (err) {
+            console.error("Network or server error:", err);
+            res.status(500).json({err});        }
 
-      const roleLowerCase = role.toLowerCase();
+    })
 
-      const link =
-        `http://localhost:3000/account/account-registration.html?role=${roleLowerCase}`;
-      await sendAccountRegistrationEmail(email, link)
+    //https://dev.to/therealmrmumba/beginners-guide-to-handling-delete-requests-in-nodejs-with-express-28dh
 
-      return res.json({success: true})
-    } catch (err) {
-      console.error("Network or server error:", err);
-      res.status(500).json({ err });
-    }
-  });
-
-
-  router.post("/register_user", async (req, res) => {
-    try {
-      console.log("attempt", req.body);
-      const { firstName, lastName, email, password, role } = req.body;
-
-      if (!firstName || !lastName || !email || !password || !role) {
-        return res
-          .status(400)
-          .json({ error: "Missing Field. All Fields Are Required" });
-      }
-      const {data: userData, error: userError} = await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true, 
-      })
-      if(userError){
-        console.error(userError)
-        return res.status(400).json({ userError }); // User has wrong email/password
-      }
-      const first_name = firstName;
-      const last_name = lastName;
-      const auth_id = userData.user.id;
-      if(!auth_id){
-        console.warn("no authid")
-      }
-      const user_role = role.toLowerCase();
-      const is_admin = user_role === "admin";
-
-      const { data, error } = await supabase.from("users").insert(
-        [
-          {
-            first_name,
-            last_name,
-            email,
-            is_admin,
-            auth_id,
-            is_deleted: false,
-            current_marker: true,
-          },
-        ],
-        { returning: "representation" }
-      );
-      console.log("data registered", {data, error});
-      if (error) {
-        console.error("be error", error);
-        return res.status(400).json({ error: error.message }); // User has wrong email/password
-      }
-      console.log("added user");
-      return res.json({ success: true });
-    } catch (err) {
-      console.error("Network or server error:", err);
-      res.status(500).json({ err });
-    }
-  });
-  
-  router.post("/forgot_psw", async (req, res) => {
+    //Deletes User
     
-      console.log("attempt", req.body);
-      const { email } = req.body;
+    router.post("/delete_user/:userID", async (req, res) => {
+        const id = req.params.userID
+        try{
+            const{data, error} = await supabase
+            .from("users")
+            .update({
+                email: null,
+                first_name: null,
+                last_name: null,                
+                is_deleted: true,
+                current_marker: false
 
-      if (!email) {
-        return res
-          .status(400)
-          .json({ error: "Missing Field. All Fields Are Required" });
-      }
+            })
+            .eq("auth_id",id)
+            if(error) {
+                console.error("be error", error)
+                return res.status(400).json({ error: error.message })  // User has wrong email/password   
+            }
+            res.json({ success: true, message: "user deleted"})
+        } catch (err){
+            console.error("Network or server error:", err);
+            res.status(500).json({err});         
+        }
+    })
 
-      const {data: userData, error: userError} = await supabase.auth.resetPasswordForEmail(email,{
-        redirectTo: "http://localhost:3000/login-pages/reset-psw.html",
-      })
+    router.get("/get_user", async (req, res) =>{
+        try{
+            const{data, error} = await supabase
+                .from("users")
+                .select("auth_id, first_name, last_name, email, is_admin")
+                .eq("is_deleted", false)
+            if(error){
+                console.error("be error", error)
+                return res.status(400).json({ error: error.message })  // User has wrong email/password
+            }
+            res.json(data)
+        } catch (err){
+            console.error("Network or server error:", err);
+            res.status(500).json({err}); 
+        }
+    }
+    )
 
-      if(userError){
-        console.error(userError);
-        res.status(500).json({ userError });
-      }
-
-      return res.json({success: true})
-
-  });
-  return router;
+    return router
 }
