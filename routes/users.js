@@ -5,58 +5,6 @@ import { sendAccountRegistrationEmail } from "../mail.js";
 //https://supabase.com/docs/reference/javascript/
 export default function userRoutes(supabase) {
   const router = express.Router();
-
-  //Add a user
-  /*router.post("/add_user", async (req, res) => {
-    try {
-      console.log("attempt", req.body);
-      const { first_name, last_name, email, role } = req.body;
-
-      if (!first_name || !last_name || !email || !role) {
-        return res
-          .status(400)
-          .json({ error: "Missing Field. All Fields Are Required" });
-      }
-      //const password = Math.random().toString(36).slice(-8)
-
-      await supabase.auth.admin.inviteUserByEmail(email, {
-        redirectTo: "http://localhost:3000/account/account-registration.html",
-      });
-
-      if (authError) {
-        console.error("auth error", authError);
-        return res.status(400).json({ error: authError.message }); // User has wrong email/password
-      }
-      const auth_id = authData.user.id;
-      const user_role = role.toLowerCase();
-      const is_admin = user_role === "admin";
-      console.log("user created in auth", authData);
-      const { data, error } = await supabase.from("users").insert(
-        [
-          {
-            first_name,
-            last_name,
-            email,
-            is_admin,
-            auth_id,
-            is_deleted: false,
-            current_marker: true,
-          },
-        ],
-        { returning: "representation" }
-      );
-      if (error) {
-        console.error("be error", error);
-        return res.status(400).json({ error: error.message }); // User has wrong email/password
-      }
-      console.log("added user");
-      res.json({ success: true });
-    } catch (err) {
-      console.error("Network or server error:", err);
-      res.status(500).json({ err });
-    }
-  }); */
-
   //https://dev.to/therealmrmumba/beginners-guide-to-handling-delete-requests-in-nodejs-with-express-28dh
 
   //Deletes User
@@ -126,15 +74,6 @@ export default function userRoutes(supabase) {
       await sendAccountRegistrationEmail(email, link)
 
       return res.json({success: true})
-      /*const {data, error} = await supabase.auth.admin.inviteUserByEmail(email, {
-        redirectTo: link,
-      });
-
-      if (error) {
-        console.error("be error", error);
-        return res.status(400).json({ error: error.message }); // User has wrong email/password
-      }
-      res.json({ success: true });*/
     } catch (err) {
       console.error("Network or server error:", err);
       res.status(500).json({ err });
@@ -161,21 +100,6 @@ export default function userRoutes(supabase) {
         console.error(userError)
         return res.status(400).json({ userError }); // User has wrong email/password
       }
-      /*const {data: passwordData, error: passwordError} = await supabase.auth.admin.updateUserById(
-        user.id,
-        { password }
-      )
-      /*const { data: registerData, error: registerError } =
-        await supabase.auth.signUp({
-          email,
-          password,
-        }); 
-
-      if (registerError) {
-        console.error("be error", registerError);
-        return res.status(400).json({ registerError: registerError.message });
-      }*/
-
       const first_name = firstName;
       const last_name = lastName;
       const auth_id = userData.user.id;
@@ -210,6 +134,30 @@ export default function userRoutes(supabase) {
       console.error("Network or server error:", err);
       res.status(500).json({ err });
     }
+  });
+  
+  router.post("/forgot_psw", async (req, res) => {
+    
+      console.log("attempt", req.body);
+      const { email } = req.body;
+
+      if (!email) {
+        return res
+          .status(400)
+          .json({ error: "Missing Field. All Fields Are Required" });
+      }
+
+      const {data: userData, error: userError} = await supabase.auth.resetPasswordForEmail(email,{
+        redirectTo: "http://localhost:3000/login-pages/reset-psw.html",
+      })
+
+      if(userError){
+        console.error(userError);
+        res.status(500).json({ userError });
+      }
+
+      return res.json({success: true})
+
   });
   return router;
 }
