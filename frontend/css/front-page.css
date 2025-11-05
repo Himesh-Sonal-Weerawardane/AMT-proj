@@ -1,5 +1,4 @@
 
-
 body {
     font-family: "Inter", sans-serif;
     height: 100%;
@@ -32,30 +31,6 @@ body {
     border-collapse: collapse;
     width: 1000px;
     height: 400px;
-}
-*/
-
-
-.table-header {
-    justify-content: center;
-    display: grid;
-    grid-template-columns: 0.2fr 0.2fr 0.2fr 0.2fr; /* same as moderation rows */
-    text-align: center;
-    color: #333;
-    padding: 10px 0;
-    width: 80%;
-    margin: auto 20px;
-}
-
-.moderation {
-    display: grid;
-    grid-template-columns: 0.2fr 0.2fr 0.2fr 0.2fr;
-    align-items: center;
-    text-align: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-    width: 80%;
-    margin: auto;
 }
 
 
@@ -106,7 +81,6 @@ body {
     margin-top: 10px;
 }
 
-/*
 .moderation {
     display: flex;
     flex-direction: column;
@@ -118,8 +92,6 @@ body {
     max-width: 100%;
     background-color: white;
 }
-*/
-
 
 
 .moderation-head {
@@ -364,14 +336,6 @@ canvas {
     background-color: white;
     margin: 0 auto;
 }
-
-
-
-
-
-
-
-
 
 
 
