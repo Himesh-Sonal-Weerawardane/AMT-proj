@@ -397,6 +397,11 @@ function renderOverallStats(overallStats) {
     const container = document.getElementById("overall-stats");
     if (!container) return;
 
+    if (!Array.isArray(overallStats) || overallStats.length === 0) {
+        container.innerHTML = `<p style="text-align: center">No markers have marked this moderation yet.</p>`;
+        return;
+    }
+
     let html = `
         <div class="stats-wrapper">
             <div class="stats-container">
