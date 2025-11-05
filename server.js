@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 dotenv.config();
 import express from "express";
 import path from "path";
+import cors from "cors";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 import cookieParser from "cookie-parser";
@@ -46,6 +47,7 @@ const transporter = nodemailer.createTransport({
 app.use(express.json())
 // Parses form submissions
 app.use(express.urlencoded({ extended: true }))
+app.use(cors())
 app.use(cookieParser());
 
 // #################################
