@@ -5,13 +5,15 @@ import { sendAccountRegistrationEmail } from "../mail.js";
 //https://supabase.com/docs/reference/javascript/
 export default function userRoutes(supabase) {
   const router = express.Router();
-  //https://dev.to/therealmrmumba/beginners-guide-to-handling-delete-requests-in-nodejs-with-express-28dh
 
+  //https://dev.to/therealmrmumba/beginners-guide-to-handling-delete-requests-in-nodejs-with-express-28dh
   //Deletes User
 
   router.post("/delete_user/:userID", async (req, res) => {
     const id = req.params.userID;
     try {
+      console.log("delete user with auth_id", id)
+      
       const { data, error } = await supabase
         .from("users")
         .update({
@@ -28,10 +30,12 @@ export default function userRoutes(supabase) {
         return res.status(400).json({ error: error.message }); // User has wrong email/password
       }
       const {data: deleteData, error: deleteError } = await supabase.auth.admin.deleteUser(id)
+
       if(deleteError){
-        console.error("authentication user delete error", deleteError)
-        return res.status(400).json({deleteError }); // User has wrong email/password
+        console.error("error with deleting auth", deleteError)
+        return res.status(400).json({deleteError})
       }
+
       res.json({ success: true, message: "user deleted" });
     } catch (err) {
       console.error("Network or server error:", err);

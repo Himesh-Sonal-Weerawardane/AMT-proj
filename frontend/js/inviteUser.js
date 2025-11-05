@@ -2,8 +2,6 @@ const inviteUser = document.getElementById("invite-submit");
 inviteUser.addEventListener("click", async (e) => {
   e.preventDefault();
 
-  /*const first_name = document.getElementById("invite-first-name").value.trim();
-  const last_name = document.getElementById("invite-last-name").value.trim();*/
   const role = document.getElementById("invite-role").value;
   const email = document
     .getElementById("invite-email")
@@ -15,7 +13,6 @@ inviteUser.addEventListener("click", async (e) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, role }),
-      //body: JSON.stringify({ first_name, last_name, email, role }),
     });
     const data = await res.json();
     if (!res.ok) {
