@@ -93,6 +93,12 @@ export default function statisticsRoutes(supabase) {
         const markerRows = rows.filter((r) => r.user_id);
         if (markerRows.length === 0) return [];
 
+        const noMarks = markerRows.every((r) =>
+            r.scores.every((s) => s === "-" || s === null || s === undefined)
+        );
+
+        if (noMarks) return [];
+
         const overallStats = [];
 
         criteria.forEach((criterion, index) => {
