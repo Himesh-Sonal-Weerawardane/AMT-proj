@@ -11,7 +11,6 @@ registration.addEventListener("submit", async (e) => {
   const password = document.getElementById("password").value;
 
   try {
-    //const {data: passwordData, error: passwordError} = await supabase.auth.updateUser( { password})
     const res = await fetch("/api/register_user", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
