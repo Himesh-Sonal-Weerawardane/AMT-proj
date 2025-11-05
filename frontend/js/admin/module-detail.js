@@ -1,4 +1,3 @@
-
 const formatDate = (isoString) => {
     if (!isoString) return "";
     try {
@@ -9,7 +8,6 @@ const formatDate = (isoString) => {
             day: "numeric",
         });
     } catch (err) {
-        console.error("Failed to format date", err);
         return isoString;
     }
 };
@@ -33,11 +31,6 @@ const showStatus = (message, isError = false) => {
     }
 };
 
-// ---------- Rubric table (Handsontable) ----------
-/**
- * We use array-of-arrays data to allow fully dynamic rows/columns.
- * `rubricHeaders` holds the column headers and is kept in sync when inserting/removing columns.
- */
 const DEFAULT_HEADERS = [
     "Criteria",
     "High Distinction",
@@ -48,7 +41,6 @@ const DEFAULT_HEADERS = [
     "Criteria Score",
 ];
 
-// For mapping JSON -> columns in a predictable order
 const GRADE_ORDER = [
     "High Distinction",
     "Distinction",
@@ -60,9 +52,6 @@ const GRADE_ORDER = [
 let rubricHeaders = [...DEFAULT_HEADERS];
 let rubricTable = null;
 
-/**
- * Create the Handsontable instance if needed.
- */
 function ensureRubricTable() {
     if (rubricTable) return rubricTable;
 
@@ -71,7 +60,7 @@ function ensureRubricTable() {
 
     rubricTable = new Handsontable(container, {
         themeName: "ht-theme-main",
-        data: [new Array(rubricHeaders.length).fill("")], // one empty row
+        data: [new Array(rubricHeaders.length).fill("")],
         colHeaders: rubricHeaders,
         rowHeaders: true,
         navigableHeaders: true,
@@ -88,7 +77,6 @@ function ensureRubricTable() {
         licenseKey: "non-commercial-and-evaluation",
         enterBeginsEditing: true,
         readOnly: false,
-        // Rich context menu including row/col ops + undo/redo
         contextMenu: [
             "row_above",
             "row_below",
@@ -112,11 +100,6 @@ function ensureRubricTable() {
     return rubricTable;
 }
 
-/**
- * Update table headers + data together.
- * @param {string[]} headers
- * @param {Array<Array<any>>} rows
- */
 function setRubricData(headers, rows) {
     rubricHeaders = headers && headers.length ? [...headers] : [...DEFAULT_HEADERS];
 
@@ -127,25 +110,7 @@ function setRubricData(headers, rows) {
     rubricTable.loadData(rows && rows.length ? rows : [new Array(rubricHeaders.length).fill("")]);
 }
 
-/**
- * Build headers + rows (2D array) from rubric JSON.
- * Expected JSON shape (example):
- * {
- *   criteria: [
- *     {
- *       criterion: "Artefacts – Requirements",
- *       maxPoints: 10,
- *       grades: [
- *         { grade: "High Distinction", description: ["...","..."], pointsRange: "9–10" },
- *         ...
- *       ]
- *     },
- *     ...
- *   ]
- * }
- */
 function buildRubricFromJSON(rubricJSON) {
-    // Start from the standard columns; you can make this dynamic if your JSON carries extra grade columns.
     const headers = [...DEFAULT_HEADERS];
 
     if (!rubricJSON?.criteria?.length) {
@@ -158,10 +123,8 @@ function buildRubricFromJSON(rubricJSON) {
     const rows = rubricJSON.criteria.map((c) => {
         const row = new Array(headers.length).fill("");
 
-        // 0: Criteria
         row[0] = c.criterion || "";
 
-        // 1..5: Grade descriptions in fixed order
         GRADE_ORDER.forEach((gradeName, idx) => {
             const g = (c.grades || []).find((gr) => gr.grade === gradeName);
             if (g) {
@@ -172,7 +135,6 @@ function buildRubricFromJSON(rubricJSON) {
             }
         });
 
-        // last: Criteria Score
         const scoreColIndex = headers.length - 1;
         row[scoreColIndex] = c.maxPoints ? `/ ${c.maxPoints}` : "";
 
@@ -182,10 +144,6 @@ function buildRubricFromJSON(rubricJSON) {
     return { headers, rows };
 }
 
-/**
- * Attach toolbar button handlers for add/remove row/column.
- * Expects buttons with IDs: add-row, remove-row, add-col, remove-col
- */
 function wireRubricToolbar() {
     const $ = (id) => document.getElementById(id);
     const hot = ensureRubricTable();
@@ -193,14 +151,12 @@ function wireRubricToolbar() {
 
     const getSel = () => hot.getSelectedLast();
 
-    // Insert Row
     $("add-row")?.addEventListener("click", () => {
         const sel = getSel();
         const insertAt = sel ? Math.max(sel[0], sel[2]) + 1 : hot.countRows();
         hot.alter("insert_row", insertAt, 1);
     });
 
-    // Remove Row (selected range or last row)
     $("remove-row")?.addEventListener("click", () => {
         if (!hot.countRows()) return;
         const sel = getSel();
@@ -213,19 +169,14 @@ function wireRubricToolbar() {
         hot.alter("remove_row", rStart, rAmount);
     });
 
-    // Insert Column
     $("add-col")?.addEventListener("click", () => {
         const sel = getSel();
-        // Insert to the right of the selection (or at the end)
         const insertAt = sel ? Math.max(sel[1], sel[3]) + 1 : hot.countCols();
         hot.alter("insert_col", insertAt, 1);
-
-        // Maintain headers array
         rubricHeaders.splice(insertAt, 0, `Column ${insertAt + 1}`);
         hot.updateSettings({ colHeaders: rubricHeaders });
     });
 
-    // Remove Column (selected range or last column)
     $("remove-col")?.addEventListener("click", () => {
         if (!hot.countCols()) return;
         const sel = getSel();
@@ -243,7 +194,27 @@ function wireRubricToolbar() {
     });
 }
 
-// ---------- Page bootstrapping ----------
+function populateAdminTable(adminJSON) {
+    if (!adminJSON.criteria?.length) {
+        return [{}];
+    }
+
+    const rows = [];
+    const len = adminJSON.feedback.length;
+
+    for (let i = 0; i < len; i++) {
+        const c = adminJSON.feedback[i];
+        const row = {
+            feedback: c.feedback,
+            criterion: c.criterion || "",
+            admin_score: c.admin_score || "",
+        };
+        rows.push(row);
+    }
+
+    return rows;
+}
+
 const OFFICE_VIEWER_EXTENSIONS = new Set([
     "doc",
     "docx",
@@ -304,30 +275,29 @@ function applyDocumentPreview(objectEl, url, options = {}) {
     return { supported: true };
 }
 
+let adminTable = null;
+
 window.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
     const moduleId = params.get("id");
 
     const contentEl = document.getElementById("module-content");
-    const rubricList = document.getElementById("rubric-list"); // (Left intact; you may fill this elsewhere)
+    const rubricList = document.getElementById("rubric-list");
     const rubricEmpty = document.getElementById("rubric-empty");
     const assignmentPreview = document.getElementById("assignment-preview");
     const assignmentDownload = document.getElementById("assignment-download");
     const rubricDownload = document.getElementById("rubric-download");
     const adminFeedbackCard = document.getElementById("admin-feedback-card");
-    const adminFeedbackPreview = document.getElementById("admin-feedback-preview");
-    const adminFeedbackDownload = document.getElementById("admin-feedback-download");
     const adminFeedbackMessage = document.getElementById("admin-feedback-message");
+    const adminGridEl = document.getElementById("adminHandsontable-grid");
 
     if (!moduleId) {
         showStatus("Module ID missing from the URL.", true);
         return;
     }
 
-    // Create the table immediately so toolbar works even before data loads
     ensureRubricTable();
     wireRubricToolbar();
-
     showStatus("Loading module details…");
 
     const headers = {};
@@ -379,26 +349,64 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
 
         adminFeedbackCard.hidden = false;
-        adminFeedbackDownload.hidden = true;
-        adminFeedbackPreview.hidden = true;
-        adminFeedbackPreview.removeAttribute("data");
         adminFeedbackMessage.hidden = true;
 
-        if (data.admin_feedback_public_url) {
-            adminFeedbackDownload.href = data.admin_feedback_public_url;
-            adminFeedbackDownload.hidden = false;
-            const adminFeedbackPreviewState = applyDocumentPreview(adminFeedbackPreview, data.admin_feedback_public_url);
-            if (!adminFeedbackPreviewState.supported) {
-                adminFeedbackMessage.textContent = "Preview is only available for PDF, Word, and Excel files. Use the download link above to view the admin feedback document.";
+        if (adminGridEl) {
+            adminTable = new Handsontable(adminGridEl, {
+                themeName: 'ht-theme-main',
+                columns: [
+                    { data: 'criterion', title: 'Criterion', width: 200 },
+                    { data: 'feedback', title: 'Feedback', width: 400 },
+                    { data: 'admin_score', title: 'Admin Score', type: 'text', width: 120 }
+                ],
+                data: [{ criterion: "", feedback: "", admin_score: null }],
+                height: '100%',
+                width: '100%',
+                stretchH: 'all',
+                rowHeaders: true,
+                navigableHeaders: true,
+                tabNavigation: true,
+                manualColumnResize: true,
+                selectionMode: 'range',
+                headerClassName: "htLeft",
+                licenseKey: "non-commercial-and-evaluation",
+                manualRowMove: true,
+                contextMenu: true
+            });
+
+            let adminJSON = data.admin_feedback;
+            if (typeof adminJSON === "string") {
+                try {
+                    adminJSON = JSON.parse(adminJSON);
+                } catch {
+                    adminJSON = null;
+                }
+            }
+
+            const list = (adminJSON && Array.isArray(adminJSON.criteria)) ? adminJSON.criteria : [];
+            const adminRows = list.map((c) => ({
+                criterion: c.criterion || "",
+                feedback: c.feedback || "",
+                admin_score: c.admin_score || ""
+            }));
+
+            adminTable.loadData(adminRows.length ? adminRows : [{ criterion: "", feedback: "", admin_score: null }]);
+
+            const hasRealData = adminRows.some(r =>
+                (r.criterion && r.criterion.trim() !== "") ||
+                (r.feedback && r.feedback.trim() !== "") ||
+                (typeof r.admin_score === "number")
+            );
+
+            if (!hasRealData) {
+                adminFeedbackMessage.textContent = "No admin feedback has been entered yet.";
                 adminFeedbackMessage.hidden = false;
             }
         } else {
-            adminFeedbackMessage.textContent = "No admin feedback file has been uploaded for this module.";
+            adminFeedbackMessage.textContent = "Admin feedback table failed to initialise.";
             adminFeedbackMessage.hidden = false;
         }
 
-        // Build table data from JSON and load into Handsontable
-        console.log(data.rubric_json);
         const { headers: builtHeaders, rows } = buildRubricFromJSON(data.rubric_json);
         setRubricData(builtHeaders, rows);
 
@@ -417,8 +425,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         }, 2500);
 
         contentEl.hidden = false;
-    } catch (err) {
-        console.error("Failed to load module details", err);
+    } catch {
         showStatus("An unexpected error occurred while loading the module.", true);
     }
 });
