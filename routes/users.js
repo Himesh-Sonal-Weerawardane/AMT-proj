@@ -105,6 +105,101 @@ export default function userRoutes(supabase) {
     } catch (err) {
       console.error("Network or server error:", err);
       res.status(500).json({ err });
+    const router = express.Router()
+
+    //Add a user 
+    router.post("/add_user", async (req, res) => {
+        try {
+            console.log("attempt", req.body)
+            const {first_name, last_name, email, role } = req.body
+
+            if (!first_name || !last_name || !email ||!role){
+                return res.status(400).json({error: "Missing Field. All Fields Are Required"})
+            }
+            //const password = Math.random().toString(36).slice(-8)
+
+            const {data: authData, error: authError} = await supabase.auth.admin.inviteUserByEmail(email)
+                /*{
+                    email,
+                    password
+                })*/
+
+            if (authError) {
+                console.error("auth error", authError)
+                return res.status(400).json({ error: authError.message })  // User has wrong email/password
+            }
+            const auth_id = authData.user.id
+            const user_role = role.toLowerCase()
+            const is_admin = user_role === "admin"
+            console.log("user created in auth", authData)
+            const {data, error} = await supabase
+                .from("users")
+                .insert([{
+                    first_name,
+                    last_name,
+                    email,
+                    is_admin,
+                    auth_id,
+                    is_deleted: false, 
+                    current_marker: true
+                }], { returning: "representation" })
+            if (error) {
+                console.error("be error", error)
+                return res.status(400).json({ error: error.message })  // User has wrong email/password
+            }
+            console.log("added user")
+            res.json({ success: true})
+
+        } catch (err) {
+            console.error("Network or server error:", err);
+            res.status(500).json({err});        }
+
+    })
+
+    //https://dev.to/therealmrmumba/beginners-guide-to-handling-delete-requests-in-nodejs-with-express-28dh
+
+    //Deletes User
+    
+    router.post("/delete_user/:userID", async (req, res) => {
+        const id = req.params.userID
+        try{
+            const{data, error} = await supabase
+            .from("users")
+            .update({
+                email: null,
+                first_name: null,
+                last_name: null,                
+                is_deleted: true,
+                current_marker: false
+
+            })
+            .eq("auth_id",id)
+            if(error) {
+                console.error("be error", error)
+                return res.status(400).json({ error: error.message })  // User has wrong email/password   
+            }
+            res.json({ success: true, message: "user deleted"})
+        } catch (err){
+            console.error("Network or server error:", err);
+            res.status(500).json({err});         
+        }
+    })
+
+    router.get("/get_user", async (req, res) =>{
+        try{
+            const{data, error} = await supabase
+                .from("users")
+                .select("user_id, auth_id, first_name, last_name, email, is_admin")
+                .eq("is_deleted", false)
+            if(error){
+                console.error("be error", error)
+                return res.status(400).json({ error: error.message })  // User has wrong email/password
+            }
+            res.json(data)
+        } catch (err){
+            console.error("Network or server error:", err);
+            res.status(500).json({err}); 
+        }
     }
   });
 
