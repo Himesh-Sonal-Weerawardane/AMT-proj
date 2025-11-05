@@ -7,9 +7,12 @@ export async function sendModuleCreationEmail(
     moderationDate
 ) {
     try {
+        const toAddress = recipient.email;
+        console.log('[Email debug] recipient param:', recipient);
         const info = await transporter.sendMail({
+
             from: `"My App" <${process.env.FROM_EMAIL}>`,
-            to: recipient,
+            to: toAddress,
             subject: 'New Module Created Successfully!',
             text: `A new module, "${moderationTitle}", has been published. It covers ${moderationDescription} and is due on ${moderationDate}. Please complete it by then.`,
             html: `
