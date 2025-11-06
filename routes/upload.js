@@ -9,6 +9,7 @@ import mammoth from "mammoth";
 import xlsx from "xlsx";
 const pdfModule = await import("pdf-parse");
 const pdf = pdfModule.default ?? pdfModule;
+import {sendModuleCreationEmail} from "../services/emailService.js";
 
 
 const fsp = fs.promises;
@@ -169,13 +170,7 @@ export default function uploadRoutes(supabase) {
                 return res.json({ error: "Rubric parsing failed" });
             }
 
-            // 3) Admin feedback parsing (build the SAME rubric JSON shape)
-// Structure written to DB column `admin_feedback` (json/jsonb):
-// {
-//   criteria: [...],
-//   rubric?: { rubricTitle, pdfFile? },
-//   source?: { text?: string, meta?: {...} } // optional raw text/meta for debugging
-// }
+
             let adminFeedback = null;
 
             if (feedbackFile) {
@@ -185,26 +180,20 @@ export default function uploadRoutes(supabase) {
                 try {
                     if (ext === ".doc" || ext === ".docx") {
                         console.log("[UploadModeration] Parsing admin feedback DOC/DOCX as rubric tables");
-                        const { title, tables } = await parseDOCX({ file: feedbackFile.path });
-                        adminFeedback = transformTableToRubric(tables, title, feedbackFile);
+
+
+                        const { title, tables } = await parseDOCX({
+                            file: feedbackFile.path });
+                        adminFeedback = transformAdminFeedbackDocxToCriteria(tables);
                         try {
                             const { value } = await mammoth.extractRawText({ path: feedbackFile.path });
-                            adminFeedback.source = {
-                                text: (value || "").trim(),
-                                meta: { type: "docx" }
-                            };
+
                         } catch {}
                         console.log("[UploadModeration] Admin feedback DOC/DOCX to rubric JSON completed!");
                     } else if (ext === ".pdf") {
                         console.log("[UploadModeration] Parsing admin feedback PDF to rubric JSON");
                         adminFeedback = parsePDF(feedbackFile.path);
-                        try {
-                            const data = await pdf(fs.readFileSync(feedbackFile.path));
-                            adminFeedback.source = {
-                                text: (data.text || "").trim(),
-                                meta: { type: "pdf", pages: data.numpages }
-                            };
-                        } catch {}
+
                         console.log("[UploadModeration] Admin feedback PDF parsing completed!");
                     } else if (ext === ".xlsx") {
                         console.log("[UploadModeration] Parsing admin feedback XLSX to rubric JSON");
@@ -244,11 +233,9 @@ export default function uploadRoutes(supabase) {
                 console.log("[UploadModeration] Uploading assignment to Supabase storage");
                 const assignmentBuffer = fs.readFileSync(assignmentFile.path);
 
-                // Upload admin feedback file first so we can write its url into adminFeedback JSON
                 if (feedbackFile) {
                     console.log("[UploadModeration] Uploading admin feedback to Supabase storage");
                     const feedbackBuffer = fs.readFileSync(feedbackFile.path);
-                    // Use unique keys to avoid filename collisions:
                     const feedbackKey = `modules/feedback/${Date.now()}-${feedbackFile.originalname}`;
 
                     const { data: fbData, error: fbErr } = await supabase.storage
@@ -265,10 +252,7 @@ export default function uploadRoutes(supabase) {
                     feedbackUrl = feedbackKey;
                     console.log("[UploadModeration] Admin feedback upload response:", fbData);
 
-                    // Attach the storage path into the JSON we save in the DB
-                    if (adminFeedback) {
-                        adminFeedback.file_url = feedbackUrl;
-                    }
+
                 }
 
                 {
@@ -324,7 +308,6 @@ export default function uploadRoutes(supabase) {
                     created_at: new Date().toISOString(),
                     assignmentUrl,
                     rubricUrl,
-                    // adminFeedback JSON prepared above
                 });
 
                 console.log("[UploadModeration] Executing Supabase insert for moderations");
@@ -342,17 +325,14 @@ export default function uploadRoutes(supabase) {
                             due_date: normalizedDueDate,
                             hidden_from_markers: false,
                             rubric_json: rubricJSON,
-
-                            // Storage paths
                             assignment_url: assignmentUrl,
                             rubric_url: rubricUrl,
                             admin_feedback_url: feedbackUrl,
                             admin_feedback: adminFeedback ?? null,
-                            // Keep feedback hidden from markers by default
                             admin_feedback_hidden_from_markers: true,
                         },
                     ])
-                    .select("id"); // ensure we get back the id
+                    .select("id");
 
                 if (insertError) {
                     console.error("[UploadModeration] Failed to insert module:", insertError);
@@ -360,21 +340,24 @@ export default function uploadRoutes(supabase) {
                 }
 
                 const moduleId = inserted?.[0]?.id;
-                console.log("[UploadModeration] Returning success response with moduleId:", moduleId);
-                await fetch("/api/email/send", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        to: "rkkulka@iclodu.com",
-                        subject: "Hello from the form",
-                        text: "Plain text body",
-                        html: "<b>HTML body</b>"
-                    })
-                });
+                console.log("[UploadModeration] Module created successfully with ID:", moduleId);
+                try {
+                    console.log("[UploadModeration] Sending module creation email...");
+                    const { data: moderatorsEmails} = await supabase
+                        .from("users")
+                        .select("email")
+                    for (const moderator of moderatorsEmails) {
+                        await sendModuleCreationEmail(moderator,name,description,normalizedDueDate);
+                    }
+
+
+                    console.log("[UploadModeration] Module creation email sent successfully.");
+                } catch (emailError) {
+                    console.error("[UploadModeration] Failed to send module creation email:", emailError);
+                }
 
                 return res.json({ success: true, moduleId });
+
             } catch (err) {
                 console.error("[UploadModeration] Unhandled error while publishing module:", err);
                 return res.status(500).json({ error: "Server error" });
@@ -427,7 +410,6 @@ export default function uploadRoutes(supabase) {
                     .publicUrl
                 : null;
 
-            // Exclude upload_date from response payload if present
             const { upload_date, ...rest } = data || {};
             return res.json({
                 ...rest,
@@ -460,7 +442,6 @@ export default function uploadRoutes(supabase) {
                 .order("moderation_number", { ascending: true, nullsFirst: false });
 
             if (role === "marker") {
-                // show rows where hidden_from_markers is null or false
                 query = query.or("hidden_from_markers.is.null,hidden_from_markers.eq.false");
             }
 
@@ -494,7 +475,7 @@ export default function uploadRoutes(supabase) {
                     semester: module.semester,
                     assignment_number: module.assignment_number,
                     moderation_number: module.moderation_number,
-                    due_date: module.due_date, // <-- expose due_date only
+                    due_date: module.due_date,
                     description: module.description,
                     hidden_from_markers: module.hidden_from_markers,
                     assignment_public_url: assignmentPublicUrl,
@@ -621,14 +602,13 @@ function transformTableToRubric(tableData, rubricTitle, rubricFile) {
 
             let pointsRange = "";
 
-            // Remove the first line - often max points in description
             lines.shift();
 
             const lastLine = lines[lines.length - 1] || "";
             const pointsMatch = lastLine.match(/\(([^)]+)\)/);
             if (pointsMatch) {
                 pointsRange = pointsMatch[0];
-                lines.pop(); // remove last line - points range from description
+                lines.pop();
             }
 
             const gradeObj = {
@@ -643,5 +623,54 @@ function transformTableToRubric(tableData, rubricTitle, rubricFile) {
         rubricJSON.criteria.push(criterionObj);
     }
 
+
     return rubricJSON;
 }
+function transformCriteriaTOJson(tableData, rubricTitle, rubricFile) {
+    const rubricJSON = {
+
+        criteria: [],
+    };
+
+    for (let i = 0; i < tableData.criteria.length; i++) {
+        const c = tableData.criteria[i];
+
+        const rowObj = {
+            feedback: c.feedback,
+            criterion: c.criterion,
+            adminScore: c.admin_score,
+        };
+       rubricJSON.criteria.push(rowObj);
+
+
+    }
+
+
+
+    return rubricJSON;
+}
+
+function transformAdminFeedbackDocxToCriteria(tables) {
+    const rubricJSON = { criteria: [] };
+
+    const table = tables[0];
+
+    for (let i = 1; i < Object.keys(table).length; i++) {
+        const row = table[i];
+
+        const criterion = row[0]?.data?.trim() || "";
+        const admin_score = row[1]?.data?.trim() || "";
+        const feedback = row[2]?.data?.trim() || "";
+
+        if (!criterion && !adminScore && !feedback) continue;
+
+        rubricJSON.criteria.push({
+            criterion,
+            admin_score,
+            feedback,
+        });
+    }
+
+    return rubricJSON;
+}
+
