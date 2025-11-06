@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Registration?</title>
+    <link rel="stylesheet" href="../css/account-registration.css" />
+</head>
+<body>
+    <div class="page-content">
+        <h3>Register Account</h3>
+        <form id = "registration-form">
+            <input
+                type="text"
+                placeholder="Enter First Name"
+                name="firstName"
+                id="firstName"
+                required
+            />  
+            <input
+                type="text"
+                placeholder="Enter Last Name"
+                name="lastName"
+                id="lastName"
+                required
+            /> 
+           <input
+                type="email"
+                placeholder="Enter new email"
+                name="email"
+                id="email"
+                required
+            /> 
+            <input
+                type="password"
+                placeholder="Enter Password"
+                name="password"
+                id="password"
+                required
+            /> 
+            <div class="button-container">
+                <button class="submit-button" type="submit">
+                    Submit 
+                </button>
+            </div>
+          </form>
+    </div>
+
+    <script type="module" src="../js/registration.js"></script>
+</body>
+</html>

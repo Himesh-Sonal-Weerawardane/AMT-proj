@@ -1,94 +1,91 @@
-
 <!-- Created by Naroline Lim -->
-
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Staff Listings - Admin</title>
-    <link rel="stylesheet" href="../css/staff-listings.css">
-    <link rel="stylesheet" href="../css/navbar.css">
-    <link rel="stylesheet" href="../css/settings-sidebar.css">
+    <link rel="stylesheet" href="../css/staff-listings.css" />
+    <link rel="stylesheet" href="../css/navbar.css" />
+    <link rel="stylesheet" href="../css/settings-sidebar.css" />
+  </head>
 
-</head>
-
-
-<body>
+  <body>
     <!-- Navigation bar -->
     <div id="navbar-container"></div>
 
     <!-- Settings Sidebar -->
     <div class="settings-sidebar">
-        <a href="settings-page-profile.html">Profile</a>
-        <a href="settings-page-privacy.html">Privacy</a>
-        <a class="active" href="staff-listings.html">Staff Listings</a>
+      <a href="settings-page-profile.html">Profile</a>
+      <a href="settings-page-privacy.html">Privacy</a>
+      <a class="active" href="staff-listings.html">Staff Listings</a>
     </div>
 
     <div class="container">
+      <div class="listing-heading">
+        <p id="staff-title">Staff Listings</p>
+        <button id="edit-button">Edit</button>
+        <button id="invite-button" onclick="openForm()">Invite</button>
+      </div>
 
-        <div class="listing-heading">
-            <p id="staff-title">Staff Listings</p>
-            <button id="edit-button">Edit</button>
-            <button id="invite-button" onclick="openForm()">Invite</button>
-        </div>
+      <div class="staff-list-header">
+        <img
+          src="../images/front-page/minus-button.png"
+          class="remove-user"
+          alt="Remove"
+        />
+        <span class="name-header">Name</span>
+        <span class="email-header">Email</span>
+        <span class="role-header">Role</span>
+      </div>
 
-        <div class="staff-list-header">
-            <img src="../images/front-page/minus-button.png" class="remove-user" alt="Remove">
-            <span class="name-header">Name</span>
-            <span class="email-header">Email</span>
-            <span class="role-header">Role</span>
-        </div>
+      <div id="horizontal-divider"></div>
 
-        <div id="horizontal-divider"></div>
-
-        <div id="staff-list"></div>
-
+      <div id="staff-list"></div>
     </div>
 
-
     <div class="invite-popup" id="invite-form">
-        <form class="form-container">
+      <form class="form-container">
+        <div class="invite-top">
+          <h3>Invite People</h3>
+          <img
+            src="../images/front-page/close.png"
+            alt="Close"
+            class="close-button"
+            onclick="closeForm()"
+          />
+        </div>
 
-            <div class="invite-top">
-                <h3>Invite People</h3>
-                <img src="../images/front-page/close.png" alt="Close" class="close-button" onclick="closeForm()">
-            </div>
+        <div class="divider"></div>
 
+        <div class="invite-section">
+          <input
+            id="invite-email"
+            type="email"
+            placeholder="Enter email..."
+            required
+          />
 
+          <select required id="invite-role">
+            <option value="" disabled selected>Select a role</option>
+            <option>Admin</option>
+            <option>Marker</option>
+          </select>
 
-            <div class="invite-section">
+          <button id="invite-submit" type="button">Invite</button>
+        </div>
 
-                <input id="invite-first-name" type="text" placeholder="Enter First Name" required>
-                <input id="invite-last-name" type="text" placeholder="Enter Surname" required>
-                <input id="invite-email" type="email" placeholder="Enter email..." required>
-
-                <select required id="invite-role">
-                    <option value="" disabled selected>Select a role</option>
-                    <option>Admin</option>
-                    <option>Marker</option>
-                </select>
-
-                <button id="invite-submit" type="button">Invite</button>
-            </div>
-
-        </form>
+        <div class="invitation">
+          <h4>Recent Invitations</h4>
+          <div id="divider-2"></div>
+        </div>
+      </form>
     </div>
 
     <script src="../js/listingHandler.js"></script>
     <script src="../js/formHandler.js"></script>
     <script src="../js/navbar.js"></script>
     <script src="../js/inviteUser.js"></script>
-
-
-</body>
-
-
-
+  </body>
 </html>
-
-
-
-
