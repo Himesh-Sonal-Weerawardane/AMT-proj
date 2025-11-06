@@ -26,17 +26,109 @@ export default function moderationRoutes(supabase) {
         const { id } = req.params;
         let { admin_feedback, rubric_json } = req.body;
 
+        const safeStringify = (obj) => { try { return JSON.stringify(obj, null, 2); } catch { return String(obj); } };
+        const safeParse = (val) => {
+            if (val == null) return val;
+            if (typeof val === "string") { try { return JSON.parse(val); } catch { return val; } }
+            return val;
+        };
+
+        // --- Helpers to convert the "compact" shape to the desired one ---
+        const normalizeDash = (s) => s.replace(/[–—]/g, "-");
+        const stripParens = (s) => s.replace(/[()]/g, "").trim();
+
+        // Extract a trailing "(...points)" segment from a description string
+        const extractPointsRange = (descString) => {
+            if (typeof descString !== "string") return { cleanText: descString, pointsRange: "" };
+            const m = descString.match(/\(([^()]*points?)\)\s*$/i);
+            if (!m) return { cleanText: descString, pointsRange: "" };
+            const pointsRange = `(${m[1]})`; // keep parentheses to match your desired output
+            const cleanText = descString.slice(0, m.index).trim();
+            return { cleanText, pointsRange };
+        };
+
+        // Turn a single string with \n\n into an array of paragraphs
+        const toParagraphArray = (d) => {
+            if (Array.isArray(d)) return d;
+            if (typeof d === "string") {
+                return d
+                    .split(/\n{2,}/)        // split on blank lines
+                    .map(s => s.trim())
+                    .filter(Boolean);
+            }
+            return [];
+        };
+
+        const normalizeCriterion = (c) => {
+            const criterion = typeof c?.criterion === "string" ? c.criterion : "";
+            const maxPoints = Number.isFinite(+c?.maxPoints) ? +c.maxPoints : 0;
+
+            const grades = Array.isArray(c?.grades) ? c.grades : [];
+            const normalizedGrades = grades.map((g) => {
+                const grade = typeof g?.grade === "string" ? g.grade : "";
+
+                // Handle both shapes:
+                // 1) description: string with "(...points)" at the end
+                // 2) description: array + pointsRange: "(...points)"
+                let pointsRange = typeof g?.pointsRange === "string" ? g.pointsRange : "";
+
+                if (!pointsRange && typeof g?.description === "string") {
+                    // Try to peel pointsRange off the end of the string
+                    const { cleanText, pointsRange: pr } = extractPointsRange(g.description);
+                    pointsRange = pr || "";
+                    // Now make description an array of paragraphs (without the trailing points range)
+                    const descParts = toParagraphArray(cleanText);
+                    return { grade, description: descParts, pointsRange: normalizeDash(pointsRange) };
+                }
+
+                // If description is already an array/string (no embedded range), just normalise
+                const descParts = toParagraphArray(g?.description);
+                return { grade, description: descParts, pointsRange: normalizeDash(pointsRange) };
+            });
+
+            return { criterion, maxPoints, grades: normalizedGrades };
+        };
+
+        const normalizeRubricShape = (raw) => {
+            const r = safeParse(raw);
+
+            // Accept [] or {criteria:[...]} or full {rubric:{...},criteria:[...]}
+            let criteria;
+            let rubricMeta;
+
+            if (Array.isArray(r)) {
+                criteria = r;
+                rubricMeta = { pdfFile: null, rubricTitle: null };
+            } else if (r && typeof r === "object") {
+                criteria = Array.isArray(r.criteria) ? r.criteria : [];
+                const rm = r.rubric && typeof r.rubric === "object" ? r.rubric : {};
+                rubricMeta = {
+                    pdfFile: rm.pdfFile ?? null,
+                    rubricTitle: rm.rubricTitle ?? null,
+                };
+            } else {
+                criteria = [];
+                rubricMeta = { pdfFile: null, rubricTitle: null };
+            }
+
+            return {
+                rubric: rubricMeta,
+                criteria: criteria.map(normalizeCriterion),
+            };
+        };
+        // --- end helpers ---
+
         admin_feedback = safeParse(admin_feedback);
-        rubric_json = safeParse(rubric_json);
+        const normalizedRubric = normalizeRubricShape(rubric_json);
 
-        // DEBUG: exactly what is being read (incoming) and what will be rendered (saved)
-        console.debug("[DEBUG] PUT /moderations/:id/rubric -> Incoming Admin Feedback (raw or parsed):", safeStringify(admin_feedback));
-        console.debug("[DEBUG] PUT /moderations/:id/rubric -> Incoming Rubric JSON (raw or parsed):", safeStringify(rubric_json));
+        // Logs
+        console.debug("[DEBUG] PUT /moderations/:id/rubric -> Incoming Admin Feedback (raw/parsed):", safeStringify(admin_feedback));
+        console.debug("[DEBUG] PUT /moderations/:id/rubric -> Incoming Rubric JSON (normalized):", safeStringify(normalizedRubric));
 
-        // Build update payload only with provided fields
+        // Build update payload
         const updatePayload = {};
         if (typeof admin_feedback !== "undefined") updatePayload.admin_feedback = admin_feedback;
-        if (typeof rubric_json !== "undefined") updatePayload.rubric_json = rubric_json;
+        if (typeof rubric_json   !== "undefined")  updatePayload.rubric_json   = normalizedRubric;
 
         if (Object.keys(updatePayload).length === 0) {
             return res.status(400).json({ error: "No fields provided to update." });
@@ -55,19 +147,23 @@ export default function moderationRoutes(supabase) {
                 return res.status(500).json({ error: "Failed to update moderation." });
             }
 
-            // DEBUG: exactly what is being rendered back in the response
-            console.debug("[DEBUG] PUT /moderations/:id/rubric -> Response Admin Feedback:", safeStringify(data?.admin_feedback));
-            console.debug("[DEBUG] PUT /moderations/:id/rubric -> Response Rubric JSON (parsed if string):", safeStringify(safeParse(data?.rubric_json)));
+            // Ensure response is also normalized (in case DB serialised it)
+            const responseRubric = normalizeRubricShape(data?.rubric_json);
 
             return res.status(200).json({
                 message: "Moderation updated successfully.",
-                data,
+                data: {
+                    id: data.id,
+                    admin_feedback: data.admin_feedback,
+                    rubric_json: responseRubric,
+                },
             });
         } catch (e) {
             console.error("PUT /moderations/:id/rubric error:", e);
             return res.status(500).json({ error: "Unexpected server error." });
         }
     });
+
 
     // admin's front page
     router.get("/moderations/progress/recent-assignment", async (req, res) => {

@@ -447,7 +447,6 @@ window.addEventListener("DOMContentLoaded", async () => {
                 "<p>Failed to load moderation stats.</p>"
         }
 
-        // Breadcrumb & headings
         const breadcrumbSegments = [];
         if (data.year) breadcrumbSegments.push(`Year ${data.year}`);
         if (data.semester) breadcrumbSegments.push(`Semester ${data.semester}`);
