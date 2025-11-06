@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 dotenv.config();
 import express from "express";
 import path from "path";
+import cors from "cors";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 
@@ -30,6 +31,8 @@ const supabase = createClient(
 app.use(express.json())
 // Parses form submissions
 app.use(express.urlencoded({ extended: true }))
+app.use(cors())
+app.use(cookieParser());
 
 // #################################
 // Cookies can be used to track session, see auth.js /session_info for more info
@@ -114,6 +117,12 @@ import moduleInfoRoutes from "./routes/module_info.js"
 import moderationRoutes from "./routes/moderation.js"
 import userRoutes from "./routes/users.js"
 import profileRoutes from "./routes/profile.js"
+import statsRoutes from "./routes/statistics.js"
+
+// ===== 3. TEMPORARILY COMMENT OUT THE EXTERNAL ROUTE =====
+// import router from "./routes/emailRoutes.js"
+// app.use("/api",router )
+
 import router from "./routes/emailRoutes.js"
 app.use("/api",router )
 app.use("/api", authRoutes(supabase))
@@ -122,6 +131,7 @@ app.use("/api", moduleInfoRoutes(supabase))
 app.use("/api", moderationRoutes(supabase))
 app.use("/api", userRoutes(supabase))
 app.use("/api", profileRoutes(supabase))
+app.use("/api", statsRoutes(supabase))
 
 // Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -15,6 +15,12 @@
             href="https://cdn.jsdelivr.net/npm/handsontable/styles/ht-theme-main.min.css"
     />
     <style>
+        .module-page { max-width: none !important; width: min(1800px, 96vw); margin: 0 auto; padding: 64px 1rem 150px 1rem !important; }
+        .module-content { display: grid; grid-template-columns: 1fr !important; gap: 2rem; }
+        .module-card { width: 75%; }
+        .module-card__body { width: 100%; }
+        .module-pdf { width: 100%; min-height: 80vh; }
+        #rubric-table, #handsontable-grid { width: 100%; }
         .module-page {
             max-width: none !important;
             width: min(1800px, 96vw);
@@ -89,7 +95,23 @@
 
     <section id="status-message" class="status-message" role="alert" hidden></section>
 
+
     <section class="module-content" id="module-content" hidden>
+
+        <article class="module-card">
+            <header class="module-card__header">
+                <h2 class="module-card__title">Moderation Statistics</h2>
+            </header>
+            <div class="module-card__body" id="moderation-stats-body"></div>
+        </article>
+
+        <article class="module-card">
+            <header class="module-card__header">
+                <h2 class="module-card__title">Overall Statistics</h2>
+            </header>
+            <div class="module-card__body" id="overall-stats"></div>
+        </article>
+
         <article class="module-card">
             <header class="module-card__header">
                 <h2 class="module-card__title">Assignment Document</h2>
