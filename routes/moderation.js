@@ -2,17 +2,11 @@ import express from 'express';
 //import {error} from "handsontable/helpers";
 const router = express.Router();
 import { computeModerationStats } from "../frontend/js/computeModerationStats.js";
+import { updateRubric } from "../frontend/js/computeModerationStats.js";
+//import {singleQuote} from "nodemailer/.prettierrc.js";
 
-const router = express.Router();
 
 export default function moderationRoutes(supabase) {
-    const safeStringify = (obj) => {
-        try {
-            return JSON.stringify(obj, null, 2);
-        } catch {
-            return String(obj);
-        }
-    };
 
     const safeParse = (val) => {
         if (val == null) return val;
@@ -23,19 +17,14 @@ export default function moderationRoutes(supabase) {
     };
 
     router.put("/moderations/:id/rubric", async (req, res) => {
-        const { id } = req.params;
-        let { admin_feedback, rubric_json } = req.body;
 
-        admin_feedback = safeParse(admin_feedback);
+        const { id } = req.params;
+        let { rubric_json } = req.body;
+
         rubric_json = safeParse(rubric_json);
 
-        // DEBUG: exactly what is being read (incoming) and what will be rendered (saved)
-        console.debug("[DEBUG] PUT /moderations/:id/rubric -> Incoming Admin Feedback (raw or parsed):", safeStringify(admin_feedback));
-        console.debug("[DEBUG] PUT /moderations/:id/rubric -> Incoming Rubric JSON (raw or parsed):", safeStringify(rubric_json));
+        const updatePayload = { rubric_json: rubric_json };
 
-        // Build update payload only with provided fields
-        const updatePayload = {};
-        if (typeof admin_feedback !== "undefined") updatePayload.admin_feedback = admin_feedback;
         if (typeof rubric_json !== "undefined") updatePayload.rubric_json = rubric_json;
 
         if (Object.keys(updatePayload).length === 0) {
@@ -47,7 +36,7 @@ export default function moderationRoutes(supabase) {
                 .from("moderations")
                 .update(updatePayload)
                 .eq("id", id)
-                .select("id, admin_feedback, rubric_json")
+                .select("id, rubric_json")
                 .single();
 
             if (error) {
@@ -56,8 +45,8 @@ export default function moderationRoutes(supabase) {
             }
 
             // DEBUG: exactly what is being rendered back in the response
-            console.debug("[DEBUG] PUT /moderations/:id/rubric -> Response Admin Feedback:", safeStringify(data?.admin_feedback));
-            console.debug("[DEBUG] PUT /moderations/:id/rubric -> Response Rubric JSON (parsed if string):", safeStringify(safeParse(data?.rubric_json)));
+            // console.debug("[DEBUG] PUT /moderations/:id/rubric -> Response Admin Feedback:", safeStringify(data?.admin_feedback));
+            // console.debug("[DEBUG] PUT /moderations/:id/rubric -> Response Rubric JSON (parsed if string):", safeStringify(safeParse(data?.rubric_json)));
 
             return res.status(200).json({
                 message: "Moderation updated successfully.",
@@ -65,6 +54,51 @@ export default function moderationRoutes(supabase) {
             });
         } catch (e) {
             console.error("PUT /moderations/:id/rubric error:", e);
+            return res.status(500).json({ error: "Unexpected server error." });
+        }
+
+    });
+
+
+    router.put("/moderations/:id/admin_feedback", async (req, res) => {
+        const { id } = req.params;
+        let { admin_feedback } = req.body;
+
+        admin_feedback = safeParse(admin_feedback);
+
+
+        // Build update payload only with provided fields
+        const updatePayload = { admin_feedback: admin_feedback };
+
+        if (typeof admin_feedback !== "undefined") updatePayload.admin_feedback = admin_feedback;
+
+        if (Object.keys(updatePayload).length === 0) {
+            return res.status(400).json({ error: "No fields provided to update." });
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from("moderations")
+                .update(updatePayload)
+                .eq("id", id)
+                .select("id, admin_feedback")
+                .single();
+
+            if (error) {
+                console.error("Supabase update error:", error);
+                return res.status(500).json({ error: "Failed to update moderation." });
+            }
+
+            // DEBUG: exactly what is being rendered back in the response
+            // console.debug("[DEBUG] PUT /moderations/:id/rubric -> Response Admin Feedback:", safeStringify(data?.admin_feedback));
+            // console.debug("[DEBUG] PUT /moderations/:id/rubric -> Response Rubric JSON (parsed if string):", safeStringify(safeParse(data?.rubric_json)));
+
+            return res.status(200).json({
+                message: "Moderation updated successfully.",
+                data,
+            });
+        } catch (e) {
+            console.error("PUT /moderations/:id/admin_feedback error:", e);
             return res.status(500).json({ error: "Unexpected server error." });
         }
     });
@@ -90,10 +124,13 @@ export default function moderationRoutes(supabase) {
             }
 
             // DEBUG: print what is being read for admin feedback and parsed rubric for the first few records
+            /*
             allMods.slice(0, 3).forEach((m, idx) => {
                 console.debug(`[DEBUG] GET /moderations/progress/recent-assignment -> Admin Feedback [${idx}] (raw):`, safeStringify(m.admin_feedback));
                 console.debug(`[DEBUG] GET /moderations/progress/recent-assignment -> Rubric JSON [${idx}] (parsed):`, safeStringify(safeParse(m.rubric_json)));
             });
+
+             */
 
             const recentYear = allMods[0].year;
             const recentSem = allMods[0].semester;
@@ -148,7 +185,7 @@ export default function moderationRoutes(supabase) {
                                 : mod.admin_feedback;
 
                         // DEBUG: parsed admin feedback used to render progress
-                        console.debug("[DEBUG] GET /moderations/progress/recent-assignment -> Parsed Admin Feedback (used):", safeStringify(feedback));
+                        // console.debug("[DEBUG] GET /moderations/progress/recent-assignment -> Parsed Admin Feedback (used):", safeStringify(feedback));
 
                         if (feedback?.criteria && Array.isArray(feedback.criteria)) {
                             feedback.criteria.forEach((c) => {
@@ -208,8 +245,8 @@ export default function moderationRoutes(supabase) {
             if (modError) throw modError;
 
             // DEBUG: print the latest moderation read values
-            console.debug("[DEBUG] GET /moderations/stats/assignment -> Most recent Admin Feedback (raw):", safeStringify(moderation?.[0]?.admin_feedback));
-            console.debug("[DEBUG] GET /moderations/stats/assignment -> Most recent Rubric JSON (parsed):", safeStringify(safeParse(moderation?.[0]?.rubric_json)));
+            // console.debug("[DEBUG] GET /moderations/stats/assignment -> Most recent Admin Feedback (raw):", safeStringify(moderation?.[0]?.admin_feedback));
+            // console.debug("[DEBUG] GET /moderations/stats/assignment -> Most recent Rubric JSON (parsed):", safeStringify(safeParse(moderation?.[0]?.rubric_json)));
 
             const recentYear = moderation[0].year;
             const recentSem = moderation[0].semester;
@@ -235,7 +272,18 @@ export default function moderationRoutes(supabase) {
 
             const moderations = [];
             for (const mod of assignmentSameSem) {
-                moderations.push(await computeModerationStats(supabase, mod, users));
+
+                const { data: freshMod, error: freshModError } = await supabase
+                    .from("moderations")
+                    .select("*")
+                    .eq("id", mod.id)
+                    .single();
+
+                if (freshModError) throw freshModError;
+
+                freshMod.rubric_json = updateRubric(freshMod.rubric_json);
+
+                moderations.push(await computeModerationStats(supabase, freshMod, users));
             }
 
 
@@ -267,8 +315,8 @@ export default function moderationRoutes(supabase) {
             if (!moderations?.length) return res.json({ results: [] });
 
             // DEBUG: preview what is being read
-            console.debug("[DEBUG] GET /marker/recent -> First Admin Feedback (raw):", safeStringify(moderations?.[0]?.admin_feedback));
-            console.debug("[DEBUG] GET /marker/recent -> First Rubric JSON (parsed):", safeStringify(safeParse(moderations?.[0]?.rubric_json)));
+            // console.debug("[DEBUG] GET /marker/recent -> First Admin Feedback (raw):", safeStringify(moderations?.[0]?.admin_feedback));
+            // console.debug("[DEBUG] GET /marker/recent -> First Rubric JSON (parsed):", safeStringify(safeParse(moderations?.[0]?.rubric_json)));
 
             const recentYear = moderations[0].year;
             const recentSem = moderations[0].semester;
@@ -307,7 +355,7 @@ export default function moderationRoutes(supabase) {
                                 : mod.admin_feedback;
 
                         // DEBUG: parsed admin feedback actually used to render totals
-                        console.debug("[DEBUG] GET /marker/recent -> Parsed Admin Feedback (used):", safeStringify(feedback));
+                        // console.debug("[DEBUG] GET /marker/recent -> Parsed Admin Feedback (used):", safeStringify(feedback));
 
                         if (feedback?.criteria && Array.isArray(feedback.criteria)) {
                             totalScore = feedback.criteria.reduce((sum, c) => {
@@ -383,9 +431,16 @@ export default function moderationRoutes(supabase) {
 
             if (modError) throw modError;
 
+            moderation.forEach(m => {
+                try {
+                    if (typeof m.rubric_json === "string") m.rubric_json = JSON.parse(m.rubric_json);
+                } catch {}
+                m.rubric_json = updateRubric(m.rubric_json);
+            })
+
             // DEBUG: show what is read for the latest moderation
-            console.debug("[DEBUG] GET /marker/stats/assignment -> Latest Admin Feedback (raw):", safeStringify(moderation?.[0]?.admin_feedback));
-            console.debug("[DEBUG] GET /marker/stats/assignment -> Latest Rubric JSON (parsed):", safeStringify(safeParse(moderation?.[0]?.rubric_json)));
+            // console.debug("[DEBUG] GET /marker/stats/assignment -> Latest Admin Feedback (raw):", safeStringify(moderation?.[0]?.admin_feedback));
+            // console.debug("[DEBUG] GET /marker/stats/assignment -> Latest Rubric JSON (parsed):", safeStringify(safeParse(moderation?.[0]?.rubric_json)));
 
             const recentYear = moderation[0].year;
             const recentSem = moderation[0].semester;
@@ -522,8 +577,8 @@ export default function moderationRoutes(supabase) {
         }
 
         // DEBUG: exactly what is being read (raw) and parsed for this moderation
-        console.debug("[DEBUG] GET /moderations/:id -> Admin Feedback (raw):", safeStringify(data?.admin_feedback));
-        console.debug("[DEBUG] GET /moderations/:id -> Rubric JSON (parsed):", safeStringify(safeParse(data?.rubric_json)));
+        // console.debug("[DEBUG] GET /moderations/:id -> Admin Feedback (raw):", safeStringify(data?.admin_feedback));
+        // console.debug("[DEBUG] GET /moderations/:id -> Rubric JSON (parsed):", safeStringify(safeParse(data?.rubric_json)));
 
         if (data.assignment_url) {
             const { data: publicURL } = supabase.storage
@@ -576,8 +631,8 @@ export default function moderationRoutes(supabase) {
             if (moderationError) throw moderationError;
 
             // DEBUG: what was read from moderation
-            console.debug("[DEBUG] POST /marks -> Admin Feedback (raw):", safeStringify(moderationData?.admin_feedback));
-            console.debug("[DEBUG] POST /marks -> Rubric JSON (raw):", safeStringify(moderationData?.rubric_json));
+            // console.debug("[DEBUG] POST /marks -> Admin Feedback (raw):", safeStringify(moderationData?.admin_feedback));
+            // console.debug("[DEBUG] POST /marks -> Rubric JSON (raw):", safeStringify(moderationData?.rubric_json));
 
             // normalise admin_feedback and rubric_json
             let adminFeedback = moderationData.admin_feedback;
@@ -601,8 +656,8 @@ export default function moderationRoutes(supabase) {
             }
 
             // DEBUG: exactly what is rendered/used after parsing
-            console.debug("[DEBUG] POST /marks -> Admin Feedback (parsed):", safeStringify(adminFeedback));
-            console.debug("[DEBUG] POST /marks -> Rubric JSON (parsed):", safeStringify(rubric));
+            // console.debug("[DEBUG] POST /marks -> Admin Feedback (parsed):", safeStringify(adminFeedback));
+            // console.debug("[DEBUG] POST /marks -> Rubric JSON (parsed):", safeStringify(rubric));
 
             const adminCriteria = Array.isArray(adminFeedback?.criteria)
                 ? adminFeedback.criteria
@@ -745,7 +800,7 @@ export default function moderationRoutes(supabase) {
             }
 
             // DEBUG: exactly what is being rendered here
-            console.debug("[DEBUG] GET /feedback/:moderationId -> Admin Feedback (raw):", safeStringify(data.admin_feedback));
+            // console.debug("[DEBUG] GET /feedback/:moderationId -> Admin Feedback (raw):", safeStringify(data.admin_feedback));
 
             res.status(200).json(data.admin_feedback);
         } catch (error) {
@@ -785,8 +840,8 @@ export default function moderationRoutes(supabase) {
             }
 
             // DEBUG: raw values read
-            console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Admin Feedback (raw):", safeStringify(moderationData?.admin_feedback));
-            console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Rubric JSON (raw):", safeStringify(moderationData?.rubric_json));
+            // console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Admin Feedback (raw):", safeStringify(moderationData?.admin_feedback));
+            // console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Rubric JSON (raw):", safeStringify(moderationData?.rubric_json));
 
             // normalise admin_feedback and rubric_json
             let adminFeedback = moderationData.admin_feedback;
@@ -800,6 +855,7 @@ export default function moderationRoutes(supabase) {
             }
 
             let rubric = moderationData.rubric_json;
+            rubric = updateRubric(rubric);
             try {
                 if (typeof rubric === "string") {
                     rubric = JSON.parse(rubric);
@@ -810,8 +866,8 @@ export default function moderationRoutes(supabase) {
             }
 
             // DEBUG: parsed values that are actually used for rendering stats
-            console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Admin Feedback (parsed):", safeStringify(adminFeedback));
-            console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Rubric JSON (parsed):", safeStringify(rubric));
+            // console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Admin Feedback (parsed):", safeStringify(adminFeedback));
+            // console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Rubric JSON (parsed):", safeStringify(rubric));
 
             const adminCriteria = Array.isArray(adminFeedback?.criteria)
                 ? adminFeedback.criteria
@@ -893,5 +949,25 @@ export default function moderationRoutes(supabase) {
         }
     });
 
+
     return router;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

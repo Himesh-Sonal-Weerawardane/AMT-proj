@@ -131,3 +131,34 @@ export async function computeModerationStats(supabase, moderation, users) {
 
 
 }
+
+
+export async function updateRubric(rubric) {
+    if (!rubric.criteria) return rubric;
+
+    rubric.criteria.forEach((criterion) => {
+        criterion.maxPoints = Number(criterion.maxPoints) || 0;
+
+        (criterion.grades || []).forEach(g => {
+
+            if (typeof g.description === "string") {
+                let parts = g.description
+                    .split(/\n{2,}/)
+                    .map(s => s.trim())
+                    .filter(Boolean);
+
+                const last = parts[parts.length - 1];
+                if (!g.pointsRange && /\d/.test(last) && last.includes("point")) {
+                    g.pointsRange = last;
+                    parts.pop();
+                }
+
+                g.description = parts;
+            }
+
+            g.pointsRange = g.pointsRange || "";
+        });
+    });
+
+    return rubric;
+}

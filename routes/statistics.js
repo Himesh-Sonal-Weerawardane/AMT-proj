@@ -55,11 +55,27 @@ export default function statisticsRoutes(supabase) {
 
             const {data: moderation, error: modError} = await supabase
                 .from("moderations")
-                .select("id, name, assignment_number, year, semester, due_date, admin_feedback")
+                .select("id, name, assignment_number, year, semester, due_date, admin_feedback, rubric_json")
                 .eq("id", id)
                 .single();
 
             if (modError) throw modError;
+
+            let adminFeedback = moderation.admin_feedback;
+            if (typeof adminFeedback === "string") {
+                try { adminFeedback = JSON.parse(adminFeedback); } catch { adminFeedback = {}; }
+            }
+
+            let rubric = moderation.rubric_json;
+            if (typeof rubric === "string") {
+                try { rubric = JSON.parse(rubric); } catch { rubric = {}; }
+            }
+
+            const moderationStats = {
+                ...moderation,
+                admin_feedback: adminFeedback,
+                rubric_json: rubric
+            };
 
             const {data: users, error: userError} = await supabase
                 .from("users")
@@ -69,7 +85,7 @@ export default function statisticsRoutes(supabase) {
 
             if (userError) throw userError;
 
-            const stats = await computeModerationStats(supabase, moderation, users);
+            const stats = await computeModerationStats(supabase, moderationStats, users);
             const overallStats = computeOverallStats(stats.rows, stats.criteria);
 
             res.json({

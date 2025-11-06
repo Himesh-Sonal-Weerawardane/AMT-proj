@@ -153,34 +153,70 @@ function buildRubricFromJSON(rubricJSON) {
  * Columns:
  * [0] Criteria, [1] HD, [2] D, [3] C, [4] P, [5] F, [6] Criteria Score
  */
+
+
 function extractRubricDataFromTable() {
     const data = rubricTable.getData();
+
+    const parseDescription = (cell) => {
+        if (!cell) return [];
+        return cell
+            .toString()
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter((line) =>
+                line.length > 0 &&
+                !/\([^)]*points?\)$/i.test(line)
+            );
+    };
+
+    const extractRange = (cell) => {
+        if (!cell) return "";
+        const match = cell.match(/\(([^)]*points?)\)/i);
+        return match ? match[0] : "";
+    };
 
     const parseMax = (cell) => {
         if (!cell) return "";
         const s = String(cell).trim();
         if (s.startsWith("/")) return s.replace("/", "").trim();
-        return s;
+        return Number(s);
     };
 
     return {
         criteria: data.map((row) => {
             const criterionName = (row[0] || "").toString();
 
-            const grades = [
-                { grade: "High Distinction", description: row[1] || "" },
-                { grade: "Distinction",      description: row[2] || "" },
-                { grade: "Credit",           description: row[3] || "" },
-                { grade: "Pass",             description: row[4] || "" },
-                { grade: "Fail",             description: row[5] || "" },
-            ];
-
-            const maxPoints = parseMax(row[6]);
-
             return {
                 criterion: criterionName,
-                grades,
-                maxPoints,
+                grades: [
+                    {
+                        grade: "High Distinction",
+                        description: parseDescription(row[1] || ""),
+                        pointsRange: extractRange(row[1] || ""),
+                    },
+                    {
+                        grade: "Distinction",
+                        description: parseDescription(row[2] || ""),
+                        pointsRange: extractRange(row[2] || ""),
+                    },
+                    {
+                        grade: "Credit",
+                        description: parseDescription(row[3] || ""),
+                        pointsRange: extractRange(row[3] || ""),
+                    },
+                    {
+                        grade: "Pass",
+                        description: parseDescription(row[4] || ""),
+                        pointsRange: extractRange(row[4] || ""),
+                    },
+                    {
+                        grade: "Fail",
+                        description: parseDescription(row[5] || ""),
+                        pointsRange: extractRange(row[5] || ""),
+                    }
+                ],
+                maxPoints: Number(parseMax(row[6])) || 0,
             };
         }),
     };
@@ -543,11 +579,30 @@ window.addEventListener("DOMContentLoaded", async () => {
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
                                 rubric_json: updatedRubricJSON,
-                                admin_feedback: updatedAdminFeedback,
                             }),
                         });
 
+                        await fetch(`/api/moderations/${moduleId}/admin_feedback`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                admin_feedback: updatedAdminFeedback,
+                            })
+                        });
+
+                        const updated = await fetch(`/api/moderations/${moduleId}`).then(res => res.json());
+
+                        rubricData = updated;
+
+                        await renderStatsCard(updated);
+                        await renderOverallStats(updated.overallStats);
+
+                        if (typeof loadAdminModeration === "function") {
+                            await loadAdminModeration();
+                        }
+
                         showStatus("Saved successfully.");
+
                         setTimeout(() => {
                             const statusEl = document.getElementById("status-message");
                             if (statusEl && statusEl.dataset.state !== "error") statusEl.hidden = true;

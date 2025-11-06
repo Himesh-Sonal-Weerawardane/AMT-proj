@@ -62,7 +62,10 @@ async function loadAdminModeration() {
     const moderationRes = await fetch(`/api/moderations/${moderationId}`)
     const moderationData = await moderationRes.json();
 
-    rubricData = moderationData;
+    rubricData = moderationData.rubric_json ? moderationData : {
+        ...moderationData,
+        rubric_json: moderationData.rubric_json || moderationData.rubric_json_backup,
+    };
 
     document.getElementById("moderation-title").textContent = rubricData.name;
     document.getElementById("moderation-doc").src = rubricData.assignment_public_url;
@@ -202,6 +205,7 @@ async function loadMarkerModeration() {
                 feedbackTabContent.classList.remove("hidden");
             }, 50);
 
+            console.log("total:", marksData);
 
             renderMarkedModeration({
                 scores: marksData.scores,
@@ -304,7 +308,9 @@ function renderUnmarkedModeration(data) {
             const desCell = document.createElement("td");
 
             const desc = document.createElement("div");
-            desc.innerHTML = g.description.join("<br><br>");
+            desc.innerHTML = Array.isArray(g.description)
+                ? g.description.join("<br><br>")
+                : g.description || "";
             desCell.appendChild(desc);
 
             const gradePoints = document.createElement("div");
@@ -385,7 +391,7 @@ function renderMarkedModeration(results) {
     console.log(resultStorage);
 
     resultStorage.forEach((element) => {
-        console.log(element);
+        console.log("criteria:", element);
         console.log(rubricData.rubric_json.criteria[Number(element.criterionID)]);
 
         if (!element || !rubricData?.rubric_json?.criteria[Number(element.criterionID)]) {
@@ -416,6 +422,12 @@ function renderMarkedModeration(results) {
 
         const activeGroup = gradeGroups.find((g) => {
             const parsed = parsePointsRange(g.pointsRange);
+
+            if (!parsed) {
+                console.warn("invalid points range", g.pointsRange);
+                return;
+            }
+
             const { min, max } = parsed;
 
             return scoreValue >= min && scoreValue <= max;
@@ -476,7 +488,10 @@ function renderMarkedModeration(results) {
             gradeDes.classList.add("marked-grade-description");
 
             const des = document.createElement("div");
-            des.innerHTML = activeGroup.description.join("<br><br>");
+            des.innerHTML = Array.isArray(activeGroup.description)
+                ? activeGroup.description.join("<br><br>")
+                : activeGroup.description || "";
+
             gradeDes.appendChild(des);
 
             const gradePoints = document.createElement("div");

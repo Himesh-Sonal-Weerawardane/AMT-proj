@@ -216,7 +216,7 @@ canvas {
 }
 #adminHandsontable-grid {
     width: 100%;
-    height: 540px;
+    height: 300px;
     overflow: hidden;
     background: #ffffff;
     border: 2px solid var(--module-border);
