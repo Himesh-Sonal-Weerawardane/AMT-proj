@@ -3,7 +3,6 @@ import express from 'express';
 const router = express.Router();
 import { computeModerationStats } from "../frontend/js/computeModerationStats.js";
 
-const router = express.Router();
 
 export default function moderationRoutes(supabase) {
     const safeStringify = (obj) => {
