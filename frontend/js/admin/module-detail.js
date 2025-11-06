@@ -100,6 +100,53 @@ function ensureRubricTable() {
     return rubricTable;
 }
 
+function extractRubricDataFromTable() {
+    const data = rubricTable.getData();
+    const rubricJSON = {
+        criteria: data.map(row => {
+            const criterionName = row[0];
+            const grades = [];
+
+            for (let i = 1; i <= 5; i++) {
+                const gradeDescription = row[i];
+                const pointsRange = row[i + 5] || "";
+
+                if (gradeDescription || pointsRange) {
+                    grades.push({
+                        grade: rubricHeaders[i],
+                        description: gradeDescription,
+                        pointsRange: pointsRange
+                    });
+                }
+            }
+
+            const maxPoints = row[10];
+
+            return {
+                criterion: criterionName,
+                grades: grades,
+                maxPoints: maxPoints
+            };
+        })
+    };
+
+    return rubricJSON;
+}
+
+function extractAdminDataFromTable() {
+    const data = adminTable.getData();
+    const adminJSON = {
+        criteria: data.map(row => {
+            return {
+                feedback: row[1],
+                criterion: row[0],
+                admin_score: row[2]
+            };
+        })
+    };
+    return adminJSON;
+}
+
 function setRubricData(headers, rows) {
     rubricHeaders = headers && headers.length ? [...headers] : [...DEFAULT_HEADERS];
 
@@ -269,6 +316,8 @@ function applyDocumentPreview(objectEl, url, options = {}) {
         return { supported: false, reason: "unsupported-extension" };
     }
 
+    console.log("Preview URL:", url);
+
     objectEl.type = config.mimeType;
     objectEl.data = config.src;
     objectEl.hidden = false;
@@ -374,57 +423,28 @@ window.addEventListener("DOMContentLoaded", async () => {
                 contextMenu: true
             });
 
-            let adminJSON = data.admin_feedback;
-            if (typeof adminJSON === "string") {
+            document.getElementById("submit-button").addEventListener("click", async () => {
+                const updatedAdminFeedback = extractAdminDataFromTable(adminTable);
+                const updatedRubricJSON = extractRubricDataFromTable(rubricTable);
+
                 try {
-                    adminJSON = JSON.parse(adminJSON);
-                } catch {
-                    adminJSON = null;
+                    const res = await fetch(`/api/moderations/${moduleId}/rubric`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            rubric_json: updatedRubricJSON,
+                            admin_feedback: updatedAdminFeedback,
+                        }),
+                    });
+                    console.log("Working");
+                    console.log("Admin Feedback:", updatedAdminFeedback);
+                    console.log("Rubric JSON:", updatedRubricJSON);
+
+                } catch (err) {
+                    console.error("Error:", err);
                 }
-            }
-
-            const list = (adminJSON && Array.isArray(adminJSON.criteria)) ? adminJSON.criteria : [];
-            const adminRows = list.map((c) => ({
-                criterion: c.criterion || "",
-                feedback: c.feedback || "",
-                admin_score: c.admin_score || ""
-            }));
-
-            adminTable.loadData(adminRows.length ? adminRows : [{ criterion: "", feedback: "", admin_score: null }]);
-
-            const hasRealData = adminRows.some(r =>
-                (r.criterion && r.criterion.trim() !== "") ||
-                (r.feedback && r.feedback.trim() !== "") ||
-                (typeof r.admin_score === "number")
-            );
-
-            if (!hasRealData) {
-                adminFeedbackMessage.textContent = "No admin feedback has been entered yet.";
-                adminFeedbackMessage.hidden = false;
-            }
-        } else {
-            adminFeedbackMessage.textContent = "Admin feedback table failed to initialise.";
-            adminFeedbackMessage.hidden = false;
+            });
         }
-
-        const { headers: builtHeaders, rows } = buildRubricFromJSON(data.rubric_json);
-        setRubricData(builtHeaders, rows);
-
-        if (rows && rows.length && rows.some(r => r.some(cell => String(cell).trim() !== ""))) {
-            rubricEmpty.hidden = true;
-        } else {
-            rubricEmpty.hidden = false;
-        }
-
-        showStatus("Module ready.");
-        setTimeout(() => {
-            const statusEl = document.getElementById("status-message");
-            if (statusEl && statusEl.dataset.state !== "error") {
-                statusEl.hidden = true;
-            }
-        }, 2500);
-
-        contentEl.hidden = false;
     } catch {
         showStatus("An unexpected error occurred while loading the module.", true);
     }

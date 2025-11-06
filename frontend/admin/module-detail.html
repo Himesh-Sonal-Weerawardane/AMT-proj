@@ -15,14 +15,61 @@
             href="https://cdn.jsdelivr.net/npm/handsontable/styles/ht-theme-main.min.css"
     />
     <style>
-        .module-page { max-width: none !important; width: min(1800px, 96vw); margin: 0 auto; padding: 64px 1rem 150px 1rem !important; }
-        .module-content { display: grid; grid-template-columns: 1fr !important; gap: 2rem; }
-        .module-card { width: 100%; }
-        .module-card__body { width: 100%; }
-        .module-pdf { width: 100%; min-height: 80vh; }
-        #rubric-table, #handsontable-grid { width: 100%; }
+        .module-page {
+            max-width: none !important;
+            width: min(1800px, 96vw);
+            margin: 0 auto;
+            padding: 64px 1rem 150px 1rem !important;
+        }
+        .module-content {
+            display: grid;
+            grid-template-columns: 1fr !important;
+            gap: 2rem;
+        }
+        .module-card {
+            width: 100%;
+        }
+        .module-card__body {
+            width: 100%;
+        }
+        .module-pdf {
+            width: 100%;
+            min-height: 80vh;
+        }
+        #rubric-table, #handsontable-grid {
+            width: 100%;
+        }
+        /* Submit button styling */
+        .submit-container {
+            position: fixed;
+            bottom: 30px;
+            right: 40px;
+            z-index: 1000;
+        }
+        #submit-button {
+            background-color: #4c6ef5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: background 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+        #submit-button:hover {
+            background-color: #3b5bdb;
+            transform: translateY(-1px);
+        }
+        #submit-button:active {
+            transform: translateY(1px);
+        }
+
         @media (min-width: 992px) {
-            .module-content { grid-template-columns: 1fr !important; }
+            .module-content {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
 </head>
@@ -69,9 +116,6 @@
 
                 <p id="admin-feedback-message" class="module-description" hidden></p>
             </div>
-
-
-
         </article>
 
         <article class="module-card">
@@ -83,8 +127,6 @@
                 <ol id="rubric-list" class="rubric-list"></ol>
                 <p id="rubric-empty" class="rubric-empty" hidden>No rubric criteria were parsed for this module.</p>
                 <br>
-
-
                 <div id="rubric-table">
                     <div id="handsontable-grid"></div>
                 </div>
@@ -92,6 +134,11 @@
         </article>
     </section>
 </main>
+
+<!-- Submit Button -->
+<div class="submit-container">
+    <button id="submit-button">Submit Changes</button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
 <script src="../js/admin/module-detail.js"></script>

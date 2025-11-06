@@ -3,6 +3,54 @@ import express from "express";
 const router = express.Router();
 
 export default function moderationRoutes(supabase) {
+
+    router.put("/moderations/:id/rubric", async (req, res) => {
+        const { id } = req.params;
+        let { admin_feedback, rubric_json } = req.body;
+
+        const safeParse = (val) => {
+            if (val == null) return val;
+            if (typeof val === "string") {
+                try { return JSON.parse(val); } catch { return val; }
+            }
+            return val;
+        };
+
+        admin_feedback = safeParse(admin_feedback);
+        rubric_json = safeParse(rubric_json);
+
+        // Build update payload only with provided fields
+        const updatePayload = {};
+        if (typeof admin_feedback !== "undefined") updatePayload.admin_feedback = admin_feedback;
+        if (typeof rubric_json !== "undefined") updatePayload.rubric_json = rubric_json;
+
+        if (Object.keys(updatePayload).length === 0) {
+            return res.status(400).json({ error: "No fields provided to update." });
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from("moderations")
+                .update(updatePayload)
+                .eq("id", id)
+                .select("id, admin_feedback, rubric_json")
+                .single();
+
+            if (error) {
+                console.error("Supabase update error:", error);
+                return res.status(500).json({ error: "Failed to update moderation." });
+            }
+
+            return res.status(200).json({
+                message: "Moderation updated successfully.",
+                data,
+            });
+        } catch (e) {
+            console.error("PUT /moderations/:id/rubric error:", e);
+            return res.status(500).json({ error: "Unexpected server error." });
+        }
+    });
+
     // admin's front page
     router.get("/moderations/progress/recent-assignment", async (req, res) => {
         try {
