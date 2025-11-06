@@ -3,17 +3,174 @@ import express from 'express';
 const router = express.Router();
 import { computeModerationStats } from "../frontend/js/computeModerationStats.js";
 
+const router = express.Router();
 
 export default function moderationRoutes(supabase) {
+    const safeStringify = (obj) => {
+        try {
+            return JSON.stringify(obj, null, 2);
+        } catch {
+            return String(obj);
+        }
+    };
+
+    const safeParse = (val) => {
+        if (val == null) return val;
+        if (typeof val === "string") {
+            try { return JSON.parse(val); } catch { return val; }
+        }
+        return val;
+    };
+
+    router.put("/moderations/:id/rubric", async (req, res) => {
+        const { id } = req.params;
+        let { admin_feedback, rubric_json } = req.body;
+
+        const safeStringify = (obj) => { try { return JSON.stringify(obj, null, 2); } catch { return String(obj); } };
+        const safeParse = (val) => {
+            if (val == null) return val;
+            if (typeof val === "string") { try { return JSON.parse(val); } catch { return val; } }
+            return val;
+        };
+
+        // --- Helpers to convert the "compact" shape to the desired one ---
+        const normalizeDash = (s) => s.replace(/[–—]/g, "-");
+        const stripParens = (s) => s.replace(/[()]/g, "").trim();
+
+        // Extract a trailing "(...points)" segment from a description string
+        const extractPointsRange = (descString) => {
+            if (typeof descString !== "string") return { cleanText: descString, pointsRange: "" };
+            const m = descString.match(/\(([^()]*points?)\)\s*$/i);
+            if (!m) return { cleanText: descString, pointsRange: "" };
+            const pointsRange = `(${m[1]})`; // keep parentheses to match your desired output
+            const cleanText = descString.slice(0, m.index).trim();
+            return { cleanText, pointsRange };
+        };
+
+        // Turn a single string with \n\n into an array of paragraphs
+        const toParagraphArray = (d) => {
+            if (Array.isArray(d)) return d;
+            if (typeof d === "string") {
+                return d
+                    .split(/\n{2,}/)        // split on blank lines
+                    .map(s => s.trim())
+                    .filter(Boolean);
+            }
+            return [];
+        };
+
+        const normalizeCriterion = (c) => {
+            const criterion = typeof c?.criterion === "string" ? c.criterion : "";
+            const maxPoints = Number.isFinite(+c?.maxPoints) ? +c.maxPoints : 0;
+
+            const grades = Array.isArray(c?.grades) ? c.grades : [];
+            const normalizedGrades = grades.map((g) => {
+                const grade = typeof g?.grade === "string" ? g.grade : "";
+
+                // Handle both shapes:
+                // 1) description: string with "(...points)" at the end
+                // 2) description: array + pointsRange: "(...points)"
+                let pointsRange = typeof g?.pointsRange === "string" ? g.pointsRange : "";
+
+                if (!pointsRange && typeof g?.description === "string") {
+                    // Try to peel pointsRange off the end of the string
+                    const { cleanText, pointsRange: pr } = extractPointsRange(g.description);
+                    pointsRange = pr || "";
+                    // Now make description an array of paragraphs (without the trailing points range)
+                    const descParts = toParagraphArray(cleanText);
+                    return { grade, description: descParts, pointsRange: normalizeDash(pointsRange) };
+                }
+
+                // If description is already an array/string (no embedded range), just normalise
+                const descParts = toParagraphArray(g?.description);
+                return { grade, description: descParts, pointsRange: normalizeDash(pointsRange) };
+            });
+
+            return { criterion, maxPoints, grades: normalizedGrades };
+        };
+
+        const normalizeRubricShape = (raw) => {
+            const r = safeParse(raw);
+
+            // Accept [] or {criteria:[...]} or full {rubric:{...},criteria:[...]}
+            let criteria;
+            let rubricMeta;
+
+            if (Array.isArray(r)) {
+                criteria = r;
+                rubricMeta = { pdfFile: null, rubricTitle: null };
+            } else if (r && typeof r === "object") {
+                criteria = Array.isArray(r.criteria) ? r.criteria : [];
+                const rm = r.rubric && typeof r.rubric === "object" ? r.rubric : {};
+                rubricMeta = {
+                    pdfFile: rm.pdfFile ?? null,
+                    rubricTitle: rm.rubricTitle ?? null,
+                };
+            } else {
+                criteria = [];
+                rubricMeta = { pdfFile: null, rubricTitle: null };
+            }
+
+            return {
+                rubric: rubricMeta,
+                criteria: criteria.map(normalizeCriterion),
+            };
+        };
+        // --- end helpers ---
+
+        admin_feedback = safeParse(admin_feedback);
+        const normalizedRubric = normalizeRubricShape(rubric_json);
+
+        // Logs
+        console.debug("[DEBUG] PUT /moderations/:id/rubric -> Incoming Admin Feedback (raw/parsed):", safeStringify(admin_feedback));
+        console.debug("[DEBUG] PUT /moderations/:id/rubric -> Incoming Rubric JSON (normalized):", safeStringify(normalizedRubric));
+
+        // Build update payload
+        const updatePayload = {};
+        if (typeof admin_feedback !== "undefined") updatePayload.admin_feedback = admin_feedback;
+        if (typeof rubric_json   !== "undefined")  updatePayload.rubric_json   = normalizedRubric;
+
+        if (Object.keys(updatePayload).length === 0) {
+            return res.status(400).json({ error: "No fields provided to update." });
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from("moderations")
+                .update(updatePayload)
+                .eq("id", id)
+                .select("id, admin_feedback, rubric_json")
+                .single();
+
+            if (error) {
+                console.error("Supabase update error:", error);
+                return res.status(500).json({ error: "Failed to update moderation." });
+            }
+
+            // Ensure response is also normalized (in case DB serialised it)
+            const responseRubric = normalizeRubricShape(data?.rubric_json);
+
+            return res.status(200).json({
+                message: "Moderation updated successfully.",
+                data: {
+                    id: data.id,
+                    admin_feedback: data.admin_feedback,
+                    rubric_json: responseRubric,
+                },
+            });
+        } catch (e) {
+            console.error("PUT /moderations/:id/rubric error:", e);
+            return res.status(500).json({ error: "Unexpected server error." });
+        }
+    });
+
 
     // admin's front page
     router.get("/moderations/progress/recent-assignment", async (req, res) => {
-
         try {
-
             const { data: allMods, error: modsErr } = await supabase
                 .from("moderations")
-                .select("id, assignment_number, name, year, semester, due_date, admin_feedback")
+                .select("id, assignment_number, name, year, semester, due_date, admin_feedback, rubric_json")
                 .order("year", { ascending: false })
                 .order("semester", { ascending: false })
                 .order("due_date", { ascending: false });
@@ -24,30 +181,34 @@ export default function moderationRoutes(supabase) {
                     assignment_name: null,
                     semester: null,
                     year: null,
-                    results: []
+                    results: [],
                 });
             }
+
+            // DEBUG: print what is being read for admin feedback and parsed rubric for the first few records
+            allMods.slice(0, 3).forEach((m, idx) => {
+                console.debug(`[DEBUG] GET /moderations/progress/recent-assignment -> Admin Feedback [${idx}] (raw):`, safeStringify(m.admin_feedback));
+                console.debug(`[DEBUG] GET /moderations/progress/recent-assignment -> Rubric JSON [${idx}] (parsed):`, safeStringify(safeParse(m.rubric_json)));
+            });
 
             const recentYear = allMods[0].year;
             const recentSem = allMods[0].semester;
 
             const assignmentSameSem = allMods.filter(
-                mod => mod.year === recentYear && mod.semester === recentSem
+                (mod) => mod.year === recentYear && mod.semester === recentSem
             );
 
-
             const assignmentGroup = {};
-            assignmentSameSem.forEach(mod => {
+            assignmentSameSem.forEach((mod) => {
                 const key = mod.assignment_number;
                 if (!assignmentGroup[key]) assignmentGroup[key] = [];
                 assignmentGroup[key].push(mod);
             });
 
-
             const latestAssignment = Object.entries(assignmentGroup).sort(
-                ([, modsA], [, modsB]) => new Date(modsB[0].due_date) - new Date(modsA[0].due_date)
+                ([, modsA], [, modsB]) =>
+                    new Date(modsB[0].due_date) - new Date(modsA[0].due_date)
             )[0][0];
-
 
             const moderations = assignmentGroup[latestAssignment];
 
@@ -71,33 +232,39 @@ export default function moderationRoutes(supabase) {
 
             if (marksError) throw marksError;
 
-
             const results = moderations.map((mod) => {
-
                 let totalScore = 0;
                 let maxScore = 0;
 
                 try {
                     if (mod.admin_feedback) {
-                        const feedback = typeof mod.admin_feedback === "string"
-                            ? JSON.parse(mod.admin_feedback)
-                            : mod.admin_feedback;
+                        const feedback =
+                            typeof mod.admin_feedback === "string"
+                                ? JSON.parse(mod.admin_feedback)
+                                : mod.admin_feedback;
 
-                        if (feedback.criteria && Array.isArray(feedback.criteria)) {
-                            feedback.criteria.forEach(c => {
-                                const [scorePart, maxPart] = (c.admin_score || "").split("/").map(s => s.trim());
-                                const score = parseFloat(scorePart) || 0;
-                                const max = parseFloat(maxPart) || 0;
-                                totalScore += score;
-                                maxScore += max;
-                            })
+                        // DEBUG: parsed admin feedback used to render progress
+                        console.debug("[DEBUG] GET /moderations/progress/recent-assignment -> Parsed Admin Feedback (used):", safeStringify(feedback));
+
+                        if (feedback?.criteria && Array.isArray(feedback.criteria)) {
+                            feedback.criteria.forEach((c) => {
+                                const [scorePart, maxPart] = (c?.admin_score || "")
+                                    .split("/")
+                                    .map((s) => s.trim());
+                                const score = parseFloat(scorePart);
+                                const max = parseFloat(maxPart);
+                                totalScore += Number.isFinite(score) ? score : 0;
+                                maxScore += Number.isFinite(max) ? max : 0;
+                            });
                         }
                     }
                 } catch (error) {
                     console.warn(`error parsing admin_feedback`, error);
                 }
 
-                const submitted = marks.filter((m) => m.moderation_id === mod.id && m.submitted_at).length;
+                const submitted = marks.filter(
+                    (m) => m.moderation_id === mod.id && m.submitted_at
+                ).length;
 
                 return {
                     id: mod.id,
@@ -110,9 +277,7 @@ export default function moderationRoutes(supabase) {
                     totalScore,
                     maxScore,
                 };
-
             });
-
 
             res.json({
                 assignment_name: latestAssignment,
@@ -120,27 +285,27 @@ export default function moderationRoutes(supabase) {
                 year: recentYear,
                 results,
             });
-
         } catch (err) {
             console.log("Error fetching latest progress", err);
             res.status(500).json({ error: "failed fetching latest progress" });
         }
-
     });
-
 
     // fetching statistics
     router.get("/moderations/stats/assignment", async (req, res) => {
-
         try {
             const { data: moderation, error: modError } = await supabase
                 .from("moderations")
-                .select("id, name, assignment_number, year, semester, due_date, admin_feedback")
+                .select("id, name, assignment_number, year, semester, due_date, admin_feedback, rubric_json")
                 .order("year", { ascending: false })
                 .order("semester", { ascending: false })
                 .order("due_date", { ascending: false });
 
             if (modError) throw modError;
+
+            // DEBUG: print the latest moderation read values
+            console.debug("[DEBUG] GET /moderations/stats/assignment -> Most recent Admin Feedback (raw):", safeStringify(moderation?.[0]?.admin_feedback));
+            console.debug("[DEBUG] GET /moderations/stats/assignment -> Most recent Rubric JSON (parsed):", safeStringify(safeParse(moderation?.[0]?.rubric_json)));
 
             const recentYear = moderation[0].year;
             const recentSem = moderation[0].semester;
@@ -152,14 +317,15 @@ export default function moderationRoutes(supabase) {
                 m.assignment_number === recentAssignment
             );
 
-            assignmentSameSem.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+            assignmentSameSem.sort(
+                (a, b) => new Date(a.due_date) - new Date(b.due_date)
+            );
 
             const { data: users, error: userError } = await supabase
                 .from("users")
                 .select("user_id, first_name, last_name")
                 .eq("is_admin", false)
                 .eq("current_marker", true);
-
 
             if (userError) throw userError;
 
@@ -175,24 +341,20 @@ export default function moderationRoutes(supabase) {
                 year: recentYear,
                 moderations,
             });
-
         } catch (err) {
             console.error(err);
             res.status(500).json({ error: "failed fetching moderation stats" });
         }
     });
 
-
     // fetch moderation to the marker's front page
     router.get("/marker/recent", async (req, res) => {
-
         try {
-
             const userId = req.user?.id;
 
             const { data: moderations, error: modError } = await supabase
                 .from("moderations")
-                .select("id, name, assignment_number, year, semester, due_date, admin_feedback")
+                .select("id, name, assignment_number, year, semester, due_date, admin_feedback, rubric_json")
                 .order("year", { ascending: false })
                 .order("semester", { ascending: false })
                 .order("due_date", { ascending: false });
@@ -200,21 +362,26 @@ export default function moderationRoutes(supabase) {
             if (modError) throw modError;
             if (!moderations?.length) return res.json({ results: [] });
 
+            // DEBUG: preview what is being read
+            console.debug("[DEBUG] GET /marker/recent -> First Admin Feedback (raw):", safeStringify(moderations?.[0]?.admin_feedback));
+            console.debug("[DEBUG] GET /marker/recent -> First Rubric JSON (parsed):", safeStringify(safeParse(moderations?.[0]?.rubric_json)));
+
             const recentYear = moderations[0].year;
             const recentSem = moderations[0].semester;
             const recentAssignment = moderations[0].assignment_number;
 
-            const assignmentSameSem = moderations.filter((m) =>
-                m.year === recentYear &&
-                m.semester === recentSem &&
-                m.assignment_number === recentAssignment
+            const assignmentSameSem = moderations.filter(
+                (m) =>
+                    m.year === recentYear &&
+                    m.semester === recentSem &&
+                    m.assignment_number === recentAssignment
             );
 
-            assignmentSameSem.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
-
+            assignmentSameSem.sort(
+                (a, b) => new Date(a.due_date) - new Date(b.due_date)
+            );
 
             const moderationIds = assignmentSameSem.map((m) => m.id);
-
 
             const { data: marks, error: marksError } = await supabase
                 .from("marks")
@@ -222,9 +389,7 @@ export default function moderationRoutes(supabase) {
                 .eq("marker_id", userId)
                 .in("moderation_id", moderationIds);
 
-
             if (marksError) throw marksError;
-
 
             const result = assignmentSameSem.map((mod) => {
                 const record = marks.find((m) => m.moderation_id === mod.id);
@@ -237,10 +402,16 @@ export default function moderationRoutes(supabase) {
                                 ? JSON.parse(mod.admin_feedback)
                                 : mod.admin_feedback;
 
-                        if (feedback.criteria && Array.isArray(feedback.criteria)) {
+                        // DEBUG: parsed admin feedback actually used to render totals
+                        console.debug("[DEBUG] GET /marker/recent -> Parsed Admin Feedback (used):", safeStringify(feedback));
+
+                        if (feedback?.criteria && Array.isArray(feedback.criteria)) {
                             totalScore = feedback.criteria.reduce((sum, c) => {
-                                const [, maxPart] = (c.admin_score || "").split("/").map((s) => s.trim());
-                                return sum + (parseFloat(maxPart) || 0);
+                                const [, maxPart] = (c?.admin_score || "")
+                                    .split("/")
+                                    .map((s) => s.trim());
+                                const max = parseFloat(maxPart);
+                                return sum + (Number.isFinite(max) ? max : 0);
                             }, 0);
                         }
                     }
@@ -257,12 +428,16 @@ export default function moderationRoutes(supabase) {
                                 : record.scores;
 
                         const numericScores = parsedScores.map((s) => {
-                            const [numPart] = (s.score || "").split("/").map((s) => s.trim());
-                            return parseFloat(numPart) || 0;
+                            const [numPart] = (s?.score || "")
+                                .split("/")
+                                .map((t) => t.trim());
+                            const val = parseFloat(numPart);
+                            return Number.isFinite(val) ? val : 0;
                         });
 
-                        markerScore = numericScores.reduce((a, b) => a + b, 0).toFixed(2);
-
+                        markerScore = numericScores
+                            .reduce((a, b) => a + b, 0)
+                            .toFixed(2);
                     } catch (error) {
                         console.warn("error parsing marker scores", error);
                     }
@@ -274,9 +449,8 @@ export default function moderationRoutes(supabase) {
                     due_date: mod.due_date,
                     submitted_at: record?.submitted_at || "-",
                     score_progress:
-                        markerScore === "-" ? `- / ${totalScore}` : `${markerScore} / ${totalScore}`
+                        markerScore === "-" ? `- / ${totalScore}` : `${markerScore} / ${totalScore}`,
                 };
-
             });
 
             res.json({
@@ -285,47 +459,52 @@ export default function moderationRoutes(supabase) {
                 year: recentYear,
                 result,
             });
-
         } catch (err) {
             console.error("error fetching current markings", err);
             res.status(500).json({ error: "failed fetching current markings" });
         }
     });
 
-
     // fetching marker's stats
-    router.get("/marker/stats/assignment", async(req, res) => {
-
+    router.get("/marker/stats/assignment", async (req, res) => {
         try {
-
             const userId = req.user?.id;
 
             const { data: moderation, error: modError } = await supabase
                 .from("moderations")
-                .select("id, name, assignment_number, year, semester, due_date, admin_feedback")
+                .select("id, name, assignment_number, year, semester, due_date, admin_feedback, rubric_json")
                 .order("year", { ascending: false })
                 .order("semester", { ascending: false })
                 .order("due_date", { ascending: false });
 
             if (modError) throw modError;
 
+            // DEBUG: show what is read for the latest moderation
+            console.debug("[DEBUG] GET /marker/stats/assignment -> Latest Admin Feedback (raw):", safeStringify(moderation?.[0]?.admin_feedback));
+            console.debug("[DEBUG] GET /marker/stats/assignment -> Latest Rubric JSON (parsed):", safeStringify(safeParse(moderation?.[0]?.rubric_json)));
+
             const recentYear = moderation[0].year;
             const recentSem = moderation[0].semester;
             const recentAssignment = moderation[0].assignment_number;
 
-            const assignmentSameSem = moderation.filter((m) =>
-                m.year === recentYear &&
-                m.semester === recentSem &&
-                m.assignment_number === recentAssignment
+            const assignmentSameSem = moderation.filter(
+                (m) =>
+                    m.year === recentYear &&
+                    m.semester === recentSem &&
+                    m.assignment_number === recentAssignment
             );
 
-            assignmentSameSem.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+            assignmentSameSem.sort(
+                (a, b) => new Date(a.due_date) - new Date(b.due_date)
+            );
 
             const moderationIds = assignmentSameSem.map((m) => m.id);
 
             const { data: stats, error: statsError } = await supabase
                 .from("moderation_stats")
-                .select("moderation_id, marker_id, criterion, max_points, unit_chair_marks, range_lower, range_upper, marker_mark")
+                .select(
+                    "moderation_id, marker_id, criterion, max_points, unit_chair_marks, range_lower, range_upper, marker_mark"
+                )
                 .in("moderation_id", moderationIds);
 
             if (statsError) throw statsError;
@@ -337,48 +516,66 @@ export default function moderationRoutes(supabase) {
             }
 
             const moderationStats = assignmentSameSem.map((mod) => {
-                const stats = groupedStats[mod.id] || [];
-                const criteria = [...new Set(stats.map((s) => s.criterion))];
+                const modStats = groupedStats[mod.id] || [];
+                const criteria = [...new Set(modStats.map((s) => s.criterion))];
 
                 const adminScores = criteria.map((c) => {
-                    const row = stats.find((s) => s.criterion === c && s.unit_chair_marks != null);
+                    const row = modStats.find(
+                        (s) => s.criterion === c && s.unit_chair_marks != null
+                    );
                     return row ? parseFloat(row.unit_chair_marks) : 0;
                 });
-                const adminTotal = adminScores.reduce((a, b) => a + b, 0).toFixed(2);
+                const adminTotal = adminScores
+                    .reduce((a, b) => a + b, 0)
+                    .toFixed(2);
 
                 const lowerBound = criteria.map((c) => {
-                    const row = stats.find((s) => s.criterion === c);
+                    const row = modStats.find((s) => s.criterion === c);
                     return row ? parseFloat(row.range_lower) : 0;
                 });
 
                 const upperBound = criteria.map((c) => {
-                    const row = stats.find((s) => s.criterion === c);
+                    const row = modStats.find((s) => s.criterion === c);
                     return row ? parseFloat(row.range_upper) : 0;
                 });
 
-                const lowerTotal = lowerBound.reduce((a, b) => a + b, 0).toFixed(2);
-                const upperTotal = upperBound.reduce((a, b) => a + b, 0).toFixed(2);
+                const lowerTotal = lowerBound
+                    .reduce((a, b) => a + b, 0)
+                    .toFixed(2);
+                const upperTotal = upperBound
+                    .reduce((a, b) => a + b, 0)
+                    .toFixed(2);
 
                 const markerScores = criteria.map((c) => {
-                    const row = stats.find((s) => s.criterion === c && Number(s.marker_id) === Number(userId));
-                    return row && row.marker_mark != null ? parseFloat(row.marker_mark) : "-";
+                    const row = modStats.find(
+                        (s) =>
+                            s.criterion === c && Number(s.marker_id) === Number(userId)
+                    );
+                    return row && row.marker_mark != null
+                        ? parseFloat(row.marker_mark)
+                        : "-";
                 });
 
                 const markerTotal =
-                    markerScores.every((v) => v === "-") ? "-"
+                    markerScores.every((v) => v === "-")
+                        ? "-"
                         : markerScores
-                            .reduce((sum, v) => (v !== "-" ? sum + parseFloat(v) : sum), 0)
+                            .reduce(
+                                (sum, v) => (v !== "-" ? sum + parseFloat(v) : sum),
+                                0
+                            )
                             .toFixed(2);
 
                 const hasMarked = markerScores.some((v) => v !== "-");
 
-                const rows = hasMarked ?
-                    [
+                const rows = hasMarked
+                    ? [
                         { label: "Unit Chair Marks", scores: adminScores, total: adminTotal },
                         { label: "5% Lower Range", scores: lowerBound, total: lowerTotal },
                         { label: "5% Upper Range", scores: upperBound, total: upperTotal },
                         { label: "Your Marks", scores: markerScores, total: markerTotal },
-                    ] : [];
+                    ]
+                    : [];
 
                 return {
                     id: mod.id,
@@ -387,7 +584,6 @@ export default function moderationRoutes(supabase) {
                     rows,
                     hasMarked,
                 };
-
             });
 
             res.json({
@@ -396,13 +592,10 @@ export default function moderationRoutes(supabase) {
                 year: recentYear,
                 moderations: moderationStats,
             });
-
         } catch (error) {
             console.log(error);
             res.status(500).json({ error: "failed fetching marker stats" });
         }
-
-
     });
 
 
@@ -424,6 +617,10 @@ export default function moderationRoutes(supabase) {
             return res.status(404).json({ error: "Failed to fetch moderation" });
         }
 
+        // DEBUG: exactly what is being read (raw) and parsed for this moderation
+        console.debug("[DEBUG] GET /moderations/:id -> Admin Feedback (raw):", safeStringify(data?.admin_feedback));
+        console.debug("[DEBUG] GET /moderations/:id -> Rubric JSON (parsed):", safeStringify(safeParse(data?.rubric_json)));
+
         if (data.assignment_url) {
             const { data: publicURL } = supabase.storage
                 .from("comp30022-amt")
@@ -439,21 +636,24 @@ export default function moderationRoutes(supabase) {
             .eq("marker_id", markerId)
             .maybeSingle();
 
-            data.marks = marks || null;
+        data.marks = marks || null;
 
         res.json(data);
-
     });
-
 
     // saving marker's marks
     router.post("/marks", async (req, res) => {
-
         try {
-            const { moderation_id, marker_id, scores, comments, total_score, submitted_at } = req.body;
+            const {
+                moderation_id,
+                marker_id,
+                scores,
+                comments,
+                total_score,
+                submitted_at,
+            } = req.body;
 
             console.log("Incoming POST /marks:", req.body);
-
 
             const { data: markData, error: markError } = await supabase
                 .from("marks")
@@ -471,40 +671,109 @@ export default function moderationRoutes(supabase) {
 
             if (moderationError) throw moderationError;
 
-            const adminCriteria = moderationData.admin_feedback?.criteria || [];
-            const rubricCriteria = moderationData.rubric_json?.criteria || [];
-            const markerScores = markData.scores || [];
+            // DEBUG: what was read from moderation
+            console.debug("[DEBUG] POST /marks -> Admin Feedback (raw):", safeStringify(moderationData?.admin_feedback));
+            console.debug("[DEBUG] POST /marks -> Rubric JSON (raw):", safeStringify(moderationData?.rubric_json));
+
+            // normalise admin_feedback and rubric_json
+            let adminFeedback = moderationData.admin_feedback;
+            try {
+                if (typeof adminFeedback === "string") {
+                    adminFeedback = JSON.parse(adminFeedback);
+                }
+            } catch (e) {
+                console.warn("error parsing moderation admin_feedback", e);
+                adminFeedback = {};
+            }
+
+            let rubric = moderationData.rubric_json;
+            try {
+                if (typeof rubric === "string") {
+                    rubric = JSON.parse(rubric);
+                }
+            } catch (e) {
+                console.warn("error parsing moderation rubric_json", e);
+                rubric = {};
+            }
+
+            // DEBUG: exactly what is rendered/used after parsing
+            console.debug("[DEBUG] POST /marks -> Admin Feedback (parsed):", safeStringify(adminFeedback));
+            console.debug("[DEBUG] POST /marks -> Rubric JSON (parsed):", safeStringify(rubric));
+
+            const adminCriteria = Array.isArray(adminFeedback?.criteria)
+                ? adminFeedback.criteria
+                : [];
+            const rubricCriteria = Array.isArray(rubric?.criteria)
+                ? rubric.criteria
+                : [];
+
+            // normalise marker scores
+            let markerScores = markData.scores || [];
+            try {
+                if (typeof markerScores === "string") {
+                    markerScores = JSON.parse(markerScores);
+                }
+            } catch (e) {
+                console.warn("error parsing markData.scores", e);
+                markerScores = [];
+            }
 
             const criteriaStats = adminCriteria.map((criterion, index) => {
-                const [adminScore, adminOutOf] = criterion.admin_score
+                const adminScoreStr =
+                    criterion && typeof criterion.admin_score === "string"
+                        ? criterion.admin_score
+                        : "0 / 0";
+
+                const [adminScoreRaw, adminOutOfRaw] = adminScoreStr
                     .split(" / ")
-                    .map(parseFloat);
+                    .map((s) => s.trim());
+
+                const adminScore = parseFloat(adminScoreRaw);
+                const adminOutOf = parseFloat(adminOutOfRaw);
 
                 const markerScoreStr = markerScores[index]?.score || "0 / 0";
-                const [markerScore, markerOutOf] = markerScoreStr
+                const [markerScoreRaw, markerOutOfRaw] = markerScoreStr
                     .split(" / ")
-                    .map(parseFloat);
+                    .map((s) => s.trim());
 
-                const maxPoints = rubricCriteria[index]?.maxPoints || adminOutOf || markerOutOf || 0;
-                const adminPercent = ((adminScore / maxPoints) * 100).toFixed(2);
-                const markerPercent = ((markerScore / maxPoints) * 100).toFixed(2);
-                const diffPercent = (adminPercent - markerPercent).toFixed(2);
+                const markerScore = parseFloat(markerScoreRaw);
+                const markerOutOf = parseFloat(markerOutOfRaw);
+
+                const safeAdminScore = Number.isFinite(adminScore) ? adminScore : 0;
+                const safeAdminOutOf = Number.isFinite(adminOutOf) ? adminOutOf : 0;
+                const safeMarkerScore = Number.isFinite(markerScore)
+                    ? markerScore
+                    : 0;
+                const safeMarkerOutOf = Number.isFinite(markerOutOf)
+                    ? markerOutOf
+                    : 0;
+
+                const maxPoints =
+                    rubricCriteria[index]?.maxPoints ||
+                    safeAdminOutOf ||
+                    safeMarkerOutOf ||
+                    0;
+
+                const adminPercentVal =
+                    maxPoints > 0 ? (safeAdminScore / maxPoints) * 100 : 0;
+                const markerPercentVal =
+                    maxPoints > 0 ? (safeMarkerScore / maxPoints) * 100 : 0;
+                const diffPercentVal = adminPercentVal - markerPercentVal;
 
                 return {
                     moderation_id,
                     marker_id,
                     criterion: criterion.criterion,
                     max_points: maxPoints,
-                    unit_chair_marks: adminScore,
-                    range_lower: (adminScore - maxPoints * 0.05).toFixed(2),
-                    range_upper: (adminScore + maxPoints * 0.05).toFixed(2),
-                    marker_mark: markerScore,
-                    unit_chair_pct: adminPercent,
-                    marker_pct: markerPercent,
-                    difference_pct: diffPercent,
+                    unit_chair_marks: safeAdminScore,
+                    range_lower: (safeAdminScore - maxPoints * 0.05).toFixed(2),
+                    range_upper: (safeAdminScore + maxPoints * 0.05).toFixed(2),
+                    marker_mark: safeMarkerScore,
+                    unit_chair_pct: adminPercentVal.toFixed(2),
+                    marker_pct: markerPercentVal.toFixed(2),
+                    difference_pct: diffPercentVal.toFixed(2),
                 };
             });
-
 
             await supabase
                 .from("moderation_stats")
@@ -512,7 +781,9 @@ export default function moderationRoutes(supabase) {
                 .eq("moderation_id", moderation_id)
                 .eq("marker_id", marker_id);
 
-            const { error: statsError } = await supabase.from("moderation_stats").insert(criteriaStats);
+            const { error: statsError } = await supabase
+                .from("moderation_stats")
+                .insert(criteriaStats);
             if (statsError) throw statsError;
 
             res.status(200).json({
@@ -524,15 +795,11 @@ export default function moderationRoutes(supabase) {
                     submitted_at,
                 },
             });
-
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: "Failed to save stats" } );
+            res.status(500).json({ error: "Failed to save stats" });
         }
-
     });
-
-
 
     // get marker's mark
     router.get("/marks/:moderationId/:markerId", async (req, res) => {
@@ -573,13 +840,15 @@ export default function moderationRoutes(supabase) {
                 return res.status(404).json({ error: "no feedback found" });
             }
 
+            // DEBUG: exactly what is being rendered here
+            console.debug("[DEBUG] GET /feedback/:moderationId -> Admin Feedback (raw):", safeStringify(data.admin_feedback));
+
             res.status(200).json(data.admin_feedback);
         } catch (error) {
             console.error("Error fetching feedback", error);
             res.status(500).json({ error: "Failed to fetch feedback" });
         }
     });
-
 
     // get admin and marker's marks
     router.get("/stats/:moderationId/:markerId", async (req, res) => {
@@ -592,7 +861,6 @@ export default function moderationRoutes(supabase) {
                 .eq("id", moderationId)
                 .single();
 
-
             const { data: markData, error: markError } = await supabase
                 .from("marks")
                 .select("scores")
@@ -602,55 +870,124 @@ export default function moderationRoutes(supabase) {
 
             if (moderationError) {
                 console.error(moderationError);
-                return res.status(404).json({error: "Moderation not found"});
+                return res.status(404).json({ error: "Moderation not found" });
             }
 
             if (markError) {
                 console.error(markError);
-                return res.status(404).json({ error: "Marks not found for this marker" });
+                return res
+                    .status(404)
+                    .json({ error: "Marks not found for this marker" });
             }
 
-            const adminCriteria = moderationData.admin_feedback?.criteria || [];
-            const rubricCriteria = moderationData.rubric_json?.criteria || [];
-            const markerScores = markData.scores || [];
+            // DEBUG: raw values read
+            console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Admin Feedback (raw):", safeStringify(moderationData?.admin_feedback));
+            console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Rubric JSON (raw):", safeStringify(moderationData?.rubric_json));
+
+            // normalise admin_feedback and rubric_json
+            let adminFeedback = moderationData.admin_feedback;
+            try {
+                if (typeof adminFeedback === "string") {
+                    adminFeedback = JSON.parse(adminFeedback);
+                }
+            } catch (e) {
+                console.warn("error parsing moderation admin_feedback", e);
+                adminFeedback = {};
+            }
+
+            let rubric = moderationData.rubric_json;
+            try {
+                if (typeof rubric === "string") {
+                    rubric = JSON.parse(rubric);
+                }
+            } catch (e) {
+                console.warn("error parsing moderation rubric_json", e);
+                rubric = {};
+            }
+
+            // DEBUG: parsed values that are actually used for rendering stats
+            console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Admin Feedback (parsed):", safeStringify(adminFeedback));
+            console.debug("[DEBUG] GET /stats/:moderationId/:markerId -> Rubric JSON (parsed):", safeStringify(rubric));
+
+            const adminCriteria = Array.isArray(adminFeedback?.criteria)
+                ? adminFeedback.criteria
+                : [];
+            const rubricCriteria = Array.isArray(rubric?.criteria)
+                ? rubric.criteria
+                : [];
+
+            // normalise marker scores
+            let markerScores = markData.scores || [];
+            try {
+                if (typeof markerScores === "string") {
+                    markerScores = JSON.parse(markerScores);
+                }
+            } catch (e) {
+                console.warn("error parsing markData.scores", e);
+                markerScores = [];
+            }
 
             const criteriaStats = adminCriteria.map((criterion, index) => {
-                const [adminScore, adminOutOf] = criterion.admin_score
+                const adminScoreStr =
+                    criterion && typeof criterion.admin_score === "string"
+                        ? criterion.admin_score
+                        : "0 / 0";
+
+                const [adminScoreRaw, adminOutOfRaw] = adminScoreStr
                     .split(" / ")
-                    .map(parseFloat);
+                    .map((s) => s.trim());
+
+                const adminScore = parseFloat(adminScoreRaw);
+                const adminOutOf = parseFloat(adminOutOfRaw);
 
                 const markerScoreStr = markerScores[index]?.score || "0 / 0";
-                const [markerScore, markerOutOf] = markerScoreStr
+                const [markerScoreRaw, markerOutOfRaw] = markerScoreStr
                     .split(" / ")
-                    .map(parseFloat);
+                    .map((s) => s.trim());
 
-                const maxPoints = rubricCriteria[index]?.maxPoints || adminOutOf || markerOutOf || 0;
+                const markerScore = parseFloat(markerScoreRaw);
+                const markerOutOf = parseFloat(markerOutOfRaw);
 
-                const adminPercent = ((adminScore / maxPoints) * 100).toFixed(2);
-                const markerPercent = ((markerScore / maxPoints) * 100).toFixed(2);
-                const diffPercent = (adminPercent - markerPercent).toFixed(2);
+                const safeAdminScore = Number.isFinite(adminScore) ? adminScore : 0;
+                const safeAdminOutOf = Number.isFinite(adminOutOf) ? adminOutOf : 0;
+                const safeMarkerScore = Number.isFinite(markerScore)
+                    ? markerScore
+                    : 0;
+                const safeMarkerOutOf = Number.isFinite(markerOutOf)
+                    ? markerOutOf
+                    : 0;
+
+                const maxPoints =
+                    rubricCriteria[index]?.maxPoints ||
+                    safeAdminOutOf ||
+                    safeMarkerOutOf ||
+                    0;
+
+                const adminPercentVal =
+                    maxPoints > 0 ? (safeAdminScore / maxPoints) * 100 : 0;
+                const markerPercentVal =
+                    maxPoints > 0 ? (safeMarkerScore / maxPoints) * 100 : 0;
+                const diffPercentVal = adminPercentVal - markerPercentVal;
 
                 return {
                     criterion: criterion.criterion,
                     max_points: maxPoints,
-                    admin_score: adminScore,
-                    admin_percent: adminPercent,
-                    lower: (adminScore - maxPoints * 0.05).toFixed(2),
-                    upper: (adminScore + maxPoints * 0.05).toFixed(2),
-                    marker_score: markerScore,
-                    marker_percent: markerPercent,
-                    diff_percent: diffPercent,
+                    admin_score: safeAdminScore,
+                    admin_percent: adminPercentVal.toFixed(2),
+                    lower: (safeAdminScore - maxPoints * 0.05).toFixed(2),
+                    upper: (safeAdminScore + maxPoints * 0.05).toFixed(2),
+                    marker_score: safeMarkerScore,
+                    marker_percent: markerPercentVal.toFixed(2),
+                    diff_percent: diffPercentVal.toFixed(2),
                 };
             });
 
             res.json({ criteria: criteriaStats });
         } catch (error) {
             console.error(error);
-            res.status(404).json({error: "Failed to calculate stats"});
+            res.status(404).json({ error: "Failed to calculate stats" });
         }
-
     });
 
     return router;
-
 }
