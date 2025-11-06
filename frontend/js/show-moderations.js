@@ -133,6 +133,7 @@ const createModuleColumn = (module, role) => {
     column.className = "column";
     column.dataset.moduleId = module.id ?? "";
     column.dataset.moduleName = module.name ?? "";
+    column.dataset.moduleAssignment = module.assignment_number ?? "";
     column.dataset.moduleModeration = module.moderation_number ?? "";
     column.dataset.moduleYear = module.year ?? "";
     column.dataset.moduleSemester = module.semester ?? "";
@@ -180,19 +181,21 @@ const createModuleColumn = (module, role) => {
     table.appendChild(headerRow);
 
     if (role === "admin") {
+        appendRow(table, "Assignment", module.assignment_number ?? "-");
         appendRow(table, "Moderation", module.moderation_number ?? "-");
         appendRow(table, "Deadline", formatDate(module.due_date));
         appendRow(table, "Uploaded", formatDate(module.upload_date));
         appendRow(table, "Visibility", "", { wrap: createVisibilityIndicator(module.hidden_from_markers) });
         appendRow(table, "Description", module.description || "No description provided.");
     } else {
+        appendRow(table, "Assignment", module.assignment_number ?? "-");
         appendRow(table, "Deadline", formatDate(module.due_date));
         appendRow(table, "Uploaded", formatDate(module.upload_date));
         appendRow(table, "Description", module.description || "No description provided.");
     }
 
     if (module.assignment_public_url) {
-        appendRow(table, "Assignment", "Download", { link: module.assignment_public_url });
+        appendRow(table, "Assignment Upload", "Download", { link: module.assignment_public_url });
     }
 
     if (module.rubric_public_url) {

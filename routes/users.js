@@ -12,7 +12,7 @@ export default function userRoutes(supabase) {
   router.post("/delete_user/:userID", async (req, res) => {
     const id = req.params.userID;
     try {
-      console.log("delete user with auth_id", id)
+      console.log("Attempting to delete user with auth_id:", id)
       
       const { data, error } = await supabase
         .from("users")
@@ -47,7 +47,7 @@ export default function userRoutes(supabase) {
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("auth_id, first_name, last_name, email, is_admin")
+        .select("auth_id, first_name, last_name, email, is_admin, user_id")
         .eq("is_deleted", false);
       if (error) {
         console.error("be error", error);

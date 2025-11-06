@@ -7,6 +7,7 @@
 let rubricData;
 let currentUser = null;
 let moderationId = null;
+let overrideMarkerId = null;
 
 
 /* -----------------------------------Fetch User Info--------------------------------------- */
@@ -20,7 +21,6 @@ async function getUserInfo() {
 
         if (!user.ok) throw new Error("Failed to fetch user data");
         currentUser = await user.json();
-        console.log(currentUser);
     } catch (error) {
         console.error("error fetching user info", error);
     }
@@ -31,7 +31,9 @@ async function getUserInfo() {
 
 function getModerationID() {
     const urlParams = new URLSearchParams(window.location.search);
-    moderationId = urlParams.get("id") || 1;
+    moderationId = urlParams.get("id");
+    overrideMarkerId = urlParams.get("marker");
+    return { moderationId, overrideMarkerId };
 }
 
 
@@ -42,7 +44,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         await getUserInfo();
         getModerationID();
 
-        if (currentUser.role === "Admin") {
+        if (currentUser.role === "Admin" && overrideMarkerId) {
+            await loadMarkerModeration();
+        } else if (currentUser.role === "Admin") {
             await loadAdminModeration();
         } else {
             await loadMarkerModeration();
@@ -121,16 +125,41 @@ async function loadAdminModeration() {
 /* ---------------------------------Load Marker's Moderation-----------------------------------*/
 
 async function loadMarkerModeration() {
-    const moderationRes = await fetch(`/api/moderations/${moderationId}`)
-    const moderationData = await moderationRes.json();
+    const { moderationId, overrideMarkerId } = getModerationID();
 
-    console.log("Moderation Data:", moderationData);
+    let moderationURL = `/api/moderations/${moderationId}`;
+    if (overrideMarkerId) {
+        moderationURL += `?marker_id=${overrideMarkerId}`;
+    }
+
+    const moderationRes = await fetch(moderationURL, { credentials: 'include' });
+    const moderationData = await moderationRes.json();
     rubricData = moderationData;
+
+    let subtitle = `${currentUser.first_name} ${currentUser.last_name}`;
+
+    const overrideString = String(overrideMarkerId ?? "");
+    if (overrideString && overrideString !== String(currentUser.user_id)) {
+        try {
+            const markerRes = await fetch(`/api/admin/user/${encodeURIComponent(overrideString)}/profile`, {
+                credentials: 'include'
+            });
+            if (markerRes.ok) {
+                const markerData = await markerRes.json();
+                const user = markerData.user;
+                if (user && user.first_name && user.last_name) {
+                    subtitle = `${user.first_name} ${user.last_name}`;
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
 
     document.getElementById("moderation-title").textContent = rubricData.name;
     document.getElementById("moderation-doc").src = rubricData.assignment_public_url;
-    document.getElementById("moderation-subtitle").textContent =
-        `${currentUser.first_name} ${currentUser.last_name}'s Moderation Attempt`;
+    document.getElementById("moderation-subtitle").textContent = `${subtitle}'s Moderation`;
 
     document.getElementById("moderation-description").textContent = rubricData.description || "No description";
     const dueDate = document.getElementById("due-date");
@@ -153,7 +182,8 @@ async function loadMarkerModeration() {
         }
     }
 
-    const marksRes = await fetch(`/api/marks/${moderationId}/${currentUser.user_id}`)
+    const markerId = overrideString || currentUser.user_id;
+    const marksRes = await fetch(`/api/marks/${moderationId}/${markerId}`, { credentials: 'include' });
     const statsTab = document.getElementById("tab-stats");
     const feedbackTab = document.getElementById("tab-feedback");
     const statsTabContent = document.getElementById("Statistics");
@@ -161,6 +191,7 @@ async function loadMarkerModeration() {
 
     if (marksRes.ok) {
         const marksData = await marksRes.json();
+        console.log(marksData);
 
         if (marksData && marksData.scores) {
 
@@ -179,7 +210,7 @@ async function loadMarkerModeration() {
                 submitted_at: marksData.submitted_at
             });
 
-            await renderStatistics(moderationId, currentUser.user_id);
+            await renderStatistics(moderationId, markerId);
             await renderAdminFeedback(moderationId);
 
         } else {
@@ -351,14 +382,18 @@ function renderMarkedModeration(results) {
         return;
     }
 
+    console.log(resultStorage);
 
     resultStorage.forEach((element) => {
-        if (!element || !rubricData?.rubric_json?.criteria[element.criterionID]) {
+        console.log(element);
+        console.log(rubricData.rubric_json.criteria[Number(element.criterionID)]);
+
+        if (!element || !rubricData?.rubric_json?.criteria[Number(element.criterionID)]) {
             console.warn("Skipping invalid entry:", element);
             return;
         }
 
-        const criterionData = rubricData.rubric_json.criteria[element.criterionID]
+        const criterionData = rubricData.rubric_json.criteria[Number(element.criterionID)]
         const criterion = document.createElement("div");
         criterion.classList.add("marked-criterion");
 
@@ -380,9 +415,9 @@ function renderMarkedModeration(results) {
         const gradeGroups = criterionData.grades;
 
         const activeGroup = gradeGroups.find((g) => {
-            const range = g.pointsRange.match(/\(([\d.]+)\s*-\s*([\d.]+)/);
-            const min = parseFloat(range[1]);
-            const max = parseFloat(range[2]);
+            const parsed = parsePointsRange(g.pointsRange);
+            const { min, max } = parsed;
+
             return scoreValue >= min && scoreValue <= max;
         })
 
@@ -606,10 +641,11 @@ function highlightGrade(score, gradeDes, grades) {
     const groupDes = gradeDes.querySelectorAll("tr:nth-child(2) td");
     const gradeHead = gradeDes.querySelectorAll("tr:first-child th");
 
+
     grades.forEach((g, i) => {
-        const range = g.pointsRange.match(/\(([\d.]+)\s*-\s*([\d.]+)/);
-        const min = parseFloat(range[1]);
-        const max = parseFloat(range[2]);
+        const parsed = parsePointsRange(g.pointsRange);
+        const { min, max } = parsed;
+
         if (score>=min && score<=max) {
             gradeHead[i].classList.add("highlighted");
             groupDes[i].classList.add("highlighted");
@@ -619,6 +655,29 @@ function highlightGrade(score, gradeDes, grades) {
         }
     });
 
+}
+
+/* ------------------------------------Parse points range---------------------------------------*/
+
+function parsePointsRange(range) {
+    if (!range || typeof range !== "string") {
+        return null;
+    }
+
+    const clean = range
+        .replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, "-")
+        .trim();
+
+    const match = clean.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+
+    if (!match) {
+        return null;
+    }
+
+    return {
+        min: parseFloat(match[1]),
+        max: parseFloat(match[2]),
+    }
 }
 
 /* -----------------------Alert the user when submission is made----------------------------- */
@@ -747,3 +806,5 @@ function calculateTotalScore(data) {
 
     totalScore.textContent = `_ / ${maxScore}`;
 }
+
+
