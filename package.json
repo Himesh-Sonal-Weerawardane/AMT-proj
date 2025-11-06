@@ -2,7 +2,7 @@
   "name": "amt",
   "version": "1.0.0",
   "description": "Assignment Moderation Tool for IT Project Created on 8th August 2025",
-  "main": "server.js",
+  "main": "index.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
