@@ -256,9 +256,139 @@ function applyDocumentPreview(objectEl, url, options = {}) {
     return { supported: true };
 }
 
-// =========================
-/* Main */
-// =========================
+// -------- Render moderation stats -------------
+function renderStatsCard(moderation) {
+
+    const container = document.getElementById("moderation-stats-body");
+    if (!container) return;
+
+    const { moderationName, criteria, rows } = moderation;
+
+    let statsHTML = `
+        <div class="stats-wrapper">
+            <div class="moderation-stats-title">
+                <a href="./moderation.html?id=${moderation.id}" class="moderation-link">
+                     ${moderationName}
+                </a>
+            </div>
+                
+            <div class="stats-container">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Criterion</th>
+                            ${rows.map((r) => `<th>${r.label}</th>`).join("")}
+                        </tr>
+                    </thead>
+                    <tbody>    
+        `;
+
+    criteria.forEach((criterion, index) => {
+        statsHTML += `
+                <tr>
+                    <td class="row-label">${criterion}</td>
+                    ${rows.map((r) => {
+            const score = r.scores[index];
+
+            if (
+                score === "-" ||
+                r.label.includes("Range") ||
+                r.label.includes("Unit Chair")
+            ) {
+                return `<td>${score}</td>`;
+            } else {
+                const rowLower = rows.find((row) => row.label === "5% Lower Range");
+                const rowUpper = rows.find((row) => row.label === "5% Upper Range");
+                const inRange =
+                    typeof score === "number" &&
+                    score >= rowLower.scores[index] &&
+                    score <= rowUpper.scores[index];
+                return `<td class="${inRange ? "in-range" : "out-of-range"}">${score}</td>`;
+            }
+        }).join("")}
+                </tr>
+            `;
+    });
+
+    const lowerRow = rows.find((row) => row.label === "5% Lower Range");
+    const upperRow = rows.find((row) => row.label === "5% Upper Range");
+
+    statsHTML += `
+            <tr class="total-row">
+                <td class="row-label">Total</td>
+                ${rows.map((r) => {
+        if (!r.label.includes("Range") && !r.label.includes("Unit Chair")) {
+            const lower = parseFloat(lowerRow?.total || 0);
+            const upper = parseFloat(upperRow?.total || 0);
+            const totalVal = parseFloat(r.total || 0);
+
+            const inRange = totalVal >= lower && totalVal <= upper;
+            return `<td class="total-cell ${inRange ? "in-range" : "out-of-range"}">${r.total}</td>`;
+        }
+        return `<td class="total-cell">${r.total}</td>`;
+    }).join("")}
+            </tr>
+        `;
+
+    statsHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+
+    container.innerHTML = statsHTML;
+
+}
+
+// ------------ Render moderation overall statistics -----------
+
+function renderOverallStats(overallStats) {
+
+    const container = document.getElementById("overall-stats");
+    if (!container) return;
+
+    if (!Array.isArray(overallStats) || overallStats.length === 0) {
+        container.innerHTML = `<p style="text-align: center">No markers have marked this moderation yet.</p>`;
+        return;
+    }
+
+    let html = `
+        <div class="stats-wrapper">
+            <div class="stats-container">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Criterion</th>
+                            <th>Mean</th>
+                            <th>Standard Deviation</th>
+                            <th>Minimum</th>
+                            <th>Maximum</th>
+                        </tr>
+                    </thead>
+                    
+                    <tbody>
+                        ${overallStats.map((s) => `
+                            <tr class="${s.criterion === "Total" ? "total-row" : ""}">
+                                <td class="row-label">${s.criterion}</td>
+                                <td>${s.mean}</td>
+                                <td>${s.std}</td>
+                                <td>${s.min}</td>
+                                <td>${s.max}</td>
+                            </tr>   
+                        `).join("")}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = html;
+
+}
+
+
 window.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
     const moduleId = params.get("id");
@@ -298,10 +428,29 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         const data = await res.json();
 
-        // Breadcrumb & headings
+        try {
+            const statsRes = await fetch(`/api/moderations/${encodeURIComponent(moduleId)}/stats`);
+            if (statsRes.ok) {
+                const statsData = await statsRes.json();
+                console.log(statsData);
+                renderStatsCard(statsData);
+                renderOverallStats(statsData.overallStats);
+            } else {
+                console.warn(`Failed to load moderation stats.`);
+                document.getElementById("moderation-stats-body").innerHTML =
+                    "<p>No statistics available for this moderation.</p>"
+
+            }
+        } catch (err) {
+            console.error("Failed to load moderation stats.", err);
+            document.getElementById("moderation-stats-body").innerHTML =
+                "<p>Failed to load moderation stats.</p>"
+        }
+
         const breadcrumbSegments = [];
         if (data.year) breadcrumbSegments.push(`Year ${data.year}`);
         if (data.semester) breadcrumbSegments.push(`Semester ${data.semester}`);
+        if (data.assignment_number) breadcrumbSegments.push(`Assignment ${data.assignment_number}`);
         if (data.moderation_number) breadcrumbSegments.push(`Moderation ${data.moderation_number}`);
         document.getElementById("module-breadcrumb").textContent = breadcrumbSegments.join(" • ") || "Module";
 
