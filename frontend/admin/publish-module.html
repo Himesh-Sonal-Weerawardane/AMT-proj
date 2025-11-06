@@ -17,6 +17,9 @@
   />
 </head>
 <body>
+<div id="loading-circle" hidden>
+  <div class="spinner"></div>
+</div>
 
 <!-- Navigation bar -->
 <div id="navbar-container"></div>
@@ -108,6 +111,8 @@
                 placeholder="Provide a detailed module description here... (Not required)"
         ></textarea>
       </div>
+
+
 
       <section class="upload-section">
         <div class="upload-section__heading">
@@ -213,6 +218,45 @@
             </div>
           </label>
         </div>
+
+        <section class="upload-section">
+          <div class="upload-section__heading">
+            <h2 class="upload-section__title">Upload Admin Feedback (optional)</h2>
+            <span class="upload-section__icon" aria-hidden="true">♡</span>
+          </div>
+          <div class="upload-section__content">
+            <label class="file-upload-card" for="admin-feedback-upload" data-upload-card>
+              <input
+                      class="file-upload-card__input"
+                      type="file"
+                      id="admin-feedback-upload"
+                      name="admin-feedback"
+                      accept=".pdf,.doc,.docx"
+                      data-upload-input
+              />
+              <div class="file-upload-card__placeholder" data-placeholder>
+                <span class="file-upload-card__icon" aria-hidden="true">⬆</span>
+                <span class="file-upload-card__text">Upload here</span>
+                <span class="file-upload-card__hint">PDF files will display a preview once selected.</span>
+              </div>
+              <div class="file-upload-card__preview" data-preview hidden>
+                <div class="file-upload-card__details">
+                  <h3 class="file-upload-card__title">Preview</h3>
+                  <p class="file-upload-card__filename" data-file-name></p>
+                </div>
+                <object class="file-upload-card__document" data-preview-object type="application/pdf" hidden>
+                  <p class="file-upload-card__fallback-message">
+                    Preview unavailable. Your file will still be uploaded.
+                  </p>
+                </object>
+                <p class="file-upload-card__fallback-message" data-fallback data-default-message="Preview unavailable for this file type. Your file will still be uploaded." hidden>
+                  Preview unavailable for this file type. Your file will still be uploaded.
+                </p>
+              </div>
+            </label>
+          </div>
+        </section>
+
 
         <!-- Manual Rubric Section (Copy data into a table) -->
         <div id="manual-rubric">

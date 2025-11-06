@@ -1,6 +1,8 @@
 // Submit publish module form
 window.addEventListener("DOMContentLoaded", () => {
     console.log("[PublishModule] Initialising publish module form handlers")
+    let isUploading = false;
+    const loadingCircle = document.getElementById("loading-circle");
     const cleanupObjectUrl = (card) => {
         const objectHolder = card.__objectUrl
         if (objectHolder) {
@@ -88,6 +90,10 @@ window.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", async (e) => {
         e.preventDefault() // Prevent URL parameters from being added
         console.log("[PublishModule] Form submission triggered")
+        if (isUploading) {
+            console.log("upload already in progress")
+            return
+        }
 
         const year = document.getElementById("year").value
         const semester = document.getElementById("semester").value
@@ -97,7 +103,7 @@ window.addEventListener("DOMContentLoaded", () => {
         const moduleDeadline = document.getElementById("module-deadline").value
         const moduleDescription = document.getElementById("module-description").value
         const assignmentUpload = document.getElementById("assignment-upload").files[0]
-
+        const adminFeedback = document.getElementById("admin-feedback-upload")?.files?.[0];
         const now = new Date();
         const selectedDate = new Date(moduleDeadline);
         if (selectedDate <= now) {
@@ -130,7 +136,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 const values = Object.values(row);
                 // If there are no values at all, the row is empty
                 if (values.length === 0) return true;
-                
+
                 // Check if a cell is empty
                 return columnsToCheck.some(col => {
                     const cell = row[col] == null ? "" : row[col].toString().trim();
@@ -147,7 +153,9 @@ window.addEventListener("DOMContentLoaded", () => {
             console.log("Manual Rubric Upload");
             // console.log(JSON.stringify(rubricJSON, null, 2));
         }
-          
+        isUploading = true;
+        if (loadingCircle) loadingCircle.hidden = false;
+
         console.log("[PublishModule] Collected form values", {
             year,
             semester,
@@ -159,7 +167,7 @@ window.addEventListener("DOMContentLoaded", () => {
             hasRubricFile: Boolean(rubricUpload),
             hasRubricTable: modeSelect === "automatic"
         });
-        
+
         try {
             const formData = new FormData()
             formData.append("name", name);
@@ -169,8 +177,8 @@ window.addEventListener("DOMContentLoaded", () => {
             formData.append("moderation_number", moderationNumber);
             formData.append("description", moduleDescription);
             formData.append("due_date", moduleDeadline);
-          
-             if (assignmentUpload) {
+
+            if (assignmentUpload) {
                 console.log("[PublishModule] Appending assignment file to form data", {
                     name: assignmentUpload.name,
                     size: assignmentUpload.size,
@@ -178,7 +186,16 @@ window.addEventListener("DOMContentLoaded", () => {
                 });
                 formData.append("assignment", assignmentUpload);
             }
-          
+
+            if (adminFeedback) {
+                console.log("[PublishModule] Appending admin feedback to form data", {
+                    name: adminFeedback.name,
+                    size: adminFeedback.size,
+                    type: adminFeedback.type
+                });
+                formData.append("admin_feedback", adminFeedback);
+            }
+
             // modeSelect is either "automatic" or "manual"
             formData.append("is_rubric_uploaded", modeSelect === "automatic");
             if (modeSelect === "automatic") {
@@ -230,6 +247,9 @@ window.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             console.error("Network or server error:", err)
             alert("Network or server error occurred while publishing the module. Check console for details.")
+        } finally {
+            isUploading = false;
+            if (loadingCircle) loadingCircle.hidden = true;
         }
     })
 })
@@ -263,7 +283,7 @@ const rubricTable = new Handsontable(element, {
     data: [
         {}
     ],
-    
+
     height: '100%',
     width: '100%',
     stretchH: 'all',
