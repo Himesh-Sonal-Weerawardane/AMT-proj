@@ -353,6 +353,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
         if (adminGridEl) {
             adminTable = new Handsontable(adminGridEl, {
+
                 themeName: 'ht-theme-main',
                 columns: [
                     { data: 'criterion', title: 'Criterion', width: 200 },
@@ -373,6 +374,22 @@ window.addEventListener("DOMContentLoaded", async () => {
                 manualRowMove: true,
                 contextMenu: true
             });
+            adminTable.addHook("afterChange", async (changes, source) => {
+                const updatedAdminFeedback = buildAdminFeedbackJSON(adminTable);
+                const updatedRubricJSON    = buildRubricJSONFromTable(rubricTable);
+                try {
+                    const res = await fetch(`/api/moderations/${moduleId}/rubric`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            rubric_json: updatedRubricJSON ,
+                            admin_feedback: updatedAdminFeedback,
+                        }),
+                    });
+                } catch (err) {
+                }
+            });
+
 
             let adminJSON = data.admin_feedback;
             if (typeof adminJSON === "string") {

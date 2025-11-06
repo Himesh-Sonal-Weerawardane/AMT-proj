@@ -927,5 +927,33 @@ export default function moderationRoutes(supabase) {
         }
     });
 
+
+    router.put("/moderations/:id/rubric", async (req, res) => {
+        const { id } = req.body.moderations
+        const { rubric_json, admin_feedback } = req.body;
+
+        try {
+            const payload = {};
+            if (rubric_json !== undefined) payload.rubric_json = rubric_json;
+            if (admin_feedback !== undefined) payload.admin_feedback = admin_feedback;
+
+            if (Object.keys(payload).length === 0) {
+                return res.status(400).json({ error: "No fields to update" });
+            }
+
+            const { error } = await supabase
+                .from("moderations")
+                .update(payload)
+                .eq("id", id);
+
+            if (error) return res.status(500).json({ error: "Failed to update" });
+            res.json({ success: true });
+        } catch (e) {
+            res.status(500).json({ error: "Server error" });
+        }
+    });
+
+
+
     return router;
 }
