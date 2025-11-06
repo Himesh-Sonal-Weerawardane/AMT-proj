@@ -28,7 +28,7 @@ async function listingHandler() {
             <div class="staff-row">
                 <img src="../images/front-page/minus-button.png" class="remove-user" alt="Remove">
                 <div class="staff-profile"></div>
-                <a href="user-profile.html?id=${staff.auth_id}" class="staff-name">${fullName}</a>
+                <a href="./user-profile.html?id=${staff.auth_id}" class="staff-name">${fullName}</a>
                 <div class="staff-email">${staff.email}</div>
                 <div class="staff-role">${role}</div>
             </div>
