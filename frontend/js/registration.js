@@ -2,6 +2,12 @@ const registration = document.getElementById("registration-form");
 registration.addEventListener("submit", async (e) => {
   e.preventDefault();
 
+
+  const button = document.getElementById("submit-button")
+  const message = button.textContent
+  button.disabled=true
+  button.textContent = "Registering"
+
   const urlParams = new URLSearchParams(window.location.search);
   const role = urlParams.get("role");
 
@@ -24,12 +30,15 @@ registration.addEventListener("submit", async (e) => {
       return;
     }
     if (!data.success) {
-      alert("Invite Unsuccessful      " + data.error);
+      alert("Registration Unsuccessful      " + data.error);
     } else {
-      alert("Invite Successful");
+      alert("Registration Successful");
       window.location.href = "../index.html";
     }
   } catch (err) {
     console.error("Network or server error:", err);
+  } finally {
+    button.disabled = false
+    button.textContent = message
   }
 });                                 
