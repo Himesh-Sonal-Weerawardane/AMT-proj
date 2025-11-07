@@ -26,7 +26,11 @@ async function listingHandler() {
         staffCard.classList.add('staff-card','user-profile');
         staffCard.innerHTML = `
             <div class="staff-row">
-                <img src="../images/front-page/minus-button.png" class="remove-user" alt="Remove">
+                <img src="../images/front-page/minus-button.png" 
+                    class="remove-user" 
+                    alt="Remove"
+                    data-auth="${staff.auth_id}"
+                    data-user="${staff.user_id}">
                 <div class="staff-profile"></div>
                 <a href="./user-profile.html?id=${staff.user_id}" class="staff-name">${fullName}</a>
                 <div class="staff-email">${staff.email}</div>
@@ -75,8 +79,8 @@ window.addEventListener('DOMContentLoaded', async() => {
             return
         }
 
-        const userHTML = staffCard.querySelector(".staff-name").getAttribute("href")
-        const id = userHTML.split("id=")[1].trim()
+
+        const id = button.dataset.auth;
 
         const user = staffCard.querySelector(".staff-name").textContent.trim()
         const confirmationStep = confirm(`Are you sure you want to continue with deleting user ${user}?
@@ -87,6 +91,7 @@ window.addEventListener('DOMContentLoaded', async() => {
         }
     
         try{
+
             const res = await fetch(`/api/delete_user/${id}`, { method: "POST" });
             const data = await res.json()
 
