@@ -341,6 +341,7 @@ export default function uploadRoutes(supabase) {
 
                 const moduleId = inserted?.[0]?.id;
                 console.log("[UploadModeration] Module created successfully with ID:", moduleId);
+                return res.json({ success: true, moduleId });
                 try {
                     console.log("[UploadModeration] Sending module creation email...");
                     const { data: moderatorsEmails} = await supabase
@@ -356,7 +357,7 @@ export default function uploadRoutes(supabase) {
                     console.error("[UploadModeration] Failed to send module creation email:", emailError);
                 }
 
-                return res.json({ success: true, moduleId });
+
 
             } catch (err) {
                 console.error("[UploadModeration] Unhandled error while publishing module:", err);
