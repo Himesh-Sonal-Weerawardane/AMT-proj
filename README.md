@@ -37,3 +37,5 @@ This website allows admins to upload assignments and rubrics, manage marking wor
 - Open localhost:3000 in a browser.
 
 Note: Detailed documentation is available on Confluence.
+
+Please note that generative AI was used to assist in debugging syntax errors, logical errors, runtime errors and for finding potential fixes. Generative AI was not used to directly copy code.
