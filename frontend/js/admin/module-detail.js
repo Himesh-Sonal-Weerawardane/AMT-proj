@@ -185,34 +185,8 @@ function extractRubricDataFromTable() {
 
             return {
                 criterion: criterionName,
-                grades: [
-                    {
-                        grade: "High Distinction",
-                        description: parseDescription(row[1] || ""),
-                        pointsRange: extractRange(row[1] || ""),
-                    },
-                    {
-                        grade: "Distinction",
-                        description: parseDescription(row[2] || ""),
-                        pointsRange: extractRange(row[2] || ""),
-                    },
-                    {
-                        grade: "Credit",
-                        description: parseDescription(row[3] || ""),
-                        pointsRange: extractRange(row[3] || ""),
-                    },
-                    {
-                        grade: "Pass",
-                        description: parseDescription(row[4] || ""),
-                        pointsRange: extractRange(row[4] || ""),
-                    },
-                    {
-                        grade: "Fail",
-                        description: parseDescription(row[5] || ""),
-                        pointsRange: extractRange(row[5] || ""),
-                    }
-                ],
-                maxPoints: Number(parseMax(row[6])) || 0,
+                grades,
+                maxPoints,
             };
         }),
     };
@@ -577,6 +551,13 @@ window.addEventListener("DOMContentLoaded", async () => {
                                 admin_feedback: updatedAdminFeedback,
                             }),
                         });
+
+                        const updatedData =  await fetch(`/api/moderations/${encodeURIComponent(moduleId)}/stats`);
+                        if (updatedData.ok) {
+                            const updated = await updatedData.json();
+                            renderStatsCard(updated);
+                            renderOverallStats(updated.overallStats);
+                        }
 
                         showStatus("Saved successfully.");
                         setTimeout(() => {
