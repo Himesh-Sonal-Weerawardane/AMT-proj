@@ -390,7 +390,7 @@ function renderUnmarkedModeration(data) {
 
                 const scoreView = document.createElement("span");
                 scoreView.classList.add("score-view");
-                scoreView.textContent = `0 / ${Number.isFinite(maxPointsNum) ? maxPointsNum : "—"}`;
+                scoreView.textContent = `_ / ${Number.isFinite(maxPointsNum) ? maxPointsNum : "—"}`;
 
                 const inputWrapper = document.createElement("div");
                 inputWrapper.classList.add("input-wrapper");
@@ -473,7 +473,7 @@ function renderUnmarkedModeration(data) {
 
                 // Initial highlight
                 try {
-                    highlightGrade(0, gradeTable, grades);
+                    //highlightGrade(0, gradeTable, grades);
                 } catch (e) {
                     console.warn(`highlightGrade failed on criteria[${index}]`, e);
                 }
