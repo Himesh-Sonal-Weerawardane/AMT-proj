@@ -146,6 +146,10 @@ export default function moderationRoutes(supabase) {
                 return res.status(500).json({ error: "Failed to update moderation." });
             }
 
+            if (admin_feedback?.criteria) {
+                await updateAdminFeedback(supabase, id, admin_feedback);
+            }
+
             // Ensure response is also normalized (in case DB serialised it)
             const responseRubric = normalizeRubricShape(data?.rubric_json);
 
@@ -163,6 +167,30 @@ export default function moderationRoutes(supabase) {
         }
     });
 
+    async function updateAdminFeedback(supabase, moderationId, adminFeedback) {
+        if (!adminFeedback?.criteria) return;
+
+        for (const c of adminFeedback.criteria) {
+            const criterion = c.criterion;
+
+            const scoreStr = String(c.admin_score || "");
+            const [scorePart] = scoreStr.split("/").map(s => s.trim());
+            const adminScore = parseFloat(scorePart) || 0;
+
+            const lower = +(adminScore * 0.95).toFixed(2);
+            const upper = +(adminScore * 1.05).toFixed(2);
+
+            await supabase
+                .from("moderation_stats")
+                .update({
+                    unit_chair_marks: adminScore,
+                    range_lower: lower,
+                    range_upper: upper,
+                })
+                .eq("moderation_id", moderationId)
+                .eq("criterion", criterion);
+        }
+    }
 
     // admin's front page
     router.get("/moderations/progress/recent-assignment", async (req, res) => {
