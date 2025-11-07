@@ -156,6 +156,11 @@ function buildRubricFromJSON(rubricJSON) {
 function extractRubricDataFromTable() {
     const data = rubricTable.getData();
 
+    const normalizeDashes = (value) => {
+        if (value == null) return "";
+        return String(value).replace(/-/g, "–");
+    };
+
     const parseMax = (cell) => {
         if (!cell) return "";
         const s = String(cell).trim();
@@ -165,17 +170,17 @@ function extractRubricDataFromTable() {
 
     return {
         criteria: data.map((row) => {
-            const criterionName = (row[0] || "").toString();
+            const criterionName = normalizeDashes(row[0] || "");
 
             const grades = [
-                { grade: "High Distinction", description: row[1] || "" },
-                { grade: "Distinction",      description: row[2] || "" },
-                { grade: "Credit",           description: row[3] || "" },
-                { grade: "Pass",             description: row[4] || "" },
-                { grade: "Fail",             description: row[5] || "" },
+                { grade: "High Distinction", description: normalizeDashes(row[1] || "") },
+                { grade: "Distinction",      description: normalizeDashes(row[2] || "") },
+                { grade: "Credit",           description: normalizeDashes(row[3] || "") },
+                { grade: "Pass",             description: normalizeDashes(row[4] || "") },
+                { grade: "Fail",             description: normalizeDashes(row[5] || "") },
             ];
 
-            const maxPoints = parseMax(row[6]);
+            const maxPoints = normalizeDashes(parseMax(row[6]));
 
             return {
                 criterion: criterionName,
