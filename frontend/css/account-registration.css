@@ -33,7 +33,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 90vh; /* full viewport height */
+    height: auto;
   }
   
   input {
@@ -78,4 +78,10 @@ body {
   /* Add a hover effect for login button */
   button:hover {
     opacity: 0.8;
+  }
+
+  .page-content h3 {
+      text-align: center;
+      margin-top: 200px;
+      font-size: 24px;
   }
