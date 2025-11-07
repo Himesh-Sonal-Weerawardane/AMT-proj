@@ -18,11 +18,14 @@ body {
     overflow: auto;
     margin-bottom: 100px;
     padding-top: 64px;
+    align-items: center;
   }
   
   .container h2 {
-    margin: 30px 400px 5px 400px;
+    margin: 0;
     font-weight: normal;
+    text-align: center;
+    transform: translateY(120px);
   }
   
   form {
@@ -37,6 +40,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     font-size: 20px;
     font-weight: 300;
   }

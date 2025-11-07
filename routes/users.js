@@ -154,7 +154,7 @@ export default function userRoutes(supabase) {
 
       const url = process.env.RENDER_EXTERNAL_URL || "http://localhost:3000"
       const {data: userData, error: userError} = await supabase.auth.resetPasswordForEmail(email,{
-        redirectTo: "${url}/login-pages/reset-psw.html",
+        redirectTo: `${url}/login-pages/reset-psw.html`,
       })
 
       if(userError){
