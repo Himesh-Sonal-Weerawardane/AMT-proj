@@ -2,6 +2,9 @@ const inviteUser = document.getElementById("invite-submit");
 inviteUser.addEventListener("click", async (e) => {
   e.preventDefault();
 
+  const message = inviteUser.textContent
+  inviteUser.disabled=true
+  inviteUser.textContent = "Sending invite"
   const role = document.getElementById("invite-role").value;
   const email = document
     .getElementById("invite-email")
@@ -20,11 +23,14 @@ inviteUser.addEventListener("click", async (e) => {
       return;
     }
     if (!data.success) {
-      alert("Invite Unsuccessful      " + data.error);
+      alert("Invite Unsuccessful      " + data.error)
     } else {
-      alert("Invite Successful");
+      alert("Invite Successful, Please check your email for registration")
     }
   } catch (err) {
     console.error("Network or server error:", err);
+  } finally {
+    inviteUser.disabled = false
+    inviteUser.textContent = message
   }
 });

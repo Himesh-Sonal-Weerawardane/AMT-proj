@@ -12,7 +12,6 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: left;
   padding: 64px 200px 150px 200px;
 }
 

@@ -27,7 +27,7 @@ export default function userRoutes(supabase) {
         .eq("auth_id", id);
       if (error) {
         console.error("be error", error);
-        return res.status(400).json({ error: error.message }); // User has wrong email/password
+        return res.status(400).json({ error: error.message }); 
       }
       const {data: deleteData, error: deleteError } = await supabase.auth.admin.deleteUser(id)
 
@@ -47,11 +47,11 @@ export default function userRoutes(supabase) {
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("auth_id, first_name, last_name, email, is_admin, user_id")
+        .select("auth_id, first_name, last_name, email, is_admin")
         .eq("is_deleted", false);
       if (error) {
         console.error("be error", error);
-        return res.status(400).json({ error: error.message }); // User has wrong email/password
+        return res.status(400).json({ error: error.message }); 
       }
       res.json(data);
     } catch (err) {
@@ -73,8 +73,9 @@ export default function userRoutes(supabase) {
 
       const roleLowerCase = role.toLowerCase();
 
+      const url = process.env.RENDER_EXTERNAL_URL || "http://localhost:3000"
       const link =
-        `http://localhost:3000/account/account-registration.html?role=${roleLowerCase}`;
+        `${url}/account/account-registration.html?role=${roleLowerCase}`;
       await sendAccountRegistrationEmail(email, link)
 
       return res.json({success: true})
@@ -102,7 +103,7 @@ export default function userRoutes(supabase) {
       })
       if(userError){
         console.error(userError)
-        return res.status(400).json({ userError }); // User has wrong email/password
+        return res.status(400).json({ userError }); 
       }
       const first_name = firstName;
       const last_name = lastName;
@@ -130,7 +131,7 @@ export default function userRoutes(supabase) {
       console.log("data registered", {data, error});
       if (error) {
         console.error("be error", error);
-        return res.status(400).json({ error: error.message }); // User has wrong email/password
+        return res.status(400).json({ error: error.message }); 
       }
       console.log("added user");
       return res.json({ success: true });
@@ -151,8 +152,9 @@ export default function userRoutes(supabase) {
           .json({ error: "Missing Field. All Fields Are Required" });
       }
 
+      const url = process.env.RENDER_EXTERNAL_URL || "http://localhost:3000"
       const {data: userData, error: userError} = await supabase.auth.resetPasswordForEmail(email,{
-        redirectTo: "http://localhost:3000/login-pages/reset-psw.html",
+        redirectTo: `${url}/login-pages/reset-psw.html`,
       })
 
       if(userError){

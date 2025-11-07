@@ -8,7 +8,7 @@ export default function profileRoutes(supabase) {
 
         try {
 
-            const userId = req.params.id;
+            const userId = Number(req.params.id);
 
             if (isNaN(userId)) {
                 return res.status(400).json({ error: "Invalid marker ID" });

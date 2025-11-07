@@ -2,7 +2,7 @@
   "name": "amt",
   "version": "1.0.0",
   "description": "Assignment Moderation Tool for IT Project Created on 8th August 2025",
-  "main": "index.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
@@ -30,6 +30,7 @@
     "libreoffice-convert": "^1.7.0",
     "mammoth": "^1.11.0",
     "multer": "^2.0.2",
+    "node-mailjet": "^6.0.11",
     "nodemailer": "^7.0.10",
     "pdf-parse": "^2.4.5",
     "xlsx": "^0.18.5"

@@ -7,16 +7,33 @@ const superbase = supabase.createClient(
 )
 document.addEventListener("DOMContentLoaded", async () => {
     const form = document.getElementById("psw-form")
+    const message = document.getElementById("psw-error-msg")
  
-    const button = form.querySelector("button")
-
     const { data: authStateData } = superbase.auth.onAuthStateChange(async (event, session) => {
         if(event === 'PASSWORD_RECOVERY'){
             form.addEventListener("submit", async (e) => {
                 e.preventDefault()
                 const password = document.getElementById("psw").value.trim()
                 const passwordConfirmation = document.getElementById("confirm-psw").value.trim()
+
+                if(password.length < 6){
+                    alert("Password has to have a minimum of 6 characters, please enter a new password")
+                    return
+                }
+                if(password !== passwordConfirmation){
+                    message.style.display = "block"
+                    return
+                } else {
+                    message.style.display = "none"
+                }
                 const {data, error} = await superbase.auth.updateUser( { password})
+                if(error) {
+                    console.error("error - update password fail",error.message)
+                    alert("Error in updating password" +error.message)
+                }
+
+                alert("Password Updated")
+                window.location.href = "../index.html";
             })
         }
     })

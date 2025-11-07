@@ -28,7 +28,7 @@ async function listingHandler() {
             <div class="staff-row">
                 <img src="../images/front-page/minus-button.png" class="remove-user" alt="Remove">
                 <div class="staff-profile"></div>
-                <a href="./user-profile.html?id=${staff.user_id}" class="staff-name">${fullName}</a>
+                <a href="./user-profile.html?id=${staff.auth_id}" class="staff-name">${fullName}</a>
                 <div class="staff-email">${staff.email}</div>
                 <div class="staff-role">${role}</div>
             </div>
@@ -78,6 +78,14 @@ window.addEventListener('DOMContentLoaded', async() => {
         const userHTML = staffCard.querySelector(".staff-name").getAttribute("href")
         const id = userHTML.split("id=")[1].trim()
 
+        const user = staffCard.querySelector(".staff-name").textContent.trim()
+        const confirmationStep = confirm(`Are you sure you want to continue with deleting user ${user}?
+                                          Please Confirm`
+        )
+        if(!confirmationStep){
+            return
+        }
+    
         try{
             const res = await fetch(`/api/delete_user/${id}`, { method: "POST" });
             const data = await res.json()
@@ -85,14 +93,15 @@ window.addEventListener('DOMContentLoaded', async() => {
             if(res.ok){
                 staffCard.remove()
                 console.log("user removed ")
+                alert(`User ${user} has been deleted`)
             } else {
                 console.error("failed to remove user", data.error)
+                alert(`There was an error in deleting user ${user}. Please try again`)
             }
         } catch(err){
             console.error(err)
+            alert(`There was an error in deleting user ${user}. Please try again`)
         }
     })
 
 })
-
-
