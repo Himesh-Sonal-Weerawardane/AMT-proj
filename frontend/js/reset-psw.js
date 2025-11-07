@@ -16,6 +16,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const password = document.getElementById("psw").value.trim()
                 const passwordConfirmation = document.getElementById("confirm-psw").value.trim()
 
+                if(password.length < 6){
+                    alert("Password has to have a minimum of 6 characters, please enter a new password")
+                    return
+                }
                 if(password !== passwordConfirmation){
                     message.style.display = "block"
                     return
@@ -28,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     alert("Error in updating password" +error.message)
                 }
 
-                alert("Passowrd Updated")
+                alert("Password Updated")
                 window.location.href = "../index.html";
             })
         }
